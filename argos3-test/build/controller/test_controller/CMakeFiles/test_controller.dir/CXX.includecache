@@ -6,6 +6,8 @@
 
 #IncludeRegexTransform: 
 
+/home/kristian/Documents/sdu/bachelor/argos3-test/build/controller/test_controller/test_controller_autogen/mocs_compilation.cpp
+
 /home/kristian/Documents/sdu/bachelor/argos3-test/controller/test_controller/test_controller.cpp
 test_controller.h
 /home/kristian/Documents/sdu/bachelor/argos3-test/controller/test_controller/test_controller.h
