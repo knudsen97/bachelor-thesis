@@ -1,4 +1,4 @@
-# Install script for directory: /home/kristian/Documents/sdu/bachelor/argos3-test/controller/test_controller
+# Install script for directory: /home/claus/bachelor/bachelor-thesis/argos3-test/controller/test_controller
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
