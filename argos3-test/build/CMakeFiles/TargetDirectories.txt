@@ -1,0 +1,8 @@
+/home/kristian/Documents/sdu/bachelor/argos3-test/build/CMakeFiles/rebuild_cache.dir
+/home/kristian/Documents/sdu/bachelor/argos3-test/build/CMakeFiles/edit_cache.dir
+/home/kristian/Documents/sdu/bachelor/argos3-test/build/controller/CMakeFiles/rebuild_cache.dir
+/home/kristian/Documents/sdu/bachelor/argos3-test/build/controller/CMakeFiles/edit_cache.dir
+/home/kristian/Documents/sdu/bachelor/argos3-test/build/controller/test_controller/CMakeFiles/rebuild_cache.dir
+/home/kristian/Documents/sdu/bachelor/argos3-test/build/controller/test_controller/CMakeFiles/edit_cache.dir
+/home/kristian/Documents/sdu/bachelor/argos3-test/build/controller/test_controller/CMakeFiles/test_controller.dir
+/home/kristian/Documents/sdu/bachelor/argos3-test/build/controller/test_controller/CMakeFiles/test_controller_autogen.dir
