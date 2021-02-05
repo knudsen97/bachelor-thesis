@@ -1,7 +1,6 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/test_controller_autogen.dir/AutogenUsed.txt"
-  "CMakeFiles/test_controller_autogen.dir/ParseCache.txt"
   "test_controller_autogen"
+  "CMakeFiles/test_controller_autogen.dir/AutogenOldSettings.cmake"
   "CMakeFiles/test_controller.dir/test_controller.cpp.o"
   "CMakeFiles/test_controller.dir/test_controller_autogen/mocs_compilation.cpp.o"
   "libtest_controller.pdb"
