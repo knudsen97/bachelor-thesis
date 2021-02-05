@@ -4,8 +4,8 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/claus/bachelor/bachelor-thesis/argos3-test/controller/test_controller/test_controller.cpp" "/home/claus/bachelor/bachelor-thesis/argos3-test/build/controller/test_controller/CMakeFiles/test_controller.dir/test_controller.cpp.o"
-  "/home/claus/bachelor/bachelor-thesis/argos3-test/build/controller/test_controller/test_controller_autogen/mocs_compilation.cpp" "/home/claus/bachelor/bachelor-thesis/argos3-test/build/controller/test_controller/CMakeFiles/test_controller.dir/test_controller_autogen/mocs_compilation.cpp.o"
+  "/home/kristian/Documents/sdu/bachelor/argos3-test/controller/test_controller/test_controller.cpp" "/home/kristian/Documents/sdu/bachelor/argos3-test/build/controller/test_controller/CMakeFiles/test_controller.dir/test_controller.cpp.o"
+  "/home/kristian/Documents/sdu/bachelor/argos3-test/build/controller/test_controller/test_controller_autogen/mocs_compilation.cpp" "/home/kristian/Documents/sdu/bachelor/argos3-test/build/controller/test_controller/CMakeFiles/test_controller.dir/test_controller_autogen/mocs_compilation.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
@@ -14,6 +14,7 @@ set(CMAKE_TARGET_DEFINITIONS_CXX
   "QT_CORE_LIB"
   "QT_GUI_LIB"
   "QT_WIDGETS_LIB"
+  "test_controller_EXPORTS"
   )
 
 # The include file search paths:

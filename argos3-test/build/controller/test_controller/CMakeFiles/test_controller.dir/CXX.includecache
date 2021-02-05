@@ -6,23 +6,17 @@
 
 #IncludeRegexTransform: 
 
-<<<<<<< HEAD
 /home/kristian/Documents/sdu/bachelor/argos3-test/build/controller/test_controller/test_controller_autogen/mocs_compilation.cpp
 
 /home/kristian/Documents/sdu/bachelor/argos3-test/controller/test_controller/test_controller.cpp
-=======
-/home/claus/bachelor/bachelor-thesis/argos3-test/build/controller/test_controller/test_controller_autogen/mocs_compilation.cpp
-
-/home/claus/bachelor/bachelor-thesis/argos3-test/controller/test_controller/test_controller.cpp
->>>>>>> c6d8a13d73aabaeafcaf6c3f99588efadcf919c2
 test_controller.h
-/home/claus/bachelor/bachelor-thesis/argos3-test/controller/test_controller/test_controller.h
+/home/kristian/Documents/sdu/bachelor/argos3-test/controller/test_controller/test_controller.h
 argos3/core/utility/configuration/argos_configuration.h
 -
 argos3/core/utility/math/vector2.h
 -
 
-/home/claus/bachelor/bachelor-thesis/argos3-test/controller/test_controller/test_controller.h
+/home/kristian/Documents/sdu/bachelor/argos3-test/controller/test_controller/test_controller.h
 argos3/core/control_interface/ci_controller.h
 -
 argos3/plugins/robots/generic/control_interface/ci_differential_steering_actuator.h

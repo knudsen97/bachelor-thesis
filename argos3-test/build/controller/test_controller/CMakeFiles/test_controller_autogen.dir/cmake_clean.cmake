@@ -1,7 +1,6 @@
 file(REMOVE_RECURSE
-  "test_controller_autogen"
-  "CMakeFiles/test_controller_autogen.dir/AutogenOldSettings.cmake"
   "CMakeFiles/test_controller_autogen"
+  "test_controller_autogen/mocs_compilation.cpp"
 )
 
 # Per-language clean rules from dependency scanning.

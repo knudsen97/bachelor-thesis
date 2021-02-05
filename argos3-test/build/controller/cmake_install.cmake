@@ -1,4 +1,4 @@
-# Install script for directory: /home/claus/bachelor/bachelor-thesis/argos3-test/controller
+# Install script for directory: /home/kristian/Documents/sdu/bachelor/argos3-test/controller
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/claus/bachelor/bachelor-thesis/argos3-test/build/controller/test_controller/cmake_install.cmake")
+  include("/home/kristian/Documents/sdu/bachelor/argos3-test/build/controller/test_controller/cmake_install.cmake")
 
 endif()
 
