@@ -48,7 +48,7 @@ link_directories(${ARGOS_LIBRARY_DIRS})
 add_subdirectory(controller)
 
 # Descend into the loop_functions directory
-#add_subdirectory(loop_functions)
+add_subdirectory(loop_functions)
 
 # Descend into the embedding directory
 #add_subdirectory(embedding)
