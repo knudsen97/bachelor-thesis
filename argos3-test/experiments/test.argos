@@ -39,6 +39,7 @@
       </actuators>
       <sensors>
         <footbot_proximity implementation="default" show_rays="true" />
+        <positioning implementation="default" />
       </sensors>
 
       <params alpha="7.5" delta="0.1" velocity="5" />
@@ -79,7 +80,9 @@
     <box id="wall_west" size="0.1,2,0.5" movable="false">
       <body position="-1,0,0" orientation="0,0,0" />
     </box>
-
+    <!-- <box id="object1" size="0.2,0.2,0.5" movable="true" mass="2">
+      <body position="0.5,0,0" orientation="0,0,0" />
+    </box> -->
     <!-- Place a foot-bot in the origin and bind it to the controller -->
     <foot-bot id="fb_0">
       <body position="0,0,0" orientation="0,0,0" />
