@@ -38,6 +38,10 @@ endif(GALIB_FOUND)
 # Find Lua
 find_package(Lua REQUIRED)
 
+# Find opencv
+find_package(OpenCV)
+include_directories(${OpenCV_INCLUDE_DIRS}) # Not needed for CMake >= 2.8.11
+
 # Set ARGoS include dir
 include_directories(${CMAKE_SOURCE_DIR} ${ARGOS_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
 
