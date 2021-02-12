@@ -81,7 +81,7 @@ void CSortLoopFunction::PlaceBox( const CVector3& min_range,
       for(size_t i = 0; i < un_box; ++i) {
          /* Make the id */
          cBId.str("");
-         cBId << "box" << i;
+         cBId << "box_" << i;
          
          CRandom::CRNG* pcRNG = CRandom::CreateRNG("argos");
          CVector3 c_position;
