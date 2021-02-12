@@ -39,6 +39,13 @@
       </actuators>
       <sensors>
         <footbot_proximity implementation="default" show_rays="true" />
+        <cameras implementation="default" show_frustum="true">
+          <camera id="camera0" range="0.025:0.25" anchor="origin"
+                  position="0.1,0,0.1" orientation="90,90,0"
+                  focal_length="800,800" principal_point="320,240"
+                  resolution="640,480"/>
+                  <tag_detector medium="qrcodes" show_rays="true"/>
+        </cameras>
         <positioning implementation="default" />
       </sensors>
 
@@ -88,6 +95,7 @@
       <body position="0,0,0" orientation="0,0,0" />
       <controller config="test"/>
     </foot-bot>
+    
 
   </arena>
 
@@ -106,6 +114,14 @@
         Use a 2D dynamics engine.
     -->
     <dynamics2d id="dyn2d" />
+
+    <!-- <dynamics3d id="dyn3d" default_friction="2.0">
+      <floor height="0.01" friction="0.05"/>
+      <gravity g="10" />
+      <magnetism max_distance="0.04" />
+    </dynamics3d>
+    -->
+  
   </physics_engines>
 
   <!-- ********* -->
@@ -139,7 +155,7 @@
     <qt-opengl>
       <camera>
         <placements>
-          <placement index="0" position="0,0,8.14689" look_at="0,0,0" up="1,0,0" lens_focal_length="65" />
+          <placement index="0" position="0,0,8.14689" look_at="0,0,0" up="1,500,0" lens_focal_length="65" />
         </placements>
       </camera>
     </qt-opengl>
