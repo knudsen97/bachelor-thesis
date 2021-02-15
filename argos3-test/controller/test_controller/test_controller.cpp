@@ -22,13 +22,12 @@ using namespace argos;
         //camSensor = GetSensor<CCI_CameraSensor>("camera0");
 
         GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
-
         pcBox = new CBoxEntity("box1",                   // id
-                                CVector3(0.5, 0.2, 0.0), // position
+                                CVector3(2, 1.7, 0.0), // position
                                 CQuaternion(),           // orientation
                                 true,                    // movable or not?
                                 CVector3(0.1, 0.4, 0.5), // size
-                                2000.0);                    // mass in kg
+                                500.0);                    // mass in kg
 
 
         AddEntity(*pcBox);
@@ -38,7 +37,6 @@ using namespace argos;
     {
         //Find the box' origin/center of mass:
         CVector2 origin = {mBox->GetEmbodiedEntity().GetOriginAnchor().Position.GetX(), mBox->GetEmbodiedEntity().GetOriginAnchor().Position.GetY()};
-        
         //Get the Orientation of the box:
         CRadians xAngle, yAngle, zAngle;
         mBox->GetEmbodiedEntity().GetOriginAnchor().Orientation.ToEulerAngles(xAngle, yAngle, zAngle);
@@ -75,7 +73,8 @@ using namespace argos;
     }
 
     //Used to calculate the projection in findPushPoints() function:
-    Real test_controller::projection(CVector3 &v1, CVector3 &v2)
+    template<class V>
+    Real test_controller::projection(V &v1, V &v2)
     {
         //return v1.DotProduct(v2)/(sqrt(pow(v2.GetX(),2)+pow(v2.GetY(),2)));
         return v1.DotProduct(v2)/(abs(v2.GetX()+v2.GetY()));    //Absolute value is taken since we're only interested in the sign of the value.
@@ -152,7 +151,7 @@ using namespace argos;
         const CCI_PositioningSensor::SReading& robotPos = posSensor->GetReading();
 
         CVector3 goal;
-        goal.Set(0.8, 0.8, 0);
+        goal.Set(3.3, 3.3, 0);
         std::vector<CVector3> validPushPoints = test_controller::findPushPoints(pcBox, goal);
 
         //To draw the points in argos. For debugging
@@ -173,8 +172,42 @@ using namespace argos;
         //     test = true;
         // }
 
+        //Implementation of simple bug 0 algorithm:
+        CRadians xAngle, yAngle, zAngle;
+        robotPos.Orientation.ToEulerAngles(xAngle, yAngle, zAngle);
+        // LOG << "xAngle: " << xAngle.GetValue()*180/PI << std::endl;
+        // LOG << "yAngle: " << yAngle.GetValue()*180/PI << std::endl;
+        // LOG << "zAngle: " << zAngle.GetValue()*180/PI << std::endl;
 
-        m_pcWheels->SetLinearVelocity(m_fWheelVelocity, m_fWheelVelocity);
+        CVector3 posDiff = validPushPoints[1] - robotPos.Position;
+        Real angleDiff = (xAngle - ATan2(posDiff.GetY(), posDiff.GetX())).GetValue();
+        LOG << angleDiff << std::endl;
+        Real angleTH = 0.0399f;
+        if(angleDiff < -angleTH && !test1)
+        {
+            LOG << "Go CCW\n";
+            m_pcWheels->SetLinearVelocity(-m_fWheelVelocity, m_fWheelVelocity);
+        }
+        else if(angleDiff > angleTH && !test1)
+        {
+            LOG << "GO CW\n";
+            m_pcWheels->SetLinearVelocity(m_fWheelVelocity, -m_fWheelVelocity);
+        }
+        // else if(posDiff.GetX() < 0.09999f)
+        // {
+        //     LOG << "STOP\n";
+        //     m_pcWheels->SetLinearVelocity(0, 0);
+        //     test1 = true;
+        // }
+        else if(!test1)
+        {
+            m_pcWheels->SetLinearVelocity(m_fWheelVelocity, m_fWheelVelocity);
+            LOG << "Go straight\n";
+        }
+        // LOG << "posDiff: " << posDiff << std::endl;
+        // LOG << "angleDiff: " << angleDiff << std::endl;
+
+
     }
 
    REGISTER_CONTROLLER(test_controller, "test_controller")

@@ -3,7 +3,7 @@
 
 #include <cmath>
 #include <string>
-
+#include "planner.h"
 #include <argos3/core/control_interface/ci_controller.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_differential_steering_actuator.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_positioning_sensor.h>
@@ -16,7 +16,7 @@
 
 using namespace argos;
 
-class test_controller : public CCI_Controller, public CLoopFunctions{
+class test_controller : public CCI_Controller, public CLoopFunctions, public CBoxEntity{
 
 public:
    struct cPositions{
@@ -31,9 +31,11 @@ public:
    virtual void ControlStep();
 
    cPositions findCPositions(CBoxEntity* mBox);
-   
 
-   Real projection(CVector3 &v1, CVector3 &v2);
+
+   template<class V>
+   Real projection(V &v1, V &v2);
+
    std::vector<CVector3> findPushPoints(CBoxEntity* mBox, CVector3 goalPoint);
 
 
@@ -47,6 +49,8 @@ private:
    Real m_fWheelVelocity;
 
    bool test = false;
+   bool test1 = false;
+   planner::planner planner;
 
 };
 
