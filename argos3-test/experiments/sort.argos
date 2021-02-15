@@ -47,6 +47,7 @@
                   resolution="640,480"/>
                   <tag_detector medium="qrcodes" show_rays="true"/>
         </cameras>
+        <positioning implementation="default" />
       </sensors>
 
       <params alpha="7.5" delta="0.1" velocity="5" />

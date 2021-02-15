@@ -1,6 +1,9 @@
 #ifndef TEST_CONTROLLER_H
 #define TEST_CONTROLLER_H
 
+#include <cmath>
+#include <string>
+
 #include <argos3/core/control_interface/ci_controller.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_differential_steering_actuator.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_positioning_sensor.h>
@@ -17,7 +20,7 @@ class test_controller : public CCI_Controller, public CLoopFunctions{
 
 public:
    struct cPositions{
-   CVector2 c1, c2, c3, c4;
+      CVector3 c1, c2, c3, c4;
    };
 
    test_controller();
@@ -28,6 +31,10 @@ public:
    virtual void ControlStep();
 
    cPositions findCPositions(CBoxEntity* mBox);
+   
+
+   Real projection(CVector3 &v1, CVector3 &v2);
+   std::vector<CVector3> findPushPoints(CBoxEntity* mBox, CVector3 goalPoint);
 
 
 private:
@@ -38,6 +45,8 @@ private:
    CBoxEntity* pcBox;
 
    Real m_fWheelVelocity;
+
+   bool test = false;
 
 };
 
