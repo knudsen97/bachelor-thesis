@@ -16,7 +16,7 @@ class utils
 public:
     struct polygon
     {
-        std::vector<cv::Point> corners;
+        std::vector<cv::Point2i> corners;
     };
 
     utils();
