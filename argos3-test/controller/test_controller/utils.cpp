@@ -1,22 +1,26 @@
 #include "utils.h"
 #include <cmath>
 
-#define SCALE 200
+#define IMAGESIZE 700
+#define WINDOWSIZE 500
+#define ARENASIZE 3
+#define SCALE (IMAGESIZE/ARENASIZE)
+
 
 utils::polygon findCPositions(argos::CBoxEntity* mBox)
 {
     utils::polygon polygon;
     //Find the box' origin/center of mass:
-    cv::Point2d origin = {mBox->GetEmbodiedEntity().GetOriginAnchor().Position.GetY(), mBox->GetEmbodiedEntity().GetOriginAnchor().Position.GetX()};
+    cv::Point2d origin = {mBox->GetEmbodiedEntity().GetOriginAnchor().Position.GetX(), mBox->GetEmbodiedEntity().GetOriginAnchor().Position.GetY()};
     
     //Get the Orientation of the box:
     argos::CRadians xAngle, yAngle, zAngle;
     mBox->GetEmbodiedEntity().GetOriginAnchor().Orientation.ToEulerAngles(xAngle, yAngle, zAngle);
-    float theta = xAngle.GetValue();
+    float theta = xAngle.GetAbsoluteValue() + M_PI_2;
     
     //Get box dimensions to calculate offset:
     float xSize = mBox->GetSize().GetX();
-    float ySize = mBox->GetSize().GetY();    
+    float ySize = mBox->GetSize().GetY();
 
     //TOP RIGHT CORNER:
     float c1x = origin.x + ((ySize / 2) * cos(theta)) - ((xSize / 2) * sin(theta));
@@ -34,10 +38,10 @@ utils::polygon findCPositions(argos::CBoxEntity* mBox)
     float c4x = origin.x + ((ySize / 2) * cos(theta)) + ((xSize / 2) * sin(theta));
     float c4y = origin.y + ((ySize / 2) * sin(theta)) - ((xSize / 2) * cos(theta));
 
-    polygon.corners.push_back({(c1y)*SCALE, (c1x-ySize)*SCALE});
-    polygon.corners.push_back({(c2y)*SCALE, (c2x-ySize)*SCALE});
-    polygon.corners.push_back({(c3y)*SCALE, (c3x-ySize)*SCALE});
-    polygon.corners.push_back({(c4y)*SCALE, (c4x-ySize)*SCALE});
+    polygon.corners.push_back({(c1x)*SCALE, (c1y)*SCALE});
+    polygon.corners.push_back({(c2x)*SCALE, (c2y)*SCALE});
+    polygon.corners.push_back({(c3x)*SCALE, (c3y)*SCALE});
+    polygon.corners.push_back({(c4x)*SCALE, (c4y)*SCALE});
 
     return polygon;
 }
@@ -49,7 +53,8 @@ utils::utils()
     name.append(utils::window_name_temp);
     name.append(" ");
     name.append(std::to_string(utils::window_counter));
-    cv::namedWindow(name);
+    cv::namedWindow(name, cv::WINDOW_NORMAL);
+    cv::resizeWindow(name, WINDOWSIZE, WINDOWSIZE);
     utils::window_name = name;
     utils::window_counter++;
     frame = empty_frame.clone();
@@ -57,7 +62,8 @@ utils::utils()
 
 utils::utils(std::string name)
 {
-    cv::namedWindow(name);
+    cv::namedWindow(name, cv::WINDOW_NORMAL);
+    cv::resizeWindow(name, WINDOWSIZE, WINDOWSIZE);
     utils::window_name = name;
     utils::window_counter++;
     frame = empty_frame.clone();
@@ -79,7 +85,6 @@ void utils::plot(argos::CVector3 robot)
 {
     cv::Point robot_position(robot.GetX()*SCALE, robot.GetY()*SCALE);
     cv::circle(frame, robot_position, 15, cv::Scalar(255, 255, 000), 2);
-    //cv::flip(frame, frame, 1);
     cv::imshow(this->window_name, frame);
     argos::LOG << "robot position: " << robot_position/(SCALE/100) << "\n";
 }
@@ -93,4 +98,4 @@ void utils::clear_plot()
 
 
 size_t utils::window_counter = 0;
-cv::Mat utils::empty_frame(500,500, CV_8UC3, cv::Scalar(255,255,255));
+cv::Mat utils::empty_frame(IMAGESIZE,IMAGESIZE, CV_8UC3, cv::Scalar(255,255,255));
