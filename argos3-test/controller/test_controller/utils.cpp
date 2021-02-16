@@ -69,25 +69,36 @@ utils::utils(std::string name)
     frame = empty_frame.clone();
 }
 
-void utils::plot(argos::CBoxEntity* box)
+void utils::addBox(argos::CBoxEntity* box)
 {
     utils::polygon polygon;
     polygon = findCPositions(box);
     cv::polylines(frame, polygon.corners, true, cv::Scalar(0,0,0), 2);
-    cv::imshow(this->window_name, frame);
     for (size_t i = 0; i < polygon.corners.size(); i++)
     {
         argos::LOG << "corner " << std::to_string(i) << ": " << polygon.corners[i]/(SCALE/100) << "\n";
     }     
 }
 
-void utils::plot(argos::CVector3 robot)
+void utils::addRobotPosition(argos::CVector3 robot, int robotRadius)
 {
     cv::Point robot_position(robot.GetX()*SCALE, robot.GetY()*SCALE);
-    cv::circle(frame, robot_position, 15, cv::Scalar(255, 255, 000), 2);
-    cv::imshow(this->window_name, frame);
+    cv::circle(frame, robot_position, robotRadius, cv::Scalar(255, 255, 000), 2);
     argos::LOG << "robot position: " << robot_position/(SCALE/100) << "\n";
 }
+
+void utils::plot() //shows if fliped for visual purpose
+{
+    cv::flip(frame, frame, 0);
+    cv::imshow(this->window_name, this->frame);
+    utils::frame = utils::empty_frame.clone();
+}
+
+cv::Mat utils::getPlot()
+{
+    return frame.clone();
+}
+
 
 void utils::clear_plot()
 {

@@ -21,8 +21,10 @@ public:
 
     utils();
     utils(std::string name);
-    void plot(argos::CBoxEntity* box);
-    void plot(argos::CVector3 robot);
+    void addBox(argos::CBoxEntity* box);
+    void addRobotPosition(argos::CVector3 robot, int robotRadius = 15);
+    void plot();
+    cv::Mat getPlot();
     void clear_plot();
 
 
