@@ -6,6 +6,7 @@
 #define ARENASIZE 3
 #define SCALE (IMAGESIZE/ARENASIZE)
 
+using namespace argos;
 
 utils::polygon findCPositions(argos::CBoxEntity* mBox)
 {
@@ -104,8 +105,6 @@ void utils::clear_plot()
 {
     utils::frame = utils::empty_frame.clone();
 }
-
-
 
 
 size_t utils::window_counter = 0;

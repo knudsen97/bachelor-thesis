@@ -7,8 +7,11 @@
 #include <argos3/core/utility/configuration/argos_configuration.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_positioning_sensor.h>
 
+
 #include <string>
 #include <vector>
+
+//using namespace argos;
 
 class utils
 {
@@ -26,9 +29,6 @@ public:
     void plot();
     cv::Mat getPlot();
     void clear_plot();
-
-
-    
 
 private:
     std::string window_name_temp = "Utils plot";
