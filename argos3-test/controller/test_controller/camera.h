@@ -28,6 +28,7 @@ public:
 
     camera();
     camera(std::string name);
+    ~camera();
     void AddBox(argos::CBoxEntity* box);
     void AddRobotPosition(argos::CVector3 robot, int robotRadius = 15);
     void Plot();

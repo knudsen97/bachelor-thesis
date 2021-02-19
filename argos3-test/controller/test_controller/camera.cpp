@@ -34,6 +34,7 @@ void camera::PreStep()
     camera::Plot();
 }
 
+void camera::Init(){}
 
 camera::polygon findCPositions(argos::CBoxEntity* mBox)
 {
@@ -97,11 +98,12 @@ camera::camera(std::string name)
     frame = emptyFrame.clone();
 }
 
+camera::~camera(){}
+
 void camera::AddBox(argos::CBoxEntity* box)
 {
     camera::polygon polygon;
     polygon = findCPositions(box);
-
     cv::fillPoly(frame, polygon.corners, cv::Scalar(0,0,0));
     for (size_t i = 0; i < polygon.corners.size(); i++)
     {
@@ -118,14 +120,15 @@ void camera::AddRobotPosition(argos::CVector3 robot, int robotRadius)
 
 void camera::Plot() //shows if fliped for visual purpose
 {
-    camera::frame = camera::emptyFrame.clone();
     cv::flip(frame, frame, 0);
     cv::imshow(this->windowName, this->frame);
+    camera::frame = camera::emptyFrame.clone();
 }
 
 cv::Mat camera::GetPlot()
 {
     return frame.clone();
+    camera::frame = camera::emptyFrame.clone();
 }
 
 
