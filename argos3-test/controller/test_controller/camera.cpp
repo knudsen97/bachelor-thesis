@@ -8,18 +8,12 @@
 
 using namespace argos;
 
-void camera::Init()
+void camera::PreStep()
 {
     /**
      * These for-loop is written after this example 
      * https://www.argos-sim.info/code_page.php?path=examples/loop_functions/trajectory_loop_functions/trajectory_loop_functions.cpp&lang=cpp
     */
-
-    
-}
-
-void camera::PreStep()
-{
     CSpace::TMapPerType& boxMap = GetSpace().GetEntitiesByType("box");
     for (CSpace::TMapPerType::iterator i = boxMap.begin(); i != boxMap.end(); ++i)
     {
@@ -107,7 +101,8 @@ void camera::AddBox(argos::CBoxEntity* box)
 {
     camera::polygon polygon;
     polygon = findCPositions(box);
-    cv::polylines(frame, polygon.corners, true, cv::Scalar(0,0,0), 2);
+
+    cv::fillPoly(frame, polygon.corners, cv::Scalar(0,0,0));
     for (size_t i = 0; i < polygon.corners.size(); i++)
     {
         argos::LOG << "corner " << std::to_string(i) << ": " << polygon.corners[i]/(SCALE/100) << "\n";
@@ -123,9 +118,9 @@ void camera::AddRobotPosition(argos::CVector3 robot, int robotRadius)
 
 void camera::Plot() //shows if fliped for visual purpose
 {
+    camera::frame = camera::emptyFrame.clone();
     cv::flip(frame, frame, 0);
     cv::imshow(this->windowName, this->frame);
-    camera::frame = camera::emptyFrame.clone();
 }
 
 cv::Mat camera::GetPlot()
