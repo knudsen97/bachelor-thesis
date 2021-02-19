@@ -7,7 +7,7 @@
 #include <argos3/core/utility/configuration/argos_configuration.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_positioning_sensor.h>
 
-#include "utils.h"
+#include "camera.h"
 
 class planner
 {
