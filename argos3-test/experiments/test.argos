@@ -54,6 +54,13 @@
 
   </controllers>
 
+  <!-- ****************** -->
+  <!-- * Loop functions * -->
+  <!-- ****************** -->
+	<!-- place random boxes at random -->
+  <loop_functions library="build/controller/test_controller/libtest_controller"
+                  label="camera_loop_function">
+  </loop_functions>
   <!-- *********************** -->
   <!-- * Arena configuration * -->
   <!-- *********************** -->

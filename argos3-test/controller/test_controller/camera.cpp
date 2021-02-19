@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "camera.h"
 #include <cmath>
 
 #define IMAGESIZE 700
@@ -8,16 +8,49 @@
 
 using namespace argos;
 
-utils::polygon findCPositions(argos::CBoxEntity* mBox)
+void camera::Init()
 {
-    utils::polygon polygon;
+    /**
+     * These for-loop is written after this example 
+     * https://www.argos-sim.info/code_page.php?path=examples/loop_functions/trajectory_loop_functions/trajectory_loop_functions.cpp&lang=cpp
+    */
+
+    
+}
+
+void camera::PreStep()
+{
+    CSpace::TMapPerType& boxMap = GetSpace().GetEntitiesByType("box");
+    for (CSpace::TMapPerType::iterator i = boxMap.begin(); i != boxMap.end(); ++i)
+    {
+        argos::LOG << "im here\n ";
+        CBoxEntity* pBox = any_cast<CBoxEntity*>(i->second);
+        camera::AddBox(pBox);
+    }
+
+    CSpace::TMapPerType& FBmap = GetSpace().GetEntitiesByType("foot-bot");
+    for (CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
+    {
+        CFootBotEntity* fBot = any_cast<CFootBotEntity*>(i->second);
+        AddRobotPosition(fBot->GetEmbodiedEntity().GetOriginAnchor().Position);
+    }
+
+
+
+    camera::Plot();
+}
+
+
+camera::polygon findCPositions(argos::CBoxEntity* mBox)
+{
+    camera::polygon polygon;
     //Find the box' origin/center of mass:
     cv::Point2d origin = {mBox->GetEmbodiedEntity().GetOriginAnchor().Position.GetX(), mBox->GetEmbodiedEntity().GetOriginAnchor().Position.GetY()};
     
     //Get the Orientation of the box:
     argos::CRadians xAngle, yAngle, zAngle;
     mBox->GetEmbodiedEntity().GetOriginAnchor().Orientation.ToEulerAngles(xAngle, yAngle, zAngle);
-    float theta = xAngle.GetAbsoluteValue() + M_PI_2;
+    float theta = -xAngle.GetAbsoluteValue() + M_PI_2;
     
     //Get box dimensions to calculate offset:
     float xSize = mBox->GetSize().GetX();
@@ -48,31 +81,31 @@ utils::polygon findCPositions(argos::CBoxEntity* mBox)
 }
 
 
-utils::utils()
+camera::camera()
 {
     std::string name;
-    name.append(utils::window_name_temp);
+    name.append(camera::windowNameTemp);
     name.append(" ");
-    name.append(std::to_string(utils::window_counter));
+    name.append(std::to_string(camera::windowCounter));
     cv::namedWindow(name, cv::WINDOW_NORMAL);
     cv::resizeWindow(name, WINDOWSIZE, WINDOWSIZE);
-    utils::window_name = name;
-    utils::window_counter++;
-    frame = empty_frame.clone();
+    camera::windowName = name;
+    camera::windowCounter++;
+    frame = emptyFrame.clone();
 }
 
-utils::utils(std::string name)
+camera::camera(std::string name)
 {
     cv::namedWindow(name, cv::WINDOW_NORMAL);
     cv::resizeWindow(name, WINDOWSIZE, WINDOWSIZE);
-    utils::window_name = name;
-    utils::window_counter++;
-    frame = empty_frame.clone();
+    camera::windowName = name;
+    camera::windowCounter++;
+    frame = emptyFrame.clone();
 }
 
-void utils::addBox(argos::CBoxEntity* box)
+void camera::AddBox(argos::CBoxEntity* box)
 {
-    utils::polygon polygon;
+    camera::polygon polygon;
     polygon = findCPositions(box);
     cv::polylines(frame, polygon.corners, true, cv::Scalar(0,0,0), 2);
     for (size_t i = 0; i < polygon.corners.size(); i++)
@@ -81,31 +114,39 @@ void utils::addBox(argos::CBoxEntity* box)
     }     
 }
 
-void utils::addRobotPosition(argos::CVector3 robot, int robotRadius)
+void camera::AddRobotPosition(argos::CVector3 robot, int robotRadius)
 {
     cv::Point robot_position(robot.GetX()*SCALE, robot.GetY()*SCALE);
     cv::circle(frame, robot_position, robotRadius, cv::Scalar(255, 255, 000), 2);
     argos::LOG << "robot position: " << robot_position/(SCALE/100) << "\n";
 }
 
-void utils::plot() //shows if fliped for visual purpose
+void camera::Plot() //shows if fliped for visual purpose
 {
     cv::flip(frame, frame, 0);
-    cv::imshow(this->window_name, this->frame);
-    utils::frame = utils::empty_frame.clone();
+    cv::imshow(this->windowName, this->frame);
+    camera::frame = camera::emptyFrame.clone();
 }
 
-cv::Mat utils::getPlot()
+cv::Mat camera::GetPlot()
 {
     return frame.clone();
 }
 
 
-void utils::clear_plot()
+void camera::ClearPlot()
 {
-    utils::frame = utils::empty_frame.clone();
+    camera::frame = camera::emptyFrame.clone();
 }
 
 
-size_t utils::window_counter = 0;
-cv::Mat utils::empty_frame(IMAGESIZE,IMAGESIZE, CV_8UC3, cv::Scalar(255,255,255));
+size_t camera::windowCounter = 0;
+cv::Mat camera::emptyFrame(IMAGESIZE,IMAGESIZE, CV_8UC3, cv::Scalar(255,255,255));
+
+/****************************************/
+/****************************************/
+
+REGISTER_LOOP_FUNCTIONS(camera, "camera_loop_function");
+
+/****************************************/
+/****************************************/
