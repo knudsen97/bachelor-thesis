@@ -1,5 +1,4 @@
 #include "camera.h"
-#include <cmath>
 
 #define IMAGESIZE 700
 #define WINDOWSIZE 500

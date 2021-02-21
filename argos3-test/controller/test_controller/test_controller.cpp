@@ -32,14 +32,14 @@
         AddEntity(*pcBox);
 
         cv::Mat map;
-        map = C.GetPlot();
-        cv::imshow("test", map);
+        map = C.camera::GetPlot();
+        //cv::imshow("test", map);
 
         CVector3 goal, start;
         goal.Set(15,15,0);
         start.Set(5,5,0);
-        map = P.Wavefront(map,start,goal);
-        P.Pathfinder(map, start, goal);
+        map = P.planner::Wavefront(map,start,goal);
+        P.planner::Pathfinder(map, start, goal);
     }
 
  

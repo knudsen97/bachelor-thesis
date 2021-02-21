@@ -1,3 +1,6 @@
+#ifndef CAMERA_H
+#define CAMERA_H
+
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -12,6 +15,7 @@
 
 #include <string>
 #include <vector>
+#include <cmath>
 
 //using namespace argos;
 
@@ -43,3 +47,5 @@ private:
     static cv::Mat emptyFrame;
     cv::Mat frame;
 };
+
+#endif
