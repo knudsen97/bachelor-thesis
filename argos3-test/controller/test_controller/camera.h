@@ -16,23 +16,22 @@
 //using namespace argos;
 
 class camera : public argos::CLoopFunctions {
-
 public:
     struct polygon
     {
         std::vector<cv::Point2i> corners;
     };
 
-    virtual void Init();
     virtual void PreStep();
 
     camera();
     camera(std::string name);
     ~camera();
     void AddBox(argos::CBoxEntity* box);
-    void AddRobotPosition(argos::CVector3 robot, int robotRadius = 15);
+    void AddRobotPosition(argos::CVector3 robot, float robotRadius = 0.09);
     void Plot();
     cv::Mat GetPlot();
+    void GetPlot(cv::Mat& outputFrame);
     void ClearPlot();
 
 private:
@@ -42,5 +41,5 @@ private:
     std::string windowName;
     static size_t windowCounter;
     static cv::Mat emptyFrame;
-    cv::Mat frame;
+    static cv::Mat frame;
 };

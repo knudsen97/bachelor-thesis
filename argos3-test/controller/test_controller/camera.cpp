@@ -10,6 +10,7 @@ using namespace argos;
 
 void camera::PreStep()
 {
+    camera::ClearPlot();
     /**
      * These for-loop is written after this example 
      * https://www.argos-sim.info/code_page.php?path=examples/loop_functions/trajectory_loop_functions/trajectory_loop_functions.cpp&lang=cpp
@@ -17,7 +18,6 @@ void camera::PreStep()
     CSpace::TMapPerType& boxMap = GetSpace().GetEntitiesByType("box");
     for (CSpace::TMapPerType::iterator i = boxMap.begin(); i != boxMap.end(); ++i)
     {
-        argos::LOG << "im here\n ";
         CBoxEntity* pBox = any_cast<CBoxEntity*>(i->second);
         camera::AddBox(pBox);
     }
@@ -26,15 +26,9 @@ void camera::PreStep()
     for (CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
     {
         CFootBotEntity* fBot = any_cast<CFootBotEntity*>(i->second);
-        AddRobotPosition(fBot->GetEmbodiedEntity().GetOriginAnchor().Position);
+        camera::AddRobotPosition(fBot->GetEmbodiedEntity().GetOriginAnchor().Position);
     }
-
-
-
-    camera::Plot();
 }
-
-void camera::Init(){}
 
 camera::polygon findCPositions(argos::CBoxEntity* mBox)
 {
@@ -82,7 +76,6 @@ camera::camera()
     name.append(camera::windowNameTemp);
     name.append(" ");
     name.append(std::to_string(camera::windowCounter));
-    cv::namedWindow(name, cv::WINDOW_NORMAL);
     cv::resizeWindow(name, WINDOWSIZE, WINDOWSIZE);
     camera::windowName = name;
     camera::windowCounter++;
@@ -91,10 +84,8 @@ camera::camera()
 
 camera::camera(std::string name)
 {
-    cv::namedWindow(name, cv::WINDOW_NORMAL);
     cv::resizeWindow(name, WINDOWSIZE, WINDOWSIZE);
     camera::windowName = name;
-    camera::windowCounter++;
     frame = emptyFrame.clone();
 }
 
@@ -105,30 +96,55 @@ void camera::AddBox(argos::CBoxEntity* box)
     camera::polygon polygon;
     polygon = findCPositions(box);
     cv::fillPoly(frame, polygon.corners, cv::Scalar(0,0,0));
-    for (size_t i = 0; i < polygon.corners.size(); i++)
-    {
-        argos::LOG << "corner " << std::to_string(i) << ": " << polygon.corners[i]/(SCALE/100) << "\n";
-    }     
+    // for (size_t i = 0; i < polygon.corners.size(); i++)
+    // {
+    //     argos::LOG << "corner " << std::to_string(i) << ": " << polygon.corners[i]/(SCALE/100) << "\n";
+    // }     
 }
 
-void camera::AddRobotPosition(argos::CVector3 robot, int robotRadius)
+/**
+ * Draw robot into the frame
+ * @param robot is the robot coordiante
+ * @param robotRadius is the robot radius in meter 
+*/
+void camera::AddRobotPosition(argos::CVector3 robot, float robotRadius)
 {
     cv::Point robot_position(robot.GetX()*SCALE, robot.GetY()*SCALE);
-    cv::circle(frame, robot_position, robotRadius, cv::Scalar(255, 255, 000), 2);
-    argos::LOG << "robot position: " << robot_position/(SCALE/100) << "\n";
+    cv::circle(frame, robot_position, robotRadius * SCALE, cv::Scalar(255, 255, 000), 1);
+    // argos::LOG << "robot position: " << robot_position/(SCALE/100) << "\n";
 }
 
+/**
+ * Plots the frame. The frame is fliped in the x axis to match argos.
+ * OpenCV use left hand coordinate system while argos uses right hand coordinate system
+*/
 void camera::Plot() //shows if fliped for visual purpose
 {
-    cv::flip(frame, frame, 0);
-    cv::imshow(this->windowName, this->frame);
-    camera::frame = camera::emptyFrame.clone();
+    cv::namedWindow(this->windowName, cv::WINDOW_NORMAL);
+    cv::Mat frameToPlot;
+    GetPlot(frameToPlot);
+    cv::flip(frameToPlot, frameToPlot, 0);
+    if(frameToPlot.cols > 0)
+        cv::imshow(this->windowName, frameToPlot);
+    
 }
 
-cv::Mat camera::GetPlot()
+/**
+ * Gets the frame either by returning it or giving the function a output matrix.
+*/
+cv::Mat camera::GetPlot() //get non-fliped to mach argos3 coordinates 
 {
-    return frame.clone();
-    camera::frame = camera::emptyFrame.clone();
+    cv::Mat retFrame = frame.clone();
+    return retFrame;
+}
+
+/**
+ * Gets the frame either by returning it or giving the function a output matrix.
+ * @param outputframe The matrix where the frame will be saved to
+*/
+void camera::GetPlot(cv::Mat& outputFrame) //get non-fliped to mach argos3 coordinates 
+{
+    outputFrame = frame.clone();
 }
 
 
@@ -140,6 +156,7 @@ void camera::ClearPlot()
 
 size_t camera::windowCounter = 0;
 cv::Mat camera::emptyFrame(IMAGESIZE,IMAGESIZE, CV_8UC3, cv::Scalar(255,255,255));
+cv::Mat camera::frame = camera::emptyFrame.clone();
 
 /****************************************/
 /****************************************/
