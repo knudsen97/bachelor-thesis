@@ -31,11 +31,15 @@
 
         AddEntity(*pcBox);
 
-        cv::Mat test, map;
-        CVector3 goal;
-        goal.Set(0,0,0);
-        map = A.Wavefront(test,goal,goal);
-        A.Pathfinder(map, goal, goal);
+        cv::Mat map;
+        map = C.GetPlot();
+        cv::imshow("test", map);
+
+        CVector3 goal, start;
+        goal.Set(15,15,0);
+        start.Set(5,5,0);
+        map = P.Wavefront(map,start,goal);
+        P.Pathfinder(map, start, goal);
     }
 
  
@@ -48,7 +52,7 @@
         goal.Set(3.3, 3.3, 0);
         //std::vector<CVector3> validPushPoints = this->A.findPushPoints(pcBox, goal);
         std::vector<CVector3> validPushPoints;
-        validPushPoints = A.FindPushPoints(pcBox,goal);
+        validPushPoints = P.FindPushPoints(pcBox,goal);
         //std::vector<CVector3> validPushPoints = findPushPoints(pcBox, goal);
 
         //To draw the points in argos. For debugging
