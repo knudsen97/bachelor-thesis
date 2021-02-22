@@ -227,11 +227,13 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
         illustrationColor -= 0.01;
         explorer = explorerColour;
         explorerColour.clear();
-        cv::imshow("wavefront", map);
+        //cv::imshow("wavefront", map);
         //cv::imshow("wavefront", this->map);
         //cv::waitKey(10);
         //cv::waitKey(0);
     }
+    cv::imshow("wavefront", map);
+    cv::waitKey(0);
 
     map.copyTo(this->map);
 
@@ -243,7 +245,7 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
     // cv::Mat grayMap;
     // map.copyTo(grayMap);
 
-    cv::namedWindow("wavefront", cv::WINDOW_NORMAL);
+    //cv::namedWindow("wavefront", cv::WINDOW_NORMAL);
     //cv::imshow("wavefront", this->map);
 
     std::array<cv::Point, 8> neighbours =
@@ -287,12 +289,11 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
         if(prevIdx != idx)
         {
             //map.at<cv::Vec3b>(PH) = cv::Vec3b(0,255,0);
-            cv::circle(this->map, PH, 2, cv::Scalar(0,255,255), -1);    //Illustration purpose
+            cv::circle(this->map, PH, 1.5, cv::Scalar(0,255,255), -1);    //Illustration purpose
             goalPath.push_back(PH);
+            cv::imshow("wavefront", this->map);
+            cv::waitKey(0);
         }
-        cv::imshow("wavefront", this->map);
-        cv::waitKey(10);
-
     }
     return goalPath;
 }
