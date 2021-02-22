@@ -31,7 +31,7 @@ public:
     std::vector<argos::CVector3> FindPushPoints(argos::CBoxEntity* mBox, argos::CVector3 goalPoint);
 
     cv::Mat Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3 &goal);
-    std::vector<cv::Point> Pathfinder(cv::Mat &map, argos::CVector3 &robot, argos::CVector3 &goal);
+    std::vector<cv::Point> Pathfinder(cv::Mat &grayMap, argos::CVector3 &robot, argos::CVector3 &goal);
 
 private:
     cv::Mat map; //For illustration

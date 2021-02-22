@@ -238,10 +238,10 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
     return grayMap;
 }
 
-std::vector<cv::Point> planner::Pathfinder(cv::Mat &map, argos::CVector3 &robot, argos::CVector3 &goal)
+std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &robot, argos::CVector3 &goal)
 {
-    cv::Mat grayMap;
-    map.copyTo(grayMap);
+    // cv::Mat grayMap;
+    // map.copyTo(grayMap);
 
     cv::namedWindow("wavefront", cv::WINDOW_NORMAL);
     //cv::imshow("wavefront", this->map);
@@ -269,10 +269,11 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &map, argos::CVector3 &robot,
     int animationSpeed = 400;
 
     cv::Point PH = traverse + neighbours[0];
-    int idx = 0;    //To keep track of which neighbour was used in order to illustrate
-    cv::waitKey(0);
+    int idx = 0, prevIdx = 0;    //To keep track of which neighbour was used in order to illustrate
+    //cv::waitKey(0);
     while(traverse != goalLocation)
     {
+        prevIdx = idx;
         for(size_t i = 1; i < neighbours.size()-1; i++)
         {
             if(GrayPixelVal(grayMap, PH) <= GrayPixelVal(grayMap, traverse + neighbours[i]))
@@ -281,13 +282,17 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &map, argos::CVector3 &robot,
                 idx = i;
             }
         }
+
         traverse += neighbours[idx];
-        this->map.at<cv::Vec3b>(PH) = cv::Vec3b(0,255,0);
-        goalPath.push_back(PH);
+        if(prevIdx != idx)
+        {
+            //map.at<cv::Vec3b>(PH) = cv::Vec3b(0,255,0);
+            cv::circle(this->map, PH, 2, cv::Scalar(0,255,255), -1);    //Illustration purpose
+            goalPath.push_back(PH);
+        }
         cv::imshow("wavefront", this->map);
         cv::waitKey(10);
 
     }
-
     return goalPath;
 }

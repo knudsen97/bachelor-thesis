@@ -37,7 +37,6 @@
 
     void test_controller::ControlStep()
     {
-
         CVector3 goal;
         goal.Set(3.3, 3.3, 0);
         //std::vector<CVector3> validPushPoints = this->A.findPushPoints(pcBox, goal);
@@ -54,7 +53,7 @@
                 CFootBotEntity* fBot = any_cast<CFootBotEntity*>(i->second);
                 startLoc = fBot->GetEmbodiedEntity().GetOriginAnchor().Position;
             }
-            goalLoc = validPushPoints[2];
+            goalLoc = validPushPoints[0];
             C.camera::GetPlot(this->map);
             this->map = P.planner::Wavefront(this->map,startLoc,goalLoc);
             P.planner::Pathfinder(map, startLoc, goalLoc);
