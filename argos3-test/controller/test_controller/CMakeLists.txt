@@ -2,6 +2,7 @@ add_library(test_controller MODULE test_controller.h
 test_controller.cpp 
 camera.cpp camera.h 
 planner.cpp planner.h
+bug.cpp bug.h
 )
 link_directories(${CMAKE_SOURCE_DIR}/argos3-test/utils)
 include_directories(${CMAKE_SOURCE_DIR}/argos3-test/utils)
