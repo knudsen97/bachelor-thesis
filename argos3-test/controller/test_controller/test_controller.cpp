@@ -31,28 +31,39 @@
 
         AddEntity(*pcBox);
 
-        cv::Mat map;
-        map = C.camera::GetPlot();
-        //cv::imshow("test", map);
-
-        CVector3 goal, start;
-        goal.Set(15,15,0);
-        start.Set(5,5,0);
-        map = P.planner::Wavefront(map,start,goal);
-        P.planner::Pathfinder(map, start, goal);
     }
 
  
 
     void test_controller::ControlStep()
     {
-        const CCI_PositioningSensor::SReading& robotPos = posSensor->GetReading();
 
         CVector3 goal;
         goal.Set(3.3, 3.3, 0);
         //std::vector<CVector3> validPushPoints = this->A.findPushPoints(pcBox, goal);
         std::vector<CVector3> validPushPoints;
         validPushPoints = P.FindPushPoints(pcBox,goal);
+
+        if(!planComplete)
+        {
+            CVector3 goalLoc, startLoc;
+            //Find robot position:
+            CSpace::TMapPerType& FBmap = GetSpace().GetEntitiesByType("foot-bot");
+            for (CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
+            {
+                CFootBotEntity* fBot = any_cast<CFootBotEntity*>(i->second);
+                startLoc = fBot->GetEmbodiedEntity().GetOriginAnchor().Position;
+            }
+            goalLoc = validPushPoints[2];
+            C.camera::GetPlot(this->map);
+            this->map = P.planner::Wavefront(this->map,startLoc,goalLoc);
+            P.planner::Pathfinder(map, startLoc, goalLoc);
+            this->planComplete = true;
+        }
+
+        const CCI_PositioningSensor::SReading& robotPos = posSensor->GetReading();
+
+
         //std::vector<CVector3> validPushPoints = findPushPoints(pcBox, goal);
 
         //To draw the points in argos. For debugging

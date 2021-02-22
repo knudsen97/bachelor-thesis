@@ -17,6 +17,11 @@
 #include <vector>
 #include <cmath>
 
+
+#define IMAGESIZE 700
+#define WINDOWSIZE 500
+#define ARENASIZE 3
+#define SCALE (IMAGESIZE/ARENASIZE)
 //using namespace argos;
 
 class camera : public argos::CLoopFunctions {

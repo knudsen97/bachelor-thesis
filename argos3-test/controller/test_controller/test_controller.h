@@ -47,6 +47,9 @@ private:
 
    planner P;
    camera C;
+   cv::Mat map;
+
+   bool planComplete = false;
 
 };
 

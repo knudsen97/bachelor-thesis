@@ -1,10 +1,5 @@
 #include "camera.h"
 
-#define IMAGESIZE 700
-#define WINDOWSIZE 500
-#define ARENASIZE 3
-#define SCALE (IMAGESIZE/ARENASIZE)
-
 using namespace argos;
 
 void camera::PreStep()
