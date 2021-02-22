@@ -1,3 +1,6 @@
+#ifndef CAMERA_H
+#define CAMERA_H
+
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -12,7 +15,13 @@
 
 #include <string>
 #include <vector>
+#include <cmath>
 
+
+#define IMAGESIZE 700
+#define WINDOWSIZE 500
+#define ARENASIZE 3
+#define SCALE (IMAGESIZE/ARENASIZE)
 //using namespace argos;
 
 class camera : public argos::CLoopFunctions {
@@ -64,3 +73,5 @@ private:
     static cv::Mat emptyFrame;
     static cv::Mat frame;
 };
+
+#endif
