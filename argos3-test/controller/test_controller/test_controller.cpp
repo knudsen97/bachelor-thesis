@@ -53,7 +53,7 @@
                 CFootBotEntity* fBot = any_cast<CFootBotEntity*>(i->second);
                 startLoc = fBot->GetEmbodiedEntity().GetOriginAnchor().Position;
             }
-            goalLoc = validPushPoints[0];
+            goalLoc = validPushPoints[1];
             C.camera::GetPlot(this->map);
             this->map = P.planner::Wavefront(this->map,startLoc,goalLoc);
             P.planner::Pathfinder(map, startLoc, goalLoc);
