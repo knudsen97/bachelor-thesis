@@ -13,7 +13,11 @@ void camera::PreStep()
     for (CSpace::TMapPerType::iterator i = boxMap.begin(); i != boxMap.end(); ++i)
     {
         CBoxEntity* pBox = any_cast<CBoxEntity*>(i->second);
-        camera::AddBox(pBox);
+        // argos::LOG << "box id" << pBox->GetId() << '\n';
+        // if(pBox->GetMass() > 0)
+        //     camera::AddBox(pBox, {0, 0, 255});
+        // else 
+            camera::AddBox(pBox);
     }
 
     CSpace::TMapPerType& FBmap = GetSpace().GetEntitiesByType("foot-bot");
@@ -75,21 +79,26 @@ camera::camera()
     camera::windowCounter++;
     frame = emptyFrame.clone();
 }
-
 camera::camera(std::string name)
 {
     cv::resizeWindow(name, WINDOWSIZE, WINDOWSIZE);
     camera::windowName = name;
     frame = emptyFrame.clone();
 }
+camera::~camera(){
+    cv::destroyWindow(this->windowName);
+}
 
-camera::~camera(){}
-
-void camera::AddBox(argos::CBoxEntity* box)
+/**
+ * Draw box into the frame
+ * @param box is the box entity in argos
+ * @param color is the color of the show box, default is black
+*/
+void camera::AddBox(argos::CBoxEntity* box, cv::Scalar color)
 {
     camera::polygon polygon;
     polygon = findCPositions(box);
-    cv::fillPoly(frame, polygon.corners, cv::Scalar(0,0,0));
+    cv::fillPoly(frame, polygon.corners, color);
     // for (size_t i = 0; i < polygon.corners.size(); i++)
     // {
     //     argos::LOG << "corner " << std::to_string(i) << ": " << polygon.corners[i]/(SCALE/100) << "\n";
@@ -104,7 +113,7 @@ void camera::AddBox(argos::CBoxEntity* box)
 void camera::AddRobotPosition(argos::CVector3 robot, float robotRadius)
 {
     cv::Point robot_position(robot.GetX()*SCALE, robot.GetY()*SCALE);
-    cv::circle(frame, robot_position, robotRadius * SCALE, cv::Scalar(255, 255, 000), 1);
+    cv::circle(frame, robot_position, robotRadius * SCALE, cv::Scalar(255, 255, 000), -1);
     // argos::LOG << "robot position: " << robot_position/(SCALE/100) << "\n";
 }
 
@@ -115,6 +124,7 @@ void camera::AddRobotPosition(argos::CVector3 robot, float robotRadius)
 void camera::Plot() //shows if fliped for visual purpose
 {
     cv::namedWindow(this->windowName, cv::WINDOW_NORMAL);
+    cv::resizeWindow(this->windowName, WINDOWSIZE, WINDOWSIZE);
     cv::Mat frameToPlot;
     GetPlot(frameToPlot);
     cv::flip(frameToPlot, frameToPlot, 0);

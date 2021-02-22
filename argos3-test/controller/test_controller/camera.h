@@ -36,9 +36,30 @@ public:
     camera();
     camera(std::string name);
     ~camera();
-    void AddBox(argos::CBoxEntity* box);
-    void AddRobotPosition(argos::CVector3 robot, float robotRadius = 0.09);
+
+    /**
+     * Draw box into the frame
+     * @param box is the box entity in argos
+     * @param color is the color of the show box, default is black
+    */
+    void AddBox(argos::CBoxEntity* box, cv::Scalar color = {0,0,0});
+
+    /**
+     * Draw robot into the frame
+     * @param robot is the robot coordiante
+     * @param robotRadius is the robot radius in meter 
+    */
+    void AddRobotPosition(argos::CVector3 robot, float robotRadius = 0.085);
+
+    /**
+     * Plots the frame. The frame is fliped in the x axis to match argos.
+     * OpenCV use left hand coordinate system while argos uses right hand coordinate system
+    */
     void Plot();
+
+    /**
+     * Gets the frame either by returning it or giving the function a output matrix.
+    */
     cv::Mat GetPlot();
     void GetPlot(cv::Mat& outputFrame);
     void ClearPlot();
