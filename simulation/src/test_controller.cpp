@@ -9,33 +9,19 @@
 #define SAMPLING_RATE 0.01
 #define V_0 4
 
-    test_controller::test_controller() :
-        m_pcWheels(NULL),
-        m_fWheelVelocity(2.5f),
-        posSensor(NULL),
-        pcBox(NULL),
-        proxSensor(NULL){}
-        //camSensor(NULL){}
-
-    void test_controller::Init(TConfigurationNode& t_node) 
-    {
-        m_pcWheels = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
-        posSensor = GetSensor<CCI_PositioningSensor>("positioning");
-        proxSensor = GetSensor<CCI_FootBotProximitySensor>("footbot_proximity");
-        //camSensor = GetSensor<CCI_CameraSensor>("camera0");
-
-        GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
-        pcBox = new CBoxEntity("box1",                   // id
-                                CVector3(2, 1.7, 0.0), // position
-                                CQuaternion(),           // orientation
-                                true,                    // movable or not?
-                                CVector3(0.1, 0.4, 0.5), // size
-                                500.0);                    // mass in kg
+test_controller::test_controller() :
+    m_pcWheels(NULL),
+    m_fWheelVelocity(2.5f),
+    posSensor(NULL),
+    pcBox(NULL),
+    proxSensor(NULL){}
+    //camSensor(NULL){}
 
 void test_controller::Init(TConfigurationNode& t_node) 
 {
     m_pcWheels = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
     posSensor = GetSensor<CCI_PositioningSensor>("positioning");
+    proxSensor = GetSensor<CCI_FootBotProximitySensor>("footbot_proximity");
     //camSensor = GetSensor<CCI_CameraSensor>("camera0");
 
     GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
@@ -45,12 +31,27 @@ void test_controller::Init(TConfigurationNode& t_node)
                             true,                    // movable or not?
                             CVector3(0.1, 0.4, 0.5), // size
                             500.0);                    // mass in kg
-
-
     AddEntity(*pcBox);
-    m_pcWheels->SetLinearVelocity(2, 2);
-
 }
+// void test_controller::Init(TConfigurationNode& t_node) 
+// {
+//     m_pcWheels = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
+//     posSensor = GetSensor<CCI_PositioningSensor>("positioning");
+//     //camSensor = GetSensor<CCI_CameraSensor>("camera0");
+
+//     GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
+//     pcBox = new CBoxEntity("box1",                   // id
+//                             CVector3(2, 1.7, 0.0), // position
+//                             CQuaternion(),           // orientation
+//                             true,                    // movable or not?
+//                             CVector3(0.1, 0.4, 0.5), // size
+//                             500.0);                    // mass in kg
+
+
+//     AddEntity(*pcBox);
+//     m_pcWheels->SetLinearVelocity(2, 2);
+
+// }
 
 
 
