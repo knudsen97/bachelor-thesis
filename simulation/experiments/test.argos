@@ -33,7 +33,7 @@
   <!-- *************** -->
   <controllers>
     <test_controller id="test"
-                     library="build/src/libsrc">
+                     library="build/libsrc">
       <actuators>
         <differential_steering implementation="default" />
       </actuators>
@@ -58,7 +58,7 @@
   <!-- * Loop functions * -->
   <!-- ****************** -->
 	<!-- place random boxes at random -->
-  <loop_functions library="build/src/libsrc"
+  <loop_functions library="build/libsrc"
                   label="camera_loop_function">
   </loop_functions>
   <!-- *********************** -->

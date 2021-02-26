@@ -49,8 +49,22 @@ include_directories(${CMAKE_SOURCE_DIR} ${ARGOS_INCLUDE_DIRS} ${LUA_INCLUDE_DIR}
 link_directories(${ARGOS_LIBRARY_DIRS})
 
 # Descend into the inc and src directory
-add_subdirectory(src)
 
+add_library(src MODULE 
+${simulation_SOURCE_DIR}/src/test_controller.cpp
+${simulation_SOURCE_DIR}/src/camera.cpp 
+${simulation_SOURCE_DIR}/src/planner.cpp
+${simulation_SOURCE_DIR}/src/bug.cpp
+)
+include_directories(${simulation_SOURCE_DIR}/inc)
+
+target_link_libraries(src
+  argos3core_simulator
+  argos3plugin_simulator_footbot
+  argos3plugin_simulator_genericrobot
+  argos3plugin_simulator_entities
+  ${OpenCV_LIBS} 
+  )
 
 
 
