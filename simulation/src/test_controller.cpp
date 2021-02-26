@@ -11,13 +11,15 @@
         m_pcWheels(NULL),
         m_fWheelVelocity(2.5f),
         posSensor(NULL),
-        pcBox(NULL){}
+        pcBox(NULL),
+        proxSensor(NULL){}
         //camSensor(NULL){}
 
     void test_controller::Init(TConfigurationNode& t_node) 
     {
         m_pcWheels = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
         posSensor = GetSensor<CCI_PositioningSensor>("positioning");
+        proxSensor = GetSensor<CCI_FootBotProximitySensor>("footbot_proximity");
         //camSensor = GetSensor<CCI_CameraSensor>("camera0");
 
         GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
