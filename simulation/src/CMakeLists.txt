@@ -2,6 +2,7 @@ add_library(src MODULE test_controller.cpp
 camera.cpp 
 planner.cpp
 bug.cpp
+controller.cpp
 )
 include_directories(${simulation_SOURCE_DIR}/inc)
 

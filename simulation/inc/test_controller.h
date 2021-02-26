@@ -4,6 +4,7 @@
 #include <cmath>
 #include <string>
 #include "planner.h"
+#include "controller.h"
 //#include "camera.h"
 
 #include <argos3/core/control_interface/ci_controller.h>
@@ -50,7 +51,6 @@ private:
    cv::Mat map;
 
    bool planComplete = false;
-
 };
 
 #endif
