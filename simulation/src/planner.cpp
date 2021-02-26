@@ -11,6 +11,10 @@ using namespace argos;
 planner::planner(){}
 planner::~planner(){}
 
+/**
+ * Finds corner position of a CBoxEntity
+ * @param mBox is the argos box entity
+*/
 planner::cPositions planner::FindCPositions(CBoxEntity* mBox)
 {
     //Find the box' origin/center of mass:
@@ -50,13 +54,24 @@ planner::cPositions planner::FindCPositions(CBoxEntity* mBox)
     return c;
 }
 
-//Used to calculate the projection in findPushPoints() function:
+
+/**
+ * Finds absolute value of projection between two vectors
+ * @param v1 vector 1
+ * @param v2 vector 2
+*/
 template<class V>
 Real planner::Projection(V &v1, V &v2)
 {
     //return v1.DotProduct(v2)/(sqrt(pow(v2.GetX(),2)+pow(v2.GetY(),2)));   //Real value
     return v1.DotProduct(v2)/(abs(v2.GetX()+v2.GetY()));    //Absolute value is taken since we're only interested in the sign of the value.
 }
+
+/**
+ * Find eligible points on a CBoxEntity box to push from given a goal position.
+ * @param mBox is the box entity in argos
+ * @param goalPoint is the goal position
+*/
 std::vector<CVector3> planner::FindPushPoints(CBoxEntity* mBox, CVector3 goalPoint)
 {
     std::vector<CVector3> validPushPoints;
@@ -124,11 +139,23 @@ std::vector<CVector3> planner::FindPushPoints(CBoxEntity* mBox, CVector3 goalPoi
     return validPushPoints;
 }
 
+/**
+ * Finds the value of a pixel given a gray-scale map and a point.
+ * @param map is a cv::Mat object of a given map
+ * @param point is coordinate of a pixel
+*/
 ushort GrayPixelVal(cv::Mat &map, cv::Point point)
 {
     return map.at<ushort>(point);
 }
 
+
+/**
+ * Generates a wavefront starting from the goal location
+ * @param map is a cv::Mat object of a given map
+ * @param robot is the robots start location
+ * @param goal is the location of a chosen corner of the box to be pushed
+*/
 cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3 &goal)
 {
     std::array<cv::Point, 8> neighbours =
@@ -142,38 +169,17 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
          cv::Point(0, -1),
          cv::Point(1, -1)
     }};
-    //cv::namedWindow("gray wavefront", cv::WINDOW_NORMAL);
-    //cv::resizeWindow("gray wavefront", WINDOWSIZE, WINDOWSIZE);
     
     cv::namedWindow("wavefront", cv::WINDOW_NORMAL);
     cv::resizeWindow("wavefront", WINDOWSIZE, WINDOWSIZE);
 
-
-
-    //WHenever I can get map from camera class use this:
+    //Whenever I can get map from camera class use this:
     cv::Mat grayMap;
     cv::cvtColor(map, grayMap, cv::COLOR_BGR2GRAY);
     grayMap.convertTo(grayMap, CV_16UC1, 257.0f);
     //cv::imshow("gray wavefront", grayMap);
     cv::imshow("wavefront", map);
     //cv::waitKey(0);
-
-    //I created my own map here, this should be the input parameter "map" in the future!
-    // int map_size = 20;
-    // int scale = map_size/20;
-    // int animation_speed = 400;
-    // cv::Mat test(map_size, map_size, CV_8UC3, cv::Scalar(255,255,255));
-    // cv::Mat grayMap;
-
-    //Generate terrain/obstacles and insert robot start and end goal.
-    //cv::rectangle(test, cv::Point(2,2)*scale, cv::Point(5,8)*scale,cv::Scalar(0,0,0), -1);
-    // cv::rectangle(test, cv::Point(6,10)*scale, cv::Point(10,12)*scale,cv::Scalar(0,0,0), -1);
-    // cv::rectangle(test, cv::Point(0,0)*scale, cv::Point(map_size-1,map_size-1)*scale, cv::Scalar(0,0,0));
-    // cv::cvtColor(test, grayMap, cv::COLOR_BGR2GRAY);
-    // grayMap.convertTo(grayMap, CV_16UC1, 257.0f);
-    // //test.at<cv::Vec3b>(cv::Point(robot.GetX()+5, robot.GetY()+5)) = cv::Vec3b(0, 0, 255);
-    // //test.at<cv::Vec3b>(cv::Point(goal.GetX()+15, goal.GetY()+15)) = cv::Vec3b(0, 200, 0);
-    // test.copyTo(this->map);
 
     //Convert argos vector to cv::Point:
     cv::Point start(robot.GetX()*SCALE, robot.GetY()*SCALE);
@@ -182,15 +188,7 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
     //Draw robot start and goal location
     cv::circle(map, start, 5, cv::Scalar(0,0,255), -1);
     cv::circle(map, goalLocation, 5, cv::Scalar(0,200,0), -1);
-    cv::waitKey(0);
-    // map.at<cv::Vec3b>(start) = cv::Vec3b(0, 0, 255);
-    // map.at<cv::Vec3b>(goalLocation) = cv::Vec3b(0, 200, 0);
-    //this->map.at<cv::Vec3b>(start) = cv::Vec3b(0, 0, 255);
-    //this->map.at<cv::Vec3b>(goalLocation) = cv::Vec3b(0, 200, 0);
-
-    // cv::imshow("wavefront", this->map);
-    // cv::imshow("gray wavefront", grayMap);
-
+    //cv::waitKey(0);
 
     //Start wavefront:
     bool pixelChange = true;
@@ -215,10 +213,7 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
                         explorerColour.push_back(e + neighbours[j]);
                     //Don't overdraw goal and start location for visualization:
                     if(map.at<cv::Vec3b>(e+neighbours[j]) !=  cv::Vec3b(0,0,255) && map.at<cv::Vec3b>(e+neighbours[j]) !=  cv::Vec3b(0,200,0))//e + neighbours[j] != goalLocation && e + neighbours[j] != start)
-                        map.at<cv::Vec3b>(e + neighbours[j]) = cv::Vec3b(illustrationColor, illustrationColor, illustrationColor);
-
-                        //map.at<cv::Vec3b>(e + neighbours[j]) = cv::Vec3b(illustrationColor, illustrationColor, illustrationColor);
-                        //this->map.at<cv::Vec3b>(e + neighbours[j]) = cv::Vec3b(illustrationColor, illustrationColor, illustrationColor);
+                        map.at<cv::Vec3b>(e + neighbours[j]) = cv::Vec3b(illustrationColor, illustrationColor, illustrationColor); 
                 }
             }
         }
@@ -227,27 +222,25 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
         illustrationColor -= 0.01;
         explorer = explorerColour;
         explorerColour.clear();
-        //cv::imshow("wavefront", map);
-        //cv::imshow("wavefront", this->map);
-        //cv::waitKey(10);
-        //cv::waitKey(0);
+
     }
     cv::imshow("wavefront", map);
-    cv::waitKey(0);
+    //cv::waitKey(0);
 
     map.copyTo(this->map);
 
     return grayMap;
 }
 
+
+/**
+ * Finds a path from the robot's start location to it's box' corner subgoal
+ * @param grayMap is a cv::Mat object of a given map in gray-scale
+ * @param robot is the location of the robot
+ * @param goal is the goal location being a corner of the box.
+*/
 std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &robot, argos::CVector3 &goal)
 {
-    // cv::Mat grayMap;
-    // map.copyTo(grayMap);
-
-    //cv::namedWindow("wavefront", cv::WINDOW_NORMAL);
-    //cv::imshow("wavefront", this->map);
-
     std::array<cv::Point, 8> neighbours =
     {{
          cv::Point(-1, 1),
@@ -273,7 +266,8 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
     cv::Point PH = traverse + neighbours[0];
     int idx = 0, prevIdx = 0;    //To keep track of which neighbour was used in order to illustrate
     //cv::waitKey(0);
-    while(traverse != goalLocation)
+    bool foundGoal = 0;
+    while(!foundGoal)//GrayPixelVal(grayMap, traverse) != 0)//< MAX_USHORT-1)
     {
         prevIdx = idx;
         for(size_t i = 1; i < neighbours.size()-1; i++)
@@ -283,13 +277,14 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
                 PH = traverse + neighbours[i];
                 idx = i;
             }
+            else if (GrayPixelVal(grayMap, traverse + neighbours[i]) == 0)
+                foundGoal = 1;
         }
 
         traverse += neighbours[idx];
         if(prevIdx != idx)
         {
-            //map.at<cv::Vec3b>(PH) = cv::Vec3b(0,255,0);
-            cv::circle(this->map, PH, 1.5, cv::Scalar(0,255,255), -1);    //Illustration purpose
+            cv::circle(this->map, PH, 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
             goalPath.push_back(PH);
             cv::imshow("wavefront", this->map);
             //cv::waitKey(0);
