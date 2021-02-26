@@ -48,8 +48,10 @@ public:
      * Draw robot into the frame
      * @param robot is the robot coordiante
      * @param robotRadius is the robot radius in meter 
+     * @param color color of the plottet robot
+     * @param thickness line thickness -1 for fill 
     */
-    void AddRobotPosition(argos::CVector3 robot, float robotRadius = 0.085);
+    void AddRobotPosition(argos::CVector3 robot, float robotRadius = 0.085, cv::Scalar color = {255, 255, 000}, int thickness = 1);
 
     /**
      * Plots the frame. The frame is fliped in the x axis to match argos.

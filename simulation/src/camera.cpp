@@ -1,4 +1,4 @@
-#include "camera.h"
+#include "../inc/camera.h"
 
 using namespace argos;
 
@@ -110,10 +110,10 @@ void camera::AddBox(argos::CBoxEntity* box, cv::Scalar color)
  * @param robot is the robot coordiante
  * @param robotRadius is the robot radius in meter 
 */
-void camera::AddRobotPosition(argos::CVector3 robot, float robotRadius)
+void camera::AddRobotPosition(argos::CVector3 robot, float robotRadius, cv::Scalar color, int thickness)
 {
     cv::Point robot_position(robot.GetX()*SCALE, robot.GetY()*SCALE);
-    cv::circle(frame, robot_position, robotRadius * SCALE, cv::Scalar(255, 255, 000), 1);
+    cv::circle(frame, robot_position, robotRadius * SCALE, color, thickness);
     // argos::LOG << "robot position: " << robot_position/(SCALE/100) << "\n";
 }
 
