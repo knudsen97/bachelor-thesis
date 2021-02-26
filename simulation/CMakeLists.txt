@@ -56,8 +56,8 @@ ${simulation_SOURCE_DIR}/src/camera.cpp
 ${simulation_SOURCE_DIR}/src/planner.cpp
 ${simulation_SOURCE_DIR}/src/bug.cpp
 ${simulation_SOURCE_DIR}/src/controller.cpp
-
 )
+
 include_directories(${simulation_SOURCE_DIR}/inc)
 
 target_link_libraries(src
