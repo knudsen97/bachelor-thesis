@@ -69,17 +69,21 @@ void test_controller::ControlStep()
     CRadians xAngle, yAngle, zAngle;
     robotPos.Orientation.ToEulerAngles(xAngle, yAngle, zAngle);
 
+    //Calculate the angle between robot position and goal position:
+    argos::CRadians desiredAngle;
+    desiredAngle = argos::ATan2(validPushPoints[1].GetY()-robotPos.Position.GetY(), validPushPoints[1].GetX() - robotPos.Position.GetX());
+
     //Make controller instance
     controller con(SAMPLING_RATE*5, 1000, 1, 1);
 
-    std::array<Real,2> velocities; 
-    velocities = con.angleControl(xAngle, robotPos.Position, validPushPoints[1]);
-    std::cout << velocities[0] << " " << velocities[1] << std::endl;
+    controller::wVelocity wVel;
+    wVel = con.angleControl(xAngle, desiredAngle);
+    std::cout << wVel.lWheel << " " << wVel.rWheel << std::endl;
 
     if(abs(validPushPoints[1].GetX() - robotPos.Position.GetX()) <= 0.2f)
         m_pcWheels->SetLinearVelocity(0,0);
     else
-        m_pcWheels->SetLinearVelocity(velocities[0] + V_0, velocities[1] + V_0);
+        m_pcWheels->SetLinearVelocity(wVel.lWheel + V_0, wVel.rWheel + V_0);
 
     //adding a constant velocity otherwise the robot would just spin around it self.
     // if((velocities[0] > 0.499f || velocities[0] < -0.499f) && (velocities[1] > 0.499f || velocities[1] < -0.499f))

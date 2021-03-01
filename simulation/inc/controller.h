@@ -11,12 +11,20 @@
 class controller
 {
     public:
+
+    struct wVelocity
+    {
+        argos::Real lWheel;
+        argos::Real rWheel;
+    };
+
     //controller();
     controller(argos::Real _dt, argos::Real _Kp, argos::Real _Ki, argos::Real _Kd);
 
     ~controller();
 
-    std::array<argos::Real, 2> angleControl(argos::CRadians curAngle, const argos::CVector3 &robPos, argos::CVector3 &goalPos); //argos::CRadians curAngle);
+    wVelocity angleControl(argos::CRadians curAngle, argos::CRadians desiredAngle); 
+    wVelocity angleControl(argos::CRadians curAngle, const argos::CVector3 &robPos, argos::CVector3 &goalPos); 
 
     private:
     argos::Real Kp, Ki, Kd;
