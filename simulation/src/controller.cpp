@@ -18,12 +18,6 @@ controller::controller(argos::Real _dt, argos::Real _Kp, argos::Real _Ki, argos:
 
 controller::~controller(){}
 
-/**
- * Angle control
- * @param curAngle is the robots current orientation
- * @param robPos is the location of the robot
- * @param goalPos is the goal location
-*/
 controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::CRadians desiredAngle)
 {
     //TODO: Indtil videre kører jeg bare med konstant hastighed maybe fix that?
@@ -53,6 +47,9 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::
     argos::Real v = WHEEL_RADIUS/2 * (this->vR+this->vL);
     vel.lWheel = (2*v-omega*INTERWHEEL_DISTANCE) / 2*WHEEL_RADIUS;
     vel.rWheel = (2*v+omega*INTERWHEEL_DISTANCE) / 2*WHEEL_RADIUS;
+    this->vL = vel.lWheel;
+    this->vR = vel.rWheel;
+
     // this->vR = (2*v+omega*INTERWHEEL_DISTANCE) / 2*WHEEL_RADIUS;
     // this->vL = (2*v-omega*INTERWHEEL_DISTANCE) / 2*WHEEL_RADIUS;
 
@@ -65,7 +62,7 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, const a
     //TODO: Indtil videre kører jeg bare med konstant hastighed maybe fix that?
     wVelocity vel;
     
-        //Calculate the angle between robot position and goal position:
+    //Calculate the angle between robot position and goal position:
     argos::CRadians desiredAngle;
     desiredAngle = argos::ATan2(goalPos.GetY()-robPos.GetY(), goalPos.GetX() - robPos.GetX());
 

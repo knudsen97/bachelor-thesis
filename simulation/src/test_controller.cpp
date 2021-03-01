@@ -4,13 +4,13 @@
 #include <argos3/core/utility/configuration/argos_configuration.h>
 /* 2D vector definition */
 #include <argos3/core/utility/math/vector2.h>
-
-//#include "../matplotlib-cpp/matplotlibcpp.h"
-
-//namespace plt = matplotlibcpp;
+/* TCP communication */
+#include <argos3/core/utility/networking/tcp_socket.h>
 
 
 #define PI 3.14159265
+#define ANGLE_THRESHOLD 2*M_PI/32
+
 #define SAMPLING_RATE 0.01
 #define V_0 4
 
@@ -70,8 +70,9 @@ void test_controller::ControlStep()
     robotPos.Orientation.ToEulerAngles(xAngle, yAngle, zAngle);
 
     //Calculate the angle between robot position and goal position:
+    argos::CVector3 goalPoint = validPushPoints[0];
     argos::CRadians desiredAngle;
-    desiredAngle = argos::ATan2(validPushPoints[1].GetY()-robotPos.Position.GetY(), validPushPoints[1].GetX() - robotPos.Position.GetX());
+    desiredAngle = argos::ATan2(goalPoint.GetY()-robotPos.Position.GetY(), goalPoint.GetX() - robotPos.Position.GetX());
 
     //Make controller instance
     controller con(SAMPLING_RATE*5, 1000, 1, 1);
@@ -79,17 +80,15 @@ void test_controller::ControlStep()
     controller::wVelocity wVel;
     wVel = con.angleControl(xAngle, desiredAngle);
     std::cout << wVel.lWheel << " " << wVel.rWheel << std::endl;
-
-    if(abs(validPushPoints[1].GetX() - robotPos.Position.GetX()) <= 0.2f)
+ 
+    if(abs(goalPoint.GetX() - robotPos.Position.GetX()) <= 0.1999f)
         m_pcWheels->SetLinearVelocity(0,0);
+    else if(abs(desiredAngle.GetValue()) - abs(xAngle.GetValue()) >= ANGLE_THRESHOLD)
+    {
+        m_pcWheels->SetLinearVelocity(wVel.lWheel, wVel.rWheel);
+    }
     else
         m_pcWheels->SetLinearVelocity(wVel.lWheel + V_0, wVel.rWheel + V_0);
-
-    //adding a constant velocity otherwise the robot would just spin around it self.
-    // if((velocities[0] > 0.499f || velocities[0] < -0.499f) && (velocities[1] > 0.499f || velocities[1] < -0.499f))
-    //     m_pcWheels->SetLinearVelocity(velocities[0], velocities[1]);
-    // else
-    //     m_pcWheels->SetLinearVelocity(V_0, V_0);
 
 }
 
