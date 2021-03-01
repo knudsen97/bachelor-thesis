@@ -6,6 +6,11 @@
 #include <argos3/core/utility/math/vector2.h>
 /* TCP communication */
 #include <argos3/core/utility/networking/tcp_socket.h>
+#include "../inc/matplotlibcpp.h"
+
+//#include "../matplotlib-cpp/matplotlibcpp.h"
+
+namespace plt = matplotlibcpp;
 
 
 #define PI 3.14159265
@@ -37,6 +42,10 @@ void test_controller::Init(TConfigurationNode& t_node)
                             CVector3(0.1, 0.4, 0.5), // size
                             500.0);                    // mass in kg
     AddEntity(*pcBox);
+
+    plt::plot({ 1,3,2,4 });
+    plt::show();
+
 }
 
 

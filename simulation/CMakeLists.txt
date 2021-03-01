@@ -42,6 +42,10 @@ find_package(Lua REQUIRED)
 find_package(OpenCV)
 include_directories(${OpenCV_INCLUDE_DIRS}) # Not needed for CMake >= 2.8.11
 
+
+#add matlab
+find_package(Python2 COMPONENTS Development NumPy)
+
 # Set ARGoS include dir
 include_directories(${CMAKE_SOURCE_DIR} ${ARGOS_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
 
@@ -51,24 +55,29 @@ link_directories(${ARGOS_LIBRARY_DIRS})
 # Descend into the inc and src directory
 
 add_library(src MODULE 
-${simulation_SOURCE_DIR}/src/test_controller.cpp
-${simulation_SOURCE_DIR}/src/camera.cpp 
-${simulation_SOURCE_DIR}/src/planner.cpp
-${simulation_SOURCE_DIR}/src/bug.cpp
-${simulation_SOURCE_DIR}/src/controller.cpp
+  ${simulation_SOURCE_DIR}/src/test_controller.cpp
+  ${simulation_SOURCE_DIR}/src/camera.cpp 
+  ${simulation_SOURCE_DIR}/src/planner.cpp
+  ${simulation_SOURCE_DIR}/src/bug.cpp
+  ${simulation_SOURCE_DIR}/src/controller.cpp
+  ${simulation_SOURCE_DIR}/inc/matplotlibcpp.h
 )
 
-include_directories(${simulation_SOURCE_DIR}/inc)
+include_directories(${simulation_SOURCE_DIR}/inc PRIVATE ${Python2_INCLUDE_DIRS} ${Python2_NumPy_INCLUDE_DIRS})
 
-target_link_libraries(src
+target_link_libraries(
+  src
   argos3core_simulator
   argos3plugin_simulator_footbot
   argos3plugin_simulator_genericrobot
   argos3plugin_simulator_entities
   ${OpenCV_LIBS} 
+  Python2::Python Python2::NumPy
   )
 
 
 
 # Descend into the embedding directory
 #add_subdirectory(embedding)
+
+
