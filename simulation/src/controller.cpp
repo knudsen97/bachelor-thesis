@@ -12,7 +12,8 @@ controller::controller(argos::Real _dt, argos::Real _Kp, argos::Real _Ki, argos:
     Kp(_Kp),
     Kd(_Kd),
     Ki(_Ki),
-    preError(0)
+    preError(0),
+    integral(0)
 {}
 
 controller::~controller(){}
@@ -27,15 +28,21 @@ std::array<argos::Real, 2> controller::angleControl(argos::CRadians curAngle, co
 {
     //TODO: Indtil videre kører jeg bare med konstant hastighed maybe fix that?
     //Calculate the angle between robot position and goal position:
-    argos::CRadians desiredAngle = argos::ATan2(goalPos.GetY()-robPos.GetY(), goalPos.GetX() - robPos.GetX());
+    argos::CRadians desiredAngle;
+    desiredAngle = argos::ATan2(goalPos.GetY()-robPos.GetY(), goalPos.GetX() - robPos.GetX());
     
-    //Calculate the error:
+    //To account for -pi to pi transition:
+    argos::Real sign = desiredAngle >= curAngle ? 1.0f : -1.0f;
+        //Calculate the error:
     argos::Real error = (desiredAngle - curAngle).GetValue();
+    argos::Real S = -sign * M_PI * 2;
+    error = (abs(S+error) < abs(error)) ? S+error : error;
     
     //Proportional part
     argos::Real Po = Kp*error;
     //Integral part
-    argos::Real Io = 0;
+    integral += error*dt;
+    argos::Real Io = 0; //Ki*integral;
     //Differentiate part
     argos::Real Do = Kd * (error - preError)/dt;
 

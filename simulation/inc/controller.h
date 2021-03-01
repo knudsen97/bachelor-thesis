@@ -21,6 +21,7 @@ class controller
     private:
     argos::Real Kp, Ki, Kd;
     argos::Real dt;
+    argos::Real integral;
 
     argos::Real vR, vL;
     argos::Real angle;
