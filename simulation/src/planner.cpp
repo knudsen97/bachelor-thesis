@@ -1,4 +1,4 @@
-#include "planner.h"
+#include "../inc/planner.h"
 
 using namespace argos;
 
@@ -294,3 +294,23 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
 
     return goalPath;
 }
+
+
+argos::CVector3 translate(argos::CVector3 point, argos::CRadians orientation, argos::Real distance)
+{
+    argos::CVector3 returnPoint;
+
+    returnPoint.SetX(point.GetX() + argos::Sin(orientation)*distance);
+    returnPoint.SetY(point.GetY() + argos::Cos(orientation)*distance);
+    returnPoint.SetZ(point.GetZ());
+    return returnPoint;
+}
+
+argos::CVector3 planner::push(argos::CBoxEntity* mBox, argos::CVector3 currentPoint, argos::CVector3 goalPoint)
+{
+    argos::CVector3 boxOrigin = mBox->GetEmbodiedEntity().GetOriginAnchor().Position;
+    argos::Real distance = argos::Distance(goalPoint, boxOrigin);
+    argos::CRadians orientation = argos::ATan2(goalPoint.GetY() - boxOrigin.GetY(), goalPoint.GetX() - boxOrigin.GetX());
+    return translate(currentPoint, orientation, distance);
+}
+

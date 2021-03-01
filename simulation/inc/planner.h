@@ -12,7 +12,7 @@
 
 #include "queue"
 #include "algorithm"
-#include "camera.h"
+#include "../inc/camera.h"
 
 class planner
 {
@@ -32,6 +32,8 @@ public:
 
     cv::Mat Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3 &goal);
     std::vector<cv::Point> Pathfinder(cv::Mat &grayMap, argos::CVector3 &robot, argos::CVector3 &goal);
+
+    argos::CVector3 push(argos::CBoxEntity* mBox, argos::CVector3 currentPoint, argos::CVector3 goalPoint);
 
 private:
     cv::Mat map; //For illustration

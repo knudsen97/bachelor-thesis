@@ -3,7 +3,7 @@
 
 // notice that the porximity sensor measures 0 when no object
 // 1 when object touch the robot and everything in between
-#define NEAR 0.3
+#define NEAR 0.8
 #define FAR 0.1
 
 
