@@ -350,6 +350,13 @@ bool planner::ValidLine(cv::Point A, cv::Point B, cv::Mat img)
 }
 
 
+ * This function is a helper function for planner::push to calculate the robots position after pushing the object.
+ * 
+ * @brief Translate a point with an orientation and a distance
+ * @param point The point to translate
+ * @param orientation The direction to translate the point in radians
+ * @param distance The distance to translate the point in said direction
+*/
 argos::CVector3 translate(argos::CVector3 point, argos::CRadians orientation, argos::Real distance)
 {
     argos::CVector3 returnPoint;
@@ -360,6 +367,19 @@ argos::CVector3 translate(argos::CVector3 point, argos::CRadians orientation, ar
     return returnPoint;
 }
 
+
+/**
+ * This function calculate where the robot should be in order to push 
+ * an object to where the object needs to be. This function assumes 
+ * that there are enough robots to push the object so that the object 
+ * does not rotate and only moving paralel to the robots trajectory 
+ * while being pushed by the robot
+ * 
+ * @brief Calculates the endpoint for the robot in order to push the box to the box goal point.
+ * @param mBox The box to push
+ * @param currentPoint The robots current point
+ * @param goalPoint The goalpoint for the box
+*/
 argos::CVector3 planner::push(argos::CBoxEntity* mBox, argos::CVector3 currentPoint, argos::CVector3 goalPoint)
 {
     argos::CVector3 boxOrigin = mBox->GetEmbodiedEntity().GetOriginAnchor().Position;
