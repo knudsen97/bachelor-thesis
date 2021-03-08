@@ -4,11 +4,9 @@
 #include <argos3/core/utility/configuration/argos_configuration.h>
 /* 2D vector definition */
 #include <argos3/core/utility/math/vector2.h>
-/* TCP communication */
-#include <argos3/core/utility/networking/tcp_socket.h>
-#include "../inc/matplotlibcpp.h"
 
-//#include "../matplotlib-cpp/matplotlibcpp.h"
+/* For plotting */
+#include "../inc/matplotlibcpp.h"
 
 namespace plt = matplotlibcpp;
 
@@ -69,6 +67,7 @@ void test_controller::Init(TConfigurationNode& t_node)
 
 void test_controller::ControlStep()
 {
+    //Location where box needs to go:
     if (!joined)
     {
         connecting.join();
@@ -83,10 +82,12 @@ void test_controller::ControlStep()
 
     CVector3 goal;
     goal.Set(3.3, 3.3, 0);
-    //std::vector<CVector3> validPushPoints = this->A.findPushPoints(pcBox, goal);
+
+    //Find where to push on the box to get to goal:
     std::vector<CVector3> validPushPoints;
     validPushPoints = P.FindPushPoints(pcBox,goal);
 
+    //First time do path planning
     if(!planComplete)
     {
         CVector3 goalLoc, startLoc;
@@ -97,37 +98,69 @@ void test_controller::ControlStep()
             CFootBotEntity* fBot = any_cast<CFootBotEntity*>(i->second);
             startLoc = fBot->GetEmbodiedEntity().GetOriginAnchor().Position;
         }
+        //Assign a corner to do wavefront/pathfinder on:
         goalLoc = validPushPoints[1];
         C.camera::GetPlot(this->map);
+
         this->map = P.planner::Wavefront(this->map,startLoc, goalLoc);
-        P.planner::Pathfinder(map, startLoc, goalLoc);
+        subGoals = P.planner::Pathfinder(map, startLoc, goalLoc);
         this->planComplete = true;
     }
+
 
     const CCI_PositioningSensor::SReading& robotPos = posSensor->GetReading();
     CRadians xAngle, yAngle, zAngle;
     robotPos.Orientation.ToEulerAngles(xAngle, yAngle, zAngle);
 
     //Calculate the angle between robot position and goal position:
-    argos::CVector3 goalPoint = validPushPoints[0];
+    //argos::CVector3 goalPoint = validPushPoints[1];
+    argos::CVector3 goalPoint = argos::CVector3(subGoals[this->i].x/(double)SCALE, subGoals[this->i].y/(double)SCALE, 0);
+    std::cout << goalPoint << std::endl;
+
+    // if(subGoals[this->i].x - robotPos.Position.GetX() <= 0.1999f)
+    // {
+    //     this->i++;
+    //     std::cout << "i: " << this->i << std::endl;
+    // }
+    // std::cout << "cur. goal: " << goalPoint << std::endl;
+    // std::cout << "actual g : " << subGoals[this->i] << std::endl;
+
     argos::CRadians desiredAngle;
     desiredAngle = argos::ATan2(goalPoint.GetY()-robotPos.Position.GetY(), goalPoint.GetX() - robotPos.Position.GetX());
 
     //Make controller instance
-    controller con(SAMPLING_RATE*5, 1000, 1, 1);
+    controller con(SAMPLING_RATE*5, 2000, 100, 1);
 
     controller::wVelocity wVel;
     wVel = con.angleControl(xAngle, desiredAngle);
-    std::cout << wVel.lWheel << " " << wVel.rWheel << std::endl;
- 
-    if(abs(goalPoint.GetX() - robotPos.Position.GetX()) <= 0.1999f)
+    //std::cout << wVel.lWheel << " " << wVel.rWheel << std::endl;
+    
+    if(abs(goalPoint.GetX() - robotPos.Position.GetX()) <= 0.01999f)
+    {
+        this->i++;
+        std::cout << "i: " << this->i << std::endl;
         m_pcWheels->SetLinearVelocity(0,0);
+        if(i >= subGoals.size())
+            cornerFound = true;
+    }
+    else if(cornerFound)
+    {
+        m_pcWheels->SetLinearVelocity(0,0);
+        std::cout << "CORNER FOUND\n";
+        // plt::plot(con.getX(), "r--");
+        // plt::plot(con.getY());
+        // plt::show();
+    }
     else if(abs(desiredAngle.GetValue()) - abs(xAngle.GetValue()) >= ANGLE_THRESHOLD)
     {
         m_pcWheels->SetLinearVelocity(wVel.lWheel, wVel.rWheel);
     }
+
     else
+    {
         m_pcWheels->SetLinearVelocity(wVel.lWheel + V_0, wVel.rWheel + V_0);
+    }
+    
 
 }
 

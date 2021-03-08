@@ -3,7 +3,8 @@
 
 #include "bug.h"
 #include "camera.h"
-
+#include "../inc/matplotlibcpp.h"
+namespace plt = matplotlibcpp;
 
 #define WHEEL_RADIUS 0.029112741f
 #define INTERWHEEL_DISTANCE 0.14f 
@@ -26,6 +27,9 @@ class controller
     wVelocity angleControl(argos::CRadians curAngle, argos::CRadians desiredAngle); 
     wVelocity angleControl(argos::CRadians curAngle, const argos::CVector3 &robPos, argos::CVector3 &goalPos); 
 
+    std::vector<double> getY(){return y;}
+    std::vector<double> getX(){return x;}
+
     private:
     argos::Real Kp, Ki, Kd;
     argos::Real dt;
@@ -35,6 +39,7 @@ class controller
     argos::Real angle;
     argos::Real preError;
 
+    static std::vector<double> y,x;
 };
 
 #endif

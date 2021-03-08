@@ -137,7 +137,7 @@ void camera::AddBox(argos::CBoxEntity* box, cv::Scalar color)
 void camera::AddRobotPosition(argos::CVector3 robot, float robotRadius, cv::Scalar color, int thickness)
 {
     cv::Point robot_position(robot.GetX()*SCALE, robot.GetY()*SCALE);
-    cv::circle(frame, robot_position, robotRadius * SCALE, color, thickness);
+    //cv::circle(frame, robot_position, robotRadius * SCALE, color, thickness);
     // argos::LOG << "robot position: " << robot_position/(SCALE/100) << "\n";
 }
 

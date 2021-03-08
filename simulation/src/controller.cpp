@@ -1,5 +1,6 @@
 #include "controller.h"
 
+
 /**
  * Controller constructor
  * @param _dt is the sampling rate
@@ -34,7 +35,7 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::
     argos::Real Po = Kp*error;
     //Integral part
     integral += error*dt;
-    argos::Real Io = 0; //Ki*integral;
+    argos::Real Io = Ki*integral;
     //Differentiate part
     argos::Real Do = Kd * (error - preError)/dt;
 
@@ -50,8 +51,15 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::
     this->vL = vel.lWheel;
     this->vR = vel.rWheel;
 
-    // this->vR = (2*v+omega*INTERWHEEL_DISTANCE) / 2*WHEEL_RADIUS;
-    // this->vL = (2*v-omega*INTERWHEEL_DISTANCE) / 2*WHEEL_RADIUS;
+    //Plot error:
+    //y.push_back(K/(1+K*error));
+    y.push_back(abs(curAngle.GetValue()));
+    x.push_back(M_PI);
+    //x.push_back(abs(desiredAngle.GetValue()));
+    
+    // std::cout << "cur: " << curAngle << std::endl;
+    // std::cout << "des: " << desiredAngle << std::endl;
+
 
     preError = error;
     return vel;
@@ -90,9 +98,16 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, const a
     argos::Real v = WHEEL_RADIUS/2 * (this->vR+this->vL);
     vel.lWheel = (2*v-omega*INTERWHEEL_DISTANCE) / 2*WHEEL_RADIUS;
     vel.rWheel = (2*v+omega*INTERWHEEL_DISTANCE) / 2*WHEEL_RADIUS;
-    // this->vR = (2*v+omega*INTERWHEEL_DISTANCE) / 2*WHEEL_RADIUS;
-    // this->vL = (2*v-omega*INTERWHEEL_DISTANCE) / 2*WHEEL_RADIUS;
+    this->vL = vel.lWheel;
+    this->vR = vel.rWheel;
+
+    //Plot error:
+    y.push_back(K);
+    //std::cout << "error: " << error << std::endl;
 
     preError = error;
     return vel;
 }
+
+std::vector<double> controller::y = {};
+std::vector<double> controller::x = {};
