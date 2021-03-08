@@ -60,8 +60,11 @@ add_library(src MODULE
   ${simulation_SOURCE_DIR}/src/planner.cpp
   ${simulation_SOURCE_DIR}/src/bug.cpp
   ${simulation_SOURCE_DIR}/src/controller.cpp
+  ${simulation_SOURCE_DIR}/src/cameraServerLoop.cpp
+  ${simulation_SOURCE_DIR}/src/masterLoopFunction.cpp
   ${simulation_SOURCE_DIR}/inc/matplotlibcpp.h
 )
+
 
 include_directories(${simulation_SOURCE_DIR}/inc PRIVATE ${Python2_INCLUDE_DIRS} ${Python2_NumPy_INCLUDE_DIRS})
 

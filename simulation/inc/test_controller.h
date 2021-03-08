@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <string>
+#include <thread>
 #include "planner.h"
 #include "controller.h"
 //#include "camera.h"
@@ -15,11 +16,13 @@
 #include <argos3/plugins/simulator/entities/box_entity.h>
 #include <argos3/core/simulator/loop_functions.h>
 #include <argos3/plugins/robots/generic/simulator/camera_default_sensor.h>
+#include <argos3/core/utility/networking/tcp_socket.h>
 //#include <argos3/plugins/simulator/physics_engines/dynamics3d/dynamics3d_box_model.h>
 //#include <argos3/plugins/simulator/physics_engines/dynamics3d/dynamics3d_engine.h>
 
 /* TCP communication */
 #include <argos3/core/utility/networking/tcp_socket.h>
+#define BUFFERSIZE 4
 
 using namespace argos;
 
@@ -60,6 +63,19 @@ private:
 
    std::vector<cv::Point> subGoals;
    size_t i = 0;
+
+   //socket
+public:
+   void connect();
+   static size_t robotBufferSize;
+
+private:
+
+   std::thread connecting;
+   argos::CByteArray argosBuffer = argos::CByteArray(BUFFERSIZE);
+   argos::CTCPSocket clientSocket;
+   int m_nStream = 0;
+
 };
 
 #endif

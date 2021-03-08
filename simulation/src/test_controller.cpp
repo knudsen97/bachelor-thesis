@@ -16,6 +16,25 @@ namespace plt = matplotlibcpp;
 
 #define SAMPLING_RATE 0.01
 #define V_0 4
+#define PORT 1024
+
+bool joined = false;
+
+void test_controller::connect()
+{
+    while (!this->clientSocket.IsConnected())
+    {
+        try
+        {
+            this->clientSocket.Connect("localhost", PORT);
+        }
+        catch(...)
+        {
+            ;
+        }
+    }
+    
+}
 
 test_controller::test_controller() :
     m_pcWheels(NULL),
@@ -33,20 +52,38 @@ void test_controller::Init(TConfigurationNode& t_node)
     //camSensor = GetSensor<CCI_CameraSensor>("camera0");
 
     GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
-    pcBox = new CBoxEntity("box1",                   // id
-                            CVector3(1, 1.7, 0.0), // position
-                            CQuaternion(),           // orientation
-                            true,                    // movable or not?
-                            CVector3(0.1, 0.4, 0.5), // size
-                            500.0);                    // mass in kg
-    AddEntity(*pcBox);
 
+    CSpace::TMapPerType& boxMap = GetSpace().GetEntitiesByType("box");
+    for (CSpace::TMapPerType::iterator iterator = boxMap.begin(); iterator != boxMap.end(); ++iterator)
+    {   
+        pcBox = any_cast<CBoxEntity*>(iterator->second);
+        if (pcBox->GetId() == "box1")
+            break;
+    }
+
+
+    plt::plot({ 1,3,2,4 });
+    plt::show();
+
+    connecting = std::thread{[=] { connect();}};
 }
 
 
 void test_controller::ControlStep()
 {
     //Location where box needs to go:
+    if (!joined)
+    {
+        connecting.join();
+        joined = true;
+    }
+
+    if(clientSocket.GetEvents().find(argos::CTCPSocket::EEvent::InputReady) != clientSocket.GetEvents().end())
+    {
+        clientSocket.ReceiveByteArray(argosBuffer);
+    }
+    argos::LOG << "client recieved: " << argosBuffer << '\n';
+
     CVector3 goal;
     goal.Set(3.3, 3.3, 0);
 
@@ -130,5 +167,7 @@ void test_controller::ControlStep()
     
 
 }
+
+size_t test_controller::robotBufferSize = BUFFERSIZE;
 
 REGISTER_CONTROLLER(test_controller, "test_controller")

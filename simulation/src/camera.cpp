@@ -2,7 +2,7 @@
 
 using namespace argos;
 
-void camera::PreStep()
+void camera::step()
 {
     camera::ClearPlot();
     /**
@@ -70,6 +70,8 @@ camera::polygon findCPositions(argos::CBoxEntity* mBox)
 
 camera::camera()
 {
+    std::cout << "Make camera obj" << std::endl;
+
     std::string name;
     name.append(camera::windowNameTemp);
     name.append(" ");
@@ -78,15 +80,37 @@ camera::camera()
     camera::windowName = name;
     camera::windowCounter++;
     frame = emptyFrame.clone();
+    objectContainer.push_back(this);
 }
 camera::camera(std::string name)
 {
+    std::cout << "Make camera obj with arg" << std::endl;
     cv::resizeWindow(name, WINDOWSIZE, WINDOWSIZE);
     camera::windowName = name;
     frame = emptyFrame.clone();
+    objectContainer.push_back(this);
 }
 camera::~camera(){
-    cv::destroyWindow(this->windowName);
+    std::cout << "Destroy camera obj" << std::endl;
+
+    try
+    {
+        if (!cv::getWindowProperty(this->windowName, cv::WND_PROP_VISIBLE))
+        {
+            cv::destroyWindow(this->windowName);
+        }
+        if ( std::find(objectContainer.begin(), objectContainer.end(), this) != objectContainer.end() )
+        {
+            objectContainer.erase(std::remove(objectContainer.begin(), objectContainer.end(), this), objectContainer.end());
+        }
+    }
+    catch(const cv::Exception& e)
+    {
+        std::cerr << e.what() << "In camera object destuctor " << '\n';
+
+    }
+    
+
 }
 
 /**
@@ -161,11 +185,4 @@ void camera::ClearPlot()
 size_t camera::windowCounter = 0;
 cv::Mat camera::emptyFrame(IMAGESIZE,IMAGESIZE, CV_8UC3, cv::Scalar(255,255,255));
 cv::Mat camera::frame = camera::emptyFrame.clone();
-
-/****************************************/
-/****************************************/
-
-REGISTER_LOOP_FUNCTIONS(camera, "camera_loop_function");
-
-/****************************************/
-/****************************************/
+std::vector<camera*> camera::objectContainer;
