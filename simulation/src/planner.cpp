@@ -285,20 +285,18 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
         }
 
         traverse += neighbours[idx];
-        // cv::circle(this->map, PH, 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
-        // goalPath.push_back(PH);
         
-        int prevIdxMinus = (prevIdx - 1) < 0 ? 7 : prevIdx - 1; 
-        int prevIdxPlus = (prevIdx + 1) > 7 ? 0 : prevIdx + 1; 
+        // int prevIdxMinus = (prevIdx - 1) < 0 ? 7 : prevIdx - 1; 
+        // int prevIdxPlus = (prevIdx + 1) > 7 ? 0 : prevIdx + 1; 
 
-        if(prevIdx != idx || (idx != prevIdxPlus && idx != prevIdxMinus))
+        if(prevIdx != idx )//|| (idx != prevIdxPlus && idx != prevIdxMinus))
         {
             cv::circle(this->map, PH, 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
             goalPath.push_back(PH);
         }
     }
     cv::imshow("wavefront", this->map);
-    postProcessPath = planner::PostProcessing(goalPath);
+    //postProcessPath = planner::PostProcessing(goalPath);
     for(auto goal : goalPath)
         std::cout << goal << std::endl;
     cv::waitKey(0);
@@ -349,9 +347,8 @@ bool planner::ValidLine(cv::Point A, cv::Point B, cv::Mat img)
     return valid;
 }
 
-
+/**
  * This function is a helper function for planner::push to calculate the robots position after pushing the object.
- * 
  * @brief Translate a point with an orientation and a distance
  * @param point The point to translate
  * @param orientation The direction to translate the point in radians
