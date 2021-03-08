@@ -18,10 +18,12 @@
 //#include <argos3/plugins/simulator/physics_engines/dynamics3d/dynamics3d_box_model.h>
 //#include <argos3/plugins/simulator/physics_engines/dynamics3d/dynamics3d_engine.h>
 
+/* TCP communication */
+#include <argos3/core/utility/networking/tcp_socket.h>
 
 using namespace argos;
 
-class test_controller : public CCI_Controller, public CLoopFunctions, public CBoxEntity{
+class test_controller : public CCI_Controller, public CLoopFunctions, public CBoxEntity { 
 
 public:
 
@@ -54,6 +56,10 @@ private:
    cv::Mat map;
 
    bool planComplete = false;
+   bool cornerFound = false;
+
+   std::vector<cv::Point> subGoals;
+   size_t i = 0;
 };
 
 #endif
