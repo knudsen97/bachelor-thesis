@@ -63,10 +63,6 @@ void test_controller::Init(TConfigurationNode& t_node)
             break;
     }
 
-
-    plt::plot({ 1,3,2,4 });
-    plt::show();
-
     connecting = std::thread{[=] { connect();}};
 }
 
