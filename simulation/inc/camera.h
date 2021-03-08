@@ -22,16 +22,16 @@
 #define WINDOWSIZE 500
 #define ARENASIZE 3
 #define SCALE (IMAGESIZE/ARENASIZE)
-//using namespace argos;
 
-class camera : public argos::CLoopFunctions {
+class camera : public argos::CLoopFunctions
+{
 public:
     struct polygon
     {
         std::vector<cv::Point2i> corners;
     };
 
-    virtual void PreStep();
+    void step();
 
     camera();
     camera(std::string name);
@@ -66,7 +66,7 @@ public:
     void GetPlot(cv::Mat& outputFrame);
     void ClearPlot();
 
-private:
+protected:
     std::vector<argos::CBoxEntity*> boxes;
     std::vector<argos::CFootBotEntity*> bots;
     std::string windowNameTemp = "Utils plot";
@@ -74,6 +74,7 @@ private:
     static size_t windowCounter;
     static cv::Mat emptyFrame;
     static cv::Mat frame;
+    static std::vector<camera*> objectContainer;
 };
 
 #endif
