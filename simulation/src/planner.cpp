@@ -104,6 +104,7 @@ std::vector<CVector3> planner::FindPushPoints(CBoxEntity* mBox, CVector3 goalPoi
     //Find pushing points by projecting dvBox vector with each corners vectors. If atleast 1 projection is negative it is a valid point.
     bool debug = false;
     bool c1Found=0, c2Found=0, c3Found=0, c4Found=0;
+    int displacement = 4;
     for(size_t i = 0; i<2; i++) //TODO: DENNE LØKKE KAN GODT TAGE DET SAMME PUNKT 2 GANGE!!!!!! //Tror det er fikset nu. Spaghetti løsning
     {
         if(Projection(dvBox, c1Vecs[i]) < 0 && !c1Found)
@@ -177,6 +178,8 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
     cv::Mat grayMap;
     cv::cvtColor(map, grayMap, cv::COLOR_BGR2GRAY);
     grayMap.convertTo(grayMap, CV_16UC1, 257.0f);
+    grayMap.copyTo(grayMapCopy);
+
     //cv::imshow("gray wavefront", grayMap);
     cv::imshow("wavefront", map);
     //cv::waitKey(0);
@@ -190,14 +193,14 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
     cv::circle(map, goalLocation, 5, cv::Scalar(0,200,0), -1);
     //cv::waitKey(0);
 
+
+
     //Start wavefront:
     bool pixelChange = true;
     ushort calcColor = MAX_USHORT-1;  
     uchar illustrationColor = 255;
     std::vector<cv::Point> explorer, explorerColour;
     explorer.push_back(goalLocation);
-
-
     while(pixelChange)
     {
         pixelChange = false;
@@ -241,19 +244,20 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
 */
 std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &robot, argos::CVector3 &goal)
 {
+
     std::array<cv::Point, 8> neighbours =
     {{
          cv::Point(-1, 1),
-         cv::Point(0, 1),
-         cv::Point(1, 1),
-         cv::Point(-1, 0),
-         cv::Point(1,0),
+         cv::Point(0,  1),
+         cv::Point(1,  1),
+         cv::Point(1,  0),
+         cv::Point(1,  -1),
+         cv::Point(0,  -1),
          cv::Point(-1, -1),
-         cv::Point(0, -1),
-         cv::Point(1, -1)
+         cv::Point(-1, 0)
     }};
 
-    std::vector<cv::Point> goalPath;
+    std::vector<cv::Point> goalPath, postProcessPath;
     cv::Point traverse;
 
     //Convert argos vector to cv::Point:
@@ -265,7 +269,6 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
 
     cv::Point PH = traverse + neighbours[0];
     int idx = 0, prevIdx = 0;    //To keep track of which neighbour was used in order to illustrate
-    //cv::waitKey(0);
     bool foundGoal = 0;
     while(!foundGoal)//GrayPixelVal(grayMap, traverse) != 0)//< MAX_USHORT-1)
     {
@@ -282,20 +285,71 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
         }
 
         traverse += neighbours[idx];
-        if(prevIdx != idx)
+        // cv::circle(this->map, PH, 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
+        // goalPath.push_back(PH);
+        
+        int prevIdxMinus = (prevIdx - 1) < 0 ? 7 : prevIdx - 1; 
+        int prevIdxPlus = (prevIdx + 1) > 7 ? 0 : prevIdx + 1; 
+
+        if(prevIdx != idx || (idx != prevIdxPlus && idx != prevIdxMinus))
         {
             cv::circle(this->map, PH, 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
             goalPath.push_back(PH);
-            cv::imshow("wavefront", this->map);
-            //cv::waitKey(0);
         }
     }
+    cv::imshow("wavefront", this->map);
+    postProcessPath = planner::PostProcessing(goalPath);
+    for(auto goal : goalPath)
+        std::cout << goal << std::endl;
     cv::waitKey(0);
-
+    //return postProcessPath;
     return goalPath;
 }
 
 /**
+ * Optimizes the path generated from wavefront by deleting unneccesary points in a vector
+ * @param subGoals is the vector of goals
+ */
+std::vector<cv::Point> planner::PostProcessing(std::vector<cv::Point> &subGoals)
+{
+
+
+    for(size_t i = 0; subGoals.size()-2; i++)
+    {
+        if(planner::ValidLine(subGoals[i], subGoals[i+2], grayMapCopy))
+        {
+            subGoals.erase(
+                std::remove_if(subGoals.begin(), subGoals.end(), [&](cv::Point const & point){
+                    return point == subGoals[i+1];
+                }),
+                subGoals.end());
+            i = 0;
+        }
+    }
+
+
+    return subGoals;
+}
+
+/**
+ * Checks if there are any obstacles between two points in a cv::Mat object
+ * @param A The first point
+ * @param B The second point
+ * @param img The map 
+ */
+
+bool planner::ValidLine(cv::Point A, cv::Point B, cv::Mat img)
+{
+    bool valid = true;
+    cv::LineIterator it(img, A, B);
+    for(size_t i = 1; i < it.count-1; i++, ++it)
+    {
+        valid = (*(const int*)* it == false) ? false : valid;
+    }
+    return valid;
+}
+
+
  * This function is a helper function for planner::push to calculate the robots position after pushing the object.
  * 
  * @brief Translate a point with an orientation and a distance
