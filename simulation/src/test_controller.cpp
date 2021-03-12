@@ -75,7 +75,6 @@ void test_controller::ControlStep()
         connection(clientSocket);
     }
 
-    std::cout << "Recieving \n";
     argos::LOG << "bool recieved: " << connection.recieve(argosBuffer) << '\n';
     argos::LOG << "client recieved: " << argosBuffer << '\n';
 

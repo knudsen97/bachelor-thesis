@@ -62,24 +62,21 @@ bool protocol::messageHasBeenSendt()
 
 bool protocol::recieve(argos::CByteArray& message) 
 {
-    std::cout << "sendt: " << sendt << '\n';
-    std::cout << "recieved: " << recieved << '\n';
+    // std::cout << "sendt: " << sendt << '\n';
+    // std::cout << "recieved: " << recieved << '\n';
     if (recieved && sendt)
     {
-        std::cout << "new recieve thread\n";
         communicate = std::thread(&protocol::recieveMessage, this);
         communicate.detach();
         recieved = false;
     }
     else
     {
-        std::cout << "could not listen\n";
         return false;
     }
     usleep(500);
     if (recieved)
     {
-        std::cout << "recieved\n";
         message = recievedMessage;
         return true;
     }
