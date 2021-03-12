@@ -22,6 +22,9 @@
 
 /* TCP communication */
 #include <argos3/core/utility/networking/tcp_socket.h>
+#include "../inc/protocol.h"
+
+
 #define BUFFERSIZE 4
 
 using namespace argos;
@@ -74,6 +77,7 @@ private:
    std::thread connecting;
    argos::CByteArray argosBuffer = argos::CByteArray(BUFFERSIZE);
    argos::CTCPSocket clientSocket;
+   protocol connection;
    int m_nStream = 0;
 
 };

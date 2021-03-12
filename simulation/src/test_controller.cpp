@@ -60,7 +60,7 @@ void test_controller::Init(TConfigurationNode& t_node)
         if (pcBox->GetId() == "box1")
             break;
     }
-
+    
     connecting = std::thread{[=] { connect();}};
 }
 
@@ -72,12 +72,15 @@ void test_controller::ControlStep()
     {
         connecting.join();
         joined = true;
+        connection(clientSocket);
     }
 
     if(clientSocket.GetEvents().find(argos::CTCPSocket::EEvent::InputReady) != clientSocket.GetEvents().end())
     {
         clientSocket.ReceiveByteArray(argosBuffer);
     }
+    std::cout << "Recieving \n";
+    argos::LOG << "bool recieved: " << connection.recieve(argosBuffer) << '\n';
     argos::LOG << "client recieved: " << argosBuffer << '\n';
 
     CVector3 goal;

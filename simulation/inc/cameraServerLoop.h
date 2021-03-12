@@ -10,6 +10,7 @@
 #include <argos3/core/utility/logging/argos_log.h>
 #include "cameraServerLoop.h"
 #include "test_controller.h"
+#include "../inc/protocol.h"
 
 
 
@@ -21,10 +22,9 @@ protected:
     /* data */
     static int clientcount;
     static int portnumber;
-    static char buffer[5]; 
     static argos::CTCPSocket serverSocket;
     static std::vector<argos::CTCPSocket> clientSockets;
-
+    static std::vector<protocol> clientConnections;
 public:
     static void init();
     static void step();
