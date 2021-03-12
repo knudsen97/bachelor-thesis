@@ -38,7 +38,7 @@ bool protocol::send(std::string message_)
 void protocol::sendMessage(argos::CByteArray message)
 {
     argos::UInt8 premessage[2];
-    premessage[0] = (message.Size() + '0');
+    premessage[0] = (message.Size());
     while(socket->GetEvents().find(argos::CTCPSocket::EEvent::OutputReady) == socket->GetEvents().end())
     {
         ;
