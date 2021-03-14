@@ -62,6 +62,7 @@ add_library(src MODULE
   ${simulation_SOURCE_DIR}/src/controller.cpp
   ${simulation_SOURCE_DIR}/src/cameraServerLoop.cpp
   ${simulation_SOURCE_DIR}/src/masterLoopFunction.cpp
+  ${simulation_SOURCE_DIR}/src/protocol.cpp
   ${simulation_SOURCE_DIR}/inc/matplotlibcpp.h
 )
 

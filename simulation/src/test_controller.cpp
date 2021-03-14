@@ -76,6 +76,7 @@ void test_controller::ControlStep()
     {
         connecting.join();
         joined = true;
+        connection(clientSocket);
     }
 
     if(clientSocket.GetEvents().find(argos::CTCPSocket::EEvent::InputReady) != clientSocket.GetEvents().end())
@@ -83,6 +84,8 @@ void test_controller::ControlStep()
         clientSocket.ReceiveByteArray(argosBuffer);
     }
     //argos::LOG << "client recieved: " << argosBuffer << '\n';
+    argos::LOG << "bool recieved: " << connection.recieve(argosBuffer) << '\n';
+    argos::LOG << "client recieved: " << argosBuffer << '\n';
 
     //Location where box needs to go:
     CVector3 goal;
