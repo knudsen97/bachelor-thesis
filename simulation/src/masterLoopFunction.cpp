@@ -32,19 +32,19 @@ void masterLoopFunction::Init(argos::TConfigurationNode& t_tree) {
    catch(argos::CARGoSException& ex) {
       THROW_ARGOSEXCEPTION_NESTED("Error initializing the loop functions", ex);
    }
-   std::cout << "portnumber: " << cameraServerLoop::portnumber << std::endl;
+   //std::cout << "portnumber: " << cameraServerLoop::portnumber << std::endl;
 
    cameraServerLoop::init();
-   std::cout << "Finish master init" << std::endl;
+   //std::cout << "Finish master init" << std::endl;
 
 
 }
 
 void masterLoopFunction::PreStep() 
 {
-   std::cout << "Loopfunction PreStep" << std::endl;
+   //std::cout << "Loopfunction PreStep" << std::endl;
    cameraServerLoop::step();
-   std::cout << "client count: " << cameraServerLoop::clientcount << std::endl;   
+   //std::cout << "client count: " << cameraServerLoop::clientcount << std::endl;   
    for (size_t i = 0; i < camera::objectContainer.size(); i++)
       camera::objectContainer[i]->step();
 }

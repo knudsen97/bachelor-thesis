@@ -24,7 +24,7 @@ void cameraServerLoop::step()
          temp.append("\n");
          argos::CByteArray message((argos::UInt8*)temp.c_str(), temp.size()+1);
          clientSockets[i].SendByteArray(message);
-         argos::LOG << "message sent was: " << message << '\n';
+         //argos::LOG << "message sent was: " << message << '\n';
       }
    }
 }
