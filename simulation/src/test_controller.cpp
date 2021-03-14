@@ -22,7 +22,7 @@ namespace plt = matplotlibcpp;
 #define WAIT            2
 #define PUSH            3
 
-bool joined = false;
+
 
 void test_controller::connect()
 {
@@ -72,13 +72,23 @@ void test_controller::Init(TConfigurationNode& t_node)
 }
 void test_controller::ControlStep()
 {
+    const CCI_PositioningSensor::SReading& robotPos = posSensor->GetReading();
+    CRadians xAngle, yAngle, zAngle;
+    robotPos.Orientation.ToEulerAngles(xAngle, yAngle, zAngle);
+    robotPosition = robotPos.Position; 
+
     if (!joined)
     {
         connecting.join();
         joined = true;
         connection(clientSocket);
     }
-
+    if (!positionSendt)
+    {
+        connection.sendPosition(robotPosition);
+        positionSendt = true;
+    }
+    
     argos::LOG << "bool recieved: " << connection.recieve(argosBuffer) << '\n';
     argos::LOG << "client recieved: " << argosBuffer << '\n';
 
@@ -86,9 +96,6 @@ void test_controller::ControlStep()
     CVector3 goal;
 
     goal.Set(2, 2, 0);
-    const CCI_PositioningSensor::SReading& robotPos = posSensor->GetReading();
-    CRadians xAngle, yAngle, zAngle;
-    robotPos.Orientation.ToEulerAngles(xAngle, yAngle, zAngle);
 
     /************************* FSM START *************************/
     switch (currentState)

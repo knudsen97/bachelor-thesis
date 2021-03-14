@@ -58,6 +58,7 @@ private:
    CBoxEntity* pcBox;
 
    Real m_fWheelVelocity;
+   CVector3 robotPosition;
 
    bool test = false;
    bool test1 = false;
@@ -73,12 +74,14 @@ private:
    size_t i = 0;
 
    int currentState = 0;
-
+   bool positionSendt = false;
 
    //socket
 public:
    void connect();
    static size_t robotBufferSize;
+   bool joined = false;
+
 
 private:
 

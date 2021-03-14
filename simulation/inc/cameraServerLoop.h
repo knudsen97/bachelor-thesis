@@ -24,7 +24,9 @@ protected:
     static int portnumber;
     static argos::CTCPSocket serverSocket;
     static std::vector<argos::CTCPSocket> clientSockets;
+    static std::vector<argos::CVector3> robotPositions;
     static std::vector<protocol> clientConnections;
+    static bool positionRecieved;
 public:
     static void init();
     static void step();
