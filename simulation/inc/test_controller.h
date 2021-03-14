@@ -23,6 +23,7 @@
 /* TCP communication */
 #include <argos3/core/utility/networking/tcp_socket.h>
 #define BUFFERSIZE 4
+#define V_0 4
 
 using namespace argos;
 
@@ -34,9 +35,13 @@ public:
    test_controller();
    ~test_controller(){}
 
+
    virtual void Init(TConfigurationNode& t_node);
 
    virtual void ControlStep();
+   bool Planning(argos::CVector3 &goal);
+   bool ReadyToPush(const CCI_PositioningSensor::SReading& robotPos, 
+                     argos::CVector3& goalPoint, argos::CRadians& desiredAngle, argos::CRadians& robotAngle, int v0 = V_0);
 
 
 
@@ -63,6 +68,9 @@ private:
 
    std::vector<cv::Point> subGoals;
    size_t i = 0;
+
+   int currentState = 0;
+
 
    //socket
 public:
