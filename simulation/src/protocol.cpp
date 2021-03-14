@@ -3,14 +3,10 @@
 protocol::protocol(argos::CTCPSocket& socket_)
 {
     socket = &socket_;
-    // sendt = socket->GetEvents().find(argos::CTCPSocket::EEvent::OutputReady) != socket->GetEvents().end();
-    // recieved = socket->GetEvents().find(argos::CTCPSocket::EEvent::InputReady) == socket->GetEvents().end();
 }
 void protocol::operator()(argos::CTCPSocket& socket_)
 {
     socket = &socket_;
-    // sendt = socket->GetEvents().find(argos::CTCPSocket::EEvent::OutputReady) != socket->GetEvents().end();
-    // recieved = socket->GetEvents().find(argos::CTCPSocket::EEvent::InputReady) == socket->GetEvents().end();
 }
 
 protocol::protocol(){}
@@ -60,6 +56,16 @@ bool protocol::messageHasBeenSendt()
 }
 
 
+bool protocol::sendPosition(argos::CVector3 position) 
+{
+    std::string message;
+    message.append(std::to_string(position.GetX()) + ' ');
+    message.append(std::to_string(position.GetY()) + ' ');
+    message.append(std::to_string(position.GetZ()));
+    return send(message);
+}
+
+
 bool protocol::recieve(argos::CByteArray& message) 
 {
     // std::cout << "sendt: " << sendt << '\n';
@@ -106,4 +112,29 @@ void protocol::recieveMessage()
     
 
     recieved = true;
+}
+
+bool protocol::recievePosition(argos::CVector3& position) 
+{
+    argos::CByteArray message;
+    std::string str_message;
+    
+    if(!this->recieve(message))
+        return false;
+    
+    message >> str_message;
+
+    argos::Real X = std::stod(str_message.substr(0, str_message.find(' ')));
+    str_message.erase(0, str_message.find(' ') + 1);
+
+    argos::Real Y = std::stod(str_message.substr(0, str_message.find(' ')));
+    str_message.erase(0, str_message.find(' ') + 1);
+
+    argos::Real Z = std::stod(str_message.substr(0, str_message.find(' ')));
+    
+    position.SetX(X);
+    position.SetY(Y);
+    position.SetZ(Z);
+    
+    return true;
 }

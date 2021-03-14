@@ -5,7 +5,7 @@
 
 #include <argos3/core/utility/networking/tcp_socket.h>
 #include <argos3/core/utility/logging/argos_log.h>
-
+#include <argos3/core/utility/math/vector3.h>
 
 
 class protocol
@@ -18,8 +18,11 @@ public:
     bool send(argos::CByteArray message);
     bool send(std::string message);
     bool messageHasBeenSendt();
+    bool sendPosition(argos::CVector3 position);
+
     bool recieve(argos::CByteArray& message);
     void operator()(argos::CTCPSocket& socket);
+    bool recievePosition(argos::CVector3& message);
 
 private:
     /* data */
