@@ -2,11 +2,6 @@
 
 using namespace argos;
 
-#define MAX_USHORT 65535
-// #define IMAGESIZE 700
-// #define WINDOWSIZE 500
-// #define ARENASIZE 3
-// #define SCALE (IMAGESIZE/ARENASIZE)
 
 planner::planner(){}
 planner::~planner(){}
@@ -17,6 +12,7 @@ planner::~planner(){}
 */
 planner::cPositions planner::FindCPositions(CBoxEntity* mBox)
 {
+
     //Find the box' origin/center of mass:
     CVector2 origin = {mBox->GetEmbodiedEntity().GetOriginAnchor().Position.GetX(), mBox->GetEmbodiedEntity().GetOriginAnchor().Position.GetY()};
     //Get the Orientation of the box:
@@ -26,8 +22,8 @@ planner::cPositions planner::FindCPositions(CBoxEntity* mBox)
     //LOG << "Angle: " << theta << std::endl;
 
     //Get box dimensions to calculate offset:
-    Real xSize = mBox->GetSize().GetX();
-    Real ySize = mBox->GetSize().GetY();    
+    Real xSize = mBox->GetSize().GetX();// + OFF_SET;
+    Real ySize = mBox->GetSize().GetY();// + OFF_SET;    
 
     //TOP RIGHT CORNER:
     Real c1x = origin.GetX() + ((xSize / 2) * cos(theta)) - ((ySize / 2) * sin(theta));
@@ -178,6 +174,10 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
     cv::Mat grayMap;
     cv::cvtColor(map, grayMap, cv::COLOR_BGR2GRAY);
     grayMap.convertTo(grayMap, CV_16UC1, 257.0f);
+
+    //Define a kernel and erode the map inorder to not get close to obstacles
+    cv::Mat kernel = cv::Mat(OFF_SET*SCALE, OFF_SET*SCALE, CV_16UC1);
+    cv::erode(grayMap, grayMap, kernel);
     grayMap.copyTo(grayMapCopy);
 
     //cv::imshow("gray wavefront", grayMap);
@@ -270,36 +270,51 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
     cv::Point PH = traverse + neighbours[0];
     int idx = 0, prevIdx = 0;    //To keep track of which neighbour was used in order to illustrate
     bool foundGoal = 0;
+
     while(!foundGoal)//GrayPixelVal(grayMap, traverse) != 0)//< MAX_USHORT-1)
     {
         prevIdx = idx;
-        for(size_t i = 1; i < neighbours.size()-1; i++)
+        for(size_t i = 0; i < neighbours.size(); i++)
         {
-            if(GrayPixelVal(grayMap, PH) <= GrayPixelVal(grayMap, traverse + neighbours[i]))
+            //std::cout << i <<"'th goal pixel val: " << (GrayPixelVal(grayMap, traverse + neighbours[i])) << std::endl;
+            if(GrayPixelVal(grayMap, PH) <= GrayPixelVal(grayMap, traverse + neighbours[i])) 
             {
                 PH = traverse + neighbours[i];
                 idx = i;
             }
-            else if (GrayPixelVal(grayMap, traverse + neighbours[i]) == 0)
+            else if (GrayPixelVal(grayMap, traverse + neighbours[i]) >= 65533)
+            {
                 foundGoal = 1;
+                goalPath.push_back(traverse + neighbours[i]);
+                cv::circle(this->map, traverse + neighbours[i], 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
+                break;
+            }
         }
 
         traverse += neighbours[idx];
         
-        // int prevIdxMinus = (prevIdx - 1) < 0 ? 7 : prevIdx - 1; 
-        // int prevIdxPlus = (prevIdx + 1) > 7 ? 0 : prevIdx + 1; 
+        // int prevIdxMinus = (prevIdx - 1) < 0 ? 7 : prevIdx - 1;
+        // int prevIdxPlus  = (prevIdx + 1) > 7 ? 0 : prevIdx + 1; 
 
-        if(prevIdx != idx )//|| (idx != prevIdxPlus && idx != prevIdxMinus))
+        //cv::circle(this->map, PH, 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
+        //goalPath.push_back(PH);
+        if(prevIdx != idx)// || (idx == prevIdxPlus && idx == prevIdxMinus))
         {
             cv::circle(this->map, PH, 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
             goalPath.push_back(PH);
+            //std::cout << "sub goal pixel val: " << GrayPixelVal(grayMap, PH) << std::endl;
         }
     }
+    // goalPath.push_back(goalLocation);
+    // cv::circle(this->map, goalLocation, 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
+    //To show the point where the box needs to go:
+    cv::circle(map, cv::Point(2*SCALE, 2*SCALE), 3, cv::Scalar(255,0,0),-1);
     cv::imshow("wavefront", this->map);
     //postProcessPath = planner::PostProcessing(goalPath);
     for(auto goal : goalPath)
         std::cout << goal << std::endl;
-    cv::waitKey(0);
+
+
     //return postProcessPath;
     return goalPath;
 }
@@ -321,6 +336,8 @@ std::vector<cv::Point> planner::PostProcessing(std::vector<cv::Point> &subGoals)
                     return point == subGoals[i+1];
                 }),
                 subGoals.end());
+            // cv::circle(this->map, subGoals[i], 3, cv::Scalar(0,255,255), -1);
+            // cv::imshow("wavefront", map);
             i = 0;
         }
     }
