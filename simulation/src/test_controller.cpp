@@ -79,11 +79,6 @@ void test_controller::ControlStep()
         connection(clientSocket);
     }
 
-    if(clientSocket.GetEvents().find(argos::CTCPSocket::EEvent::InputReady) != clientSocket.GetEvents().end())
-    {
-        clientSocket.ReceiveByteArray(argosBuffer);
-    }
-    //argos::LOG << "client recieved: " << argosBuffer << '\n';
     argos::LOG << "bool recieved: " << connection.recieve(argosBuffer) << '\n';
     argos::LOG << "client recieved: " << argosBuffer << '\n';
 
