@@ -81,9 +81,10 @@ bool protocol::recieve(argos::CByteArray& message)
         return false;
     }
     usleep(500);
-    if (recieved)
+    if (recievedMessage.Size()>0)
     {
         message = recievedMessage;
+        recievedMessage.Clear();
         return true;
     }
     else
