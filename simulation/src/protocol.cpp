@@ -3,17 +3,19 @@
 protocol::protocol(argos::CTCPSocket& socket_)
 {
     socket = &socket_;
+    preMessageRecieved[0] = 0;
+    preMessageRecieved[1] = typeError;
 }
 void protocol::operator()(argos::CTCPSocket& socket_)
 {
     socket = &socket_;
+    preMessageRecieved[0] = 0;
+    preMessageRecieved[1] = typeError;
 }
 
 protocol::protocol(){}
 
 protocol::~protocol(){}
-
-
 
 /****************************************
 ***** transmit part of the protocol *****
@@ -204,6 +206,7 @@ bool protocol::recieve(argos::CByteArray& message)
     // std::cout << "recieved: " << recieved << '\n';
     if (recieved && sendt)
     {
+        recievedMessage.Clear();
         communicate = std::thread(&protocol::recieveMessage, this);
         communicate.detach();
         recieved = false;
@@ -214,7 +217,6 @@ bool protocol::recieve(argos::CByteArray& message)
     if (recievedMessage.Size()>0)
     {
         message = recievedMessage;
-        recievedMessage.Clear();
         return true;
     }
     else
@@ -384,6 +386,104 @@ bool protocol::recievePosition(argos::CVector3& position)
 }
 
 
+/*********************************************************
+** functions to peak a message rather then recieving it **
+*********************************************************/
+
+protocol::dataType protocol::getMessageType() 
+{    
+    return protocol::dataType(preMessageRecieved[1]);
+}
+
+argos::CByteArray protocol::getMessage(argos::CByteArray& message) 
+{
+    message = recievedMessage;
+    return recievedMessage;
+}
+
+std::string protocol::getMessage(std::string& message) 
+{
+    std::string temp;
+    recievedMessage >> temp;
+    message = temp;
+    return temp;
+}
+
+argos::CVector3 protocol::getMessage(argos::CVector3& message) 
+{
+    std::string str_message;
+    argos::CVector3 temp;
+    recievedMessage >> str_message;
+
+    argos::Real X = std::stod(str_message.substr(0, str_message.find(' ')));
+    str_message.erase(0, str_message.find(' ') + 1);
+
+    argos::Real Y = std::stod(str_message.substr(0, str_message.find(' ')));
+    str_message.erase(0, str_message.find(' ') + 1);
+
+    argos::Real Z = std::stod(str_message.substr(0, str_message.find(' ')));
+    
+    temp.SetX(X);
+    temp.SetY(Y);
+    temp.SetZ(Z);
+
+    message = temp;
+    return temp;
+}
+
+argos::Real protocol::getMessage(argos::Real& message) 
+{
+    double temp = *reinterpret_cast<double*>(recievedMessage.ToCArray());
+    message = temp;
+    return temp;
+}
+
+cv::Point protocol::getMessage(cv::Point& message) 
+{
+    std::string str_message;
+    cv::Point temp;
+    recievedMessage >> str_message;
+
+    int X = std::stod(str_message.substr(0, str_message.find(' ')));
+    str_message.erase(0, str_message.find(' ') + 1);
+
+    int Y = std::stod(str_message.substr(0, str_message.find(' ')));
+
+    temp.x = X;
+    temp.y = Y;
+    message = temp;
+    return temp;
+}
+
+std::vector<argos::CRadians> protocol::getMessage(argos::CRadians& X_, argos::CRadians& Y_, argos::CRadians& Z_) 
+{
+
+    std::string str_message;
+    std::vector<argos::CRadians> temp;
+    temp.resize(3);
+    recievedMessage >> str_message;
+
+    argos::Real X = std::stod(str_message.substr(0, str_message.find(' ')));
+    str_message.erase(0, str_message.find(' ') + 1);
+
+    argos::Real Y = std::stod(str_message.substr(0, str_message.find(' ')));
+    str_message.erase(0, str_message.find(' ') + 1);
+
+    argos::Real Z = std::stod(str_message.substr(0, str_message.find(' ')));
+    
+    temp[0].SetValue(X);
+    temp[1].SetValue(Y);
+    temp[2].SetValue(Z);
+
+    X_ = temp[0];
+    Y_ = temp[1];
+    Z_ = temp[2];
+
+    return temp;
+}
+
+
+
 /** the private thread code **/
 void protocol::recieveMessage() 
 {
@@ -397,3 +497,11 @@ void protocol::recieveMessage()
     recievedMessage = temp;
     recieved = true;
 }
+
+
+    argos::CByteArray protocol::dummy_CByte = {0};
+    std::string protocol::dummy_string = "";
+    argos::CVector3 protocol::dummy_CVector3 = {0,0,0};
+    argos::CRadians protocol::dummy_CRadians(0);
+    argos::Real protocol::dummy_Real = 0;
+    cv::Point protocol::dummy_Point = {0, 0};

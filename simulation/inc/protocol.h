@@ -15,6 +15,7 @@ class protocol
 public:
     enum dataType
     {
+        typeError,
         typeString,
         typeCVector3,
         typeCRadians,
@@ -28,10 +29,12 @@ public:
     protocol();
     ~protocol();
     void operator()(argos::CTCPSocket& socket);
+    
 
-    /****************************************
-    ***** transmit part of the protocol *****
-    *****************************************/
+
+    /*********************************************************
+    ************** transmit part of the protocol *************
+    *********************************************************/
 
     /** @name send
      * @brief Sends a datapackage
@@ -78,9 +81,9 @@ public:
     bool send(cv::Point message);
 
 
-    /****************************************
-    ****** recieve part of the protocol *****
-    *****************************************/
+    /*********************************************************
+    ************** recieve part of the protocol **************
+    *********************************************************/
 
 
     /** @name sendPosition
@@ -130,12 +133,6 @@ public:
     bool recieve(cv::Point& message);
     
     /** @name recieve
-     * @brief recieves anyting without saving it
-     */
-    bool recieve();
-
-    
-    /** @name recieve
      * @brief recieves a message.
      * @param X The buffer for X.
      * @param Y The buffer for Y.
@@ -145,8 +142,26 @@ public:
     bool recieve(argos::CRadians& X, argos::CRadians& Y, argos::CRadians& Z);
 
 
-    
+    /** @name recievePosition
+     * @brief Recieves a argos::CVector3 (legacy code please use @ref recieve).
+     * @param position The buffer in which the position is saved.
+     * @retval True if it did recieve anyting else false.
+     */
     bool recievePosition(argos::CVector3& message);
+
+
+    /*********************************************************
+    ** functions to peak a message rather then recieving it **
+    *********************************************************/
+    bool recieve();
+    dataType getMessageType();
+    
+    argos::CByteArray getMessage(argos::CByteArray& message = dummy_CByte);
+    std::string getMessage(std::string& message = dummy_string);
+    argos::CVector3 getMessage(argos::CVector3& message = dummy_CVector3);
+    std::vector<argos::CRadians> getMessage(argos::CRadians& X = dummy_CRadians, argos::CRadians& Y = dummy_CRadians, argos::CRadians& Z = dummy_CRadians);
+    argos::Real getMessage(argos::Real& message = dummy_Real);
+    cv::Point getMessage(cv::Point& message = dummy_Point);
 
 private:
     argos::CTCPSocket* socket;
@@ -161,6 +176,12 @@ private:
     argos::UInt8 messageLength[2];
     argos::UInt8 preMessageRecieved[2];
 
+    static argos::CByteArray dummy_CByte;
+    static std::string dummy_string;
+    static argos::CVector3 dummy_CVector3;
+    static argos::CRadians dummy_CRadians;
+    static argos::Real dummy_Real;
+    static cv::Point dummy_Point;
 };
 
 
