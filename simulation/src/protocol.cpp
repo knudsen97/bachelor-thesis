@@ -206,7 +206,7 @@ bool protocol::recieve(argos::CByteArray& message)
     // std::cout << "recieved: " << recieved << '\n';
     if (recieved && sendt)
     {
-        recievedMessage.Clear();
+        
         communicate = std::thread(&protocol::recieveMessage, this);
         communicate.detach();
         recieved = false;
@@ -491,6 +491,8 @@ void protocol::recieveMessage()
     socket->ReceiveBuffer(preMessageRecieved, 2);
 
     while (socket->GetEvents().find(argos::CTCPSocket::EEvent::InputReady) == socket->GetEvents().end());
+
+    recievedMessage.Clear();
     argos::CByteArray temp(preMessageRecieved[0]);
 
     socket->ReceiveByteArray(temp);
