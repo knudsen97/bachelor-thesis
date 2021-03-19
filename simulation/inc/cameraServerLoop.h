@@ -43,7 +43,11 @@ protected:
 
     static int currentState;
 
+    static std::vector<int> threadCurrentState;
+
     static argos::CVector3 robotPosition;
+
+    static bool threadsOpened;
 
 
 public:
@@ -51,7 +55,9 @@ public:
     static void step();
     static void connect();
 
-    static bool Planning(argos::CVector3 &goal);
+    static bool Planning(argos::CVector3 &goal, argos::CVector3 &startLoc, argos::CVector3 &cornerLoc);
+
+    static void PrepareToPush(argos::CVector3 goal, argos::CVector3 startLoc, argos::CVector3 cornerLoc, int currentState);
 };
 
 
