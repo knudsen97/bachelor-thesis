@@ -63,18 +63,23 @@ private:
    bool test = false;
    bool test1 = false;
 
-   planner P;
-   camera C;
-   cv::Mat map;
-
+   // planner P;
+   // camera C;
+   //cv::Mat map;
+   bool pointReached = false;
    bool planComplete = false;
    bool cornerFound = false;
 
-   std::vector<cv::Point> subGoals;
+   //std::vector<cv::Point> subGoals;
    size_t i = 0;
 
    int currentState = 0;
    bool positionSendt = false;
+
+
+   argos::CVector3 goalPointMessage;
+   argos::CRadians goalAngle;
+
 
    //socket
 public:

@@ -90,6 +90,7 @@ camera::camera(std::string name)
     frame = emptyFrame.clone();
     objectContainer.push_back(this);
 }
+
 camera::~camera(){
     std::cout << "Destroy camera obj" << std::endl;
 

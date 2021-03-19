@@ -17,10 +17,17 @@ namespace plt = matplotlibcpp;
 #define SAMPLING_RATE 0.01
 #define PORT 1024
  
-#define PLANNING        0
-#define READY_TO_PUSH   1
-#define WAIT            2
-#define PUSH            3
+// #define PLANNING        0
+// #define READY_TO_PUSH   1
+// #define WAIT            2
+// #define PUSH            3
+
+#define RECEIVE 0
+#define GO_TO_POINT 1
+#define UPDATE_SERVER 2
+#define ORIENTATE 3
+#define WAIT 4
+#define PUSH_TO_GOAL 5
 
 
 
@@ -44,7 +51,7 @@ test_controller::test_controller() :
     m_pcWheels(NULL),
     m_fWheelVelocity(2.5f),
     posSensor(NULL),
-    pcBox(NULL),
+    //pcBox(NULL),
     proxSensor(NULL){}
     //camSensor(NULL){}
 
@@ -58,17 +65,17 @@ void test_controller::Init(TConfigurationNode& t_node)
 
     GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
 
-    CSpace::TMapPerType& boxMap = GetSpace().GetEntitiesByType("box");
-    for (CSpace::TMapPerType::iterator iterator = boxMap.begin(); iterator != boxMap.end(); ++iterator)
-    {   
-        pcBox = any_cast<CBoxEntity*>(iterator->second);
-        if (pcBox->GetId() == "box1")
-            break;
-    }
+    // CSpace::TMapPerType& boxMap = GetSpace().GetEntitiesByType("box");
+    // for (CSpace::TMapPerType::iterator iterator = boxMap.begin(); iterator != boxMap.end(); ++iterator)
+    // {   
+    //     pcBox = any_cast<CBoxEntity*>(iterator->second);
+    //     if (pcBox->GetId() == "box1")
+    //         break;
+    // }
 
     connecting = std::thread{[=] { connect();}};
 
-    currentState = PLANNING;
+    currentState = RECEIVE;
 }
 void test_controller::ControlStep()
 {
@@ -82,135 +89,98 @@ void test_controller::ControlStep()
         connecting.join();
         joined = true;
         connection(clientSocket);
-    }
-    if (!positionSendt)
-    {
-        connection.sendPosition(robotPosition);
-        positionSendt = true;
-    }
-    
-    argos::LOG << "bool recieved: " << connection.recieve(argosBuffer) << '\n';
-    argos::LOG << "client recieved: " << argosBuffer << '\n';
-
-    //Location where box needs to go:
-    CVector3 goal;
-
-    goal.Set(2, 2, 0);
+    } 
 
     /************************* FSM START *************************/
     switch (currentState)
     {
-    /************************* PLANNING *************************/
-    case PLANNING:
+    /************************* RECEIVE *************************/
+    case RECEIVE:
     {
-        planComplete = Planning(goal);
-        try
+        std::cout << "CLIENT RECEIVE\n";
+        //protocol::dataType::
+        if(connection.recieve())
         {
-            if(planComplete)
+            switch (connection.getMessageType())
             {
-                currentState = READY_TO_PUSH;
-                std::cout << "PlANNING COMPLETE\n";
+            case protocol::dataType::typeCVector3:
+                connection.getMessage(goalPointMessage);
+                if(goalPointMessage != CVector3(0,0,0))
+                {
+                    currentState = GO_TO_POINT;
+                }
+                break;
+            
+            case protocol::dataType::typeCRadians:
+                connection.getMessage(goalAngle);
+                currentState = ORIENTATE;
+                break;
+
+            default:
+                break;
             }
-            else
-                throw(planComplete);
-        }
-        catch(bool e)
-        {
-            std::cerr << "An exception occured. Planning state: " << e << std::endl;
-            LOGERR << "An exception occured. Planning state: " << e << std::endl;
         }
     }
     break;
 
-    /************************* READT TO PUSH *************************/
-    case READY_TO_PUSH:
+    /************************* GO TO POINT *************************/
+    case GO_TO_POINT:
     {
-        //Calculate the angle between robot position and goal position:
-        argos::CVector3 goalPoint = argos::CVector3(subGoals[i].x/(double)SCALE, subGoals[i].y/(double)SCALE, 0);
-        //std::cout << goalPoint << std::endl;
+        std::cout << "CLIENT GO_TO_POINT\n";
 
         argos::CRadians desiredAngle;
-        desiredAngle = argos::ATan2(goalPoint.GetY()-robotPos.Position.GetY(), goalPoint.GetX() - robotPos.Position.GetX());
+        desiredAngle = argos::ATan2(goalPointMessage.GetY() - robotPos.Position.GetY(), goalPointMessage.GetX() - robotPos.Position.GetX());
+        pointReached = test_controller::ReadyToPush(robotPos, goalPointMessage, desiredAngle, xAngle);
+       
+        if(pointReached)
+            currentState = UPDATE_SERVER;
 
-        bool readyToPush = false;
-        readyToPush = test_controller::ReadyToPush(robotPos, goalPoint, desiredAngle, xAngle);
-        if(readyToPush)
+    }
+    break;
+
+    /************************* UPDATE SERVER *************************/
+    case UPDATE_SERVER:
+    {
+        std::cout << "CLIENT UPDATE SERVER\n";
+        if(connection.send(robotPos.Position))
         {
-            currentState = WAIT;
-            std::cout << "READY TO PUSH COMPLETE\n";
+            currentState = RECEIVE;
         }
     }
     break;
-    
-    /************************* WAIT *************************/
-    case WAIT:
+
+    /************************* ORIENTATE *************************/
+    case ORIENTATE:
     {
-        argos::CRadians goalAngle;
-        goalAngle = argos::ATan2(goal.GetY()-robotPos.Position.GetY(), goal.GetX() - robotPos.Position.GetX());
+        std::cout << "CLIENT ORIENTATE\n";
 
         controller con(SAMPLING_RATE*5, 2000, 100, 1);
-
         controller::wVelocity wVel;
         wVel = con.angleControl(xAngle, goalAngle);
 
-        if(abs(goalAngle.GetValue()) - abs(xAngle.GetValue()) >= ANGLE_THRESHOLD)
+        // std::cout << "ROBOT ORIEN: " << abs(goalAngle.GetValue()) - abs(xAngle.GetValue()) << std::endl;
+        // std::cout << "ANGLE THRES: " << ANGLE_THRESHOLD << std::endl;
+        if(abs(goalAngle.GetValue() - xAngle.GetValue()) >= 0.024999f)
         {
             m_pcWheels->SetLinearVelocity(wVel.lWheel, wVel.rWheel);
         }
         else
         {
-            m_pcWheels->SetLinearVelocity(wVel.lWheel, wVel.rWheel);
+            m_pcWheels->SetLinearVelocity(0,0);
+            currentState = WAIT;
         }
 
-        //m_pcWheels->SetLinearVelocity(0,0);
-        //Some code to check if all the other robots also have reached their corner.
-        //When that is true:
-        //currenState = PUSH
     }
     break;
 
-    case PUSH:
+    /************************* WAIT *************************/
+    case WAIT:
     {
-
+        std::cout << "CLIENT WAIT\n";
     }
     break;
 
     }
-}
-
-/**
- * A function to call the planning algorithms such as wavefront and pathfinder
- * @param goal The goal position
-*/
-bool test_controller::Planning(argos::CVector3 &goal)
-{
-    //Find where to push on the box to get to goal:
-    std::vector<CVector3> validPushPoints;
-    validPushPoints = P.FindPushPoints(pcBox, goal);
-
-    CVector3 goalLoc, startLoc;
-    //Find robot position:
-    CSpace::TMapPerType& FBmap = GetSpace().GetEntitiesByType("foot-bot");
-    for (CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
-    {
-        CFootBotEntity* fBot = any_cast<CFootBotEntity*>(i->second);
-        startLoc = fBot->GetEmbodiedEntity().GetOriginAnchor().Position;
-    }
-
-    //Assign a corner to do wavefront/pathfinder on:
-    goalLoc = validPushPoints[0];
-    C.camera::GetPlot(this->map);
-
-    //Find a point on the line between corner and goal
-    argos::CVector3 CG = goal - goalLoc; //Corner-Goal vector
-    CG = CG.Normalize() * (-OFF_SET);
-    goalLoc += CG;
-    //Den tegner det godt nok, men robotten kommer ikke derhen, hvilket jeg tror er pga. pathfinderen
-
-    this->map = P.planner::Wavefront(this->map,startLoc, goalLoc);
-    subGoals = P.planner::Pathfinder(map, startLoc, goalLoc);
-
-    return true;
 }
 
 /**
@@ -225,28 +195,32 @@ bool test_controller::ReadyToPush(const CCI_PositioningSensor::SReading& robotPo
 {
     //Make controller instance
     controller con(SAMPLING_RATE*5, 2000, 100, 1);
-
     controller::wVelocity wVel;
     wVel = con.angleControl(robotAngle, desiredAngle);
     //std::cout << wVel.lWheel << " " << wVel.rWheel << std::endl;
     
     if(abs(goalPoint.GetX() - robotPos.Position.GetX()) <= 0.01999f)
     {
-        i++;
+        //i++;
         //std::cout << "i: " << this->i << std::endl;
         m_pcWheels->SetLinearVelocity(0,0);
-        if(i >= subGoals.size())
-            cornerFound = true;
-    }
-    else if(cornerFound)
-    {
-        m_pcWheels->SetLinearVelocity(0,0);
-        //std::cout << "CORNER FOUND\n";
+        //pointReached = true;
+        //std::cout << "test\n";
+        // if(i >= subGoals.size())
+        //     cornerFound = true;
         return true;
-        // plt::plot(con.getX(), "r--");
-        // plt::plot(con.getY());
-        // plt::show();
     }
+    // else if(cornerFound)
+    // {
+    //     m_pcWheels->SetLinearVelocity(0,0);
+    //     //std::cout << "CORNER FOUND\n";
+    //     //std::cout << "hej\n";
+
+    //     return true;
+    //     // plt::plot(con.getX(), "r--");
+    //     // plt::plot(con.getY());
+    //     // plt::show();
+    // }
     else if(abs(desiredAngle.GetValue()) - abs(robotAngle.GetValue()) >= ANGLE_THRESHOLD)
     {
         m_pcWheels->SetLinearVelocity(wVel.lWheel, wVel.rWheel);
@@ -259,67 +233,6 @@ bool test_controller::ReadyToPush(const CCI_PositioningSensor::SReading& robotPo
     return false;
 }
 
-
-
 size_t test_controller::robotBufferSize = BUFFERSIZE;
 
 REGISTER_CONTROLLER(test_controller, "test_controller")
-
-
-// void test_controller::ControlStep()
-// {
-//     if (!joined)
-//     {
-//         connecting.join();
-//         joined = true;
-//     }
-
-//     if(clientSocket.GetEvents().find(argos::CTCPSocket::EEvent::InputReady) != clientSocket.GetEvents().end())
-//     {
-//         clientSocket.ReceiveByteArray(argosBuffer);
-//     }
-//     //argos::LOG << "client recieved: " << argosBuffer << '\n';
-
-//     //Location where box needs to go:
-//     CVector3 goal;
-//     goal.Set(3.3, 3.3, 0);
-
-//     // switch (currentState)
-//     // {
-//     // case PLANNING:
-//     //     try
-//     //     {
-//     //         if(!planComplete)
-//     //         {
-//     //             planComplete = Planning(goal);
-//     //             currentState = READY_TO_PUSH;
-//     //         }
-//     //     }
-//     //     catch(const std::exception& e)
-//     //     {
-//     //         std::cerr << "Planning not complete" << '\n';
-//     //     }
-        
-//     //     break;
-    
-//     // default:
-//     //     break;
-//     // }
-//     //First time do path planning
-//     if(!planComplete)
-//         planComplete = Planning(goal);
- 
-//     const CCI_PositioningSensor::SReading& robotPos = posSensor->GetReading();
-//     CRadians xAngle, yAngle, zAngle;
-//     robotPos.Orientation.ToEulerAngles(xAngle, yAngle, zAngle);
-
-//     //Calculate the angle between robot position and goal position:
-//     argos::CVector3 goalPoint = argos::CVector3(subGoals[i].x/(double)SCALE, subGoals[i].y/(double)SCALE, 0);
-//     std::cout << goalPoint << std::endl;
-
-//     argos::CRadians desiredAngle;
-//     desiredAngle = argos::ATan2(goalPoint.GetY()-robotPos.Position.GetY(), goalPoint.GetX() - robotPos.Position.GetX());
-
-//     //Make controller instance
-//     test_controller::ReadyToPush(robotPos, goalPoint, desiredAngle, xAngle);
-// }

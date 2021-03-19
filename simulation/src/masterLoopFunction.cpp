@@ -37,16 +37,34 @@ void masterLoopFunction::Init(argos::TConfigurationNode& t_tree) {
    cameraServerLoop::init();
    //std::cout << "Finish master init" << std::endl;
 
-
 }
 
 void masterLoopFunction::PreStep() 
 {
    //std::cout << "Loopfunction PreStep" << std::endl;
-   cameraServerLoop::step();
    //std::cout << "client count: " << cameraServerLoop::clientcount << std::endl;   
    for (size_t i = 0; i < camera::objectContainer.size(); i++)
       camera::objectContainer[i]->step();
+      
+   CSpace::TMapPerType& boxMap = GetSpace().GetEntitiesByType("box");
+   for (CSpace::TMapPerType::iterator iterator = boxMap.begin(); iterator != boxMap.end(); ++iterator)
+   {   
+      pcBox = any_cast<CBoxEntity*>(iterator->second);
+      if (pcBox->GetId() == "box1")
+         break;
+   }
+
+   //Find robot position:
+   CSpace::TMapPerType& FBmap = GetSpace().GetEntitiesByType("foot-bot");
+   for (CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
+   {
+      CFootBotEntity* fBot = any_cast<CFootBotEntity*>(i->second);
+      startLocations.push_back(fBot->GetEmbodiedEntity().GetOriginAnchor().Position);
+   }
+
+   cameraServerLoop::step();
+
+      
 }
 
 

@@ -5,6 +5,9 @@
 #include <iostream>
 #include <thread>
 
+
+#include <argos3/core/utility/configuration/argos_configuration.h>
+
 #include <argos3/core/utility/networking/tcp_socket.h>
 #include <argos3/core/simulator/loop_functions.h>
 #include <argos3/core/utility/logging/argos_log.h>
@@ -12,9 +15,7 @@
 #include "test_controller.h"
 #include "../inc/protocol.h"
 
-
-
-
+using namespace argos;
 
 class cameraServerLoop
 {
@@ -27,12 +28,30 @@ protected:
     static std::vector<argos::CVector3> robotPositions;
     static std::vector<protocol> clientConnections;
     static bool positionRecieved;
+
+    static bool planComplete;
+    static CBoxEntity* pcBox;
+    static CFootBotEntity* fBot;
+
+    static std::vector<CVector3> startLocations;
+    static cv::Mat map;
+    static std::vector<cv::Point> subGoals;
+    static camera C;
+
+    static int i;
+    static bool cornerFound;
+
+    static int currentState;
+
+    static argos::CVector3 robotPosition;
+
+
 public:
     static void init();
     static void step();
     static void connect();
 
-
+    static bool Planning(argos::CVector3 &goal);
 };
 
 
