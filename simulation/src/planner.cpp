@@ -155,6 +155,7 @@ ushort GrayPixelVal(cv::Mat &map, cv::Point point)
 */
 cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3 &goal)
 {
+
     std::array<cv::Point, 8> neighbours =
     {{
          cv::Point(-1, 1),
@@ -166,17 +167,16 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
          cv::Point(0, -1),
          cv::Point(1, -1)
     }};
-    
+
     cv::namedWindow("wavefront", cv::WINDOW_NORMAL);
     cv::resizeWindow("wavefront", WINDOWSIZE, WINDOWSIZE);
-
     //Whenever I can get map from camera class use this:
     cv::Mat grayMap;
     cv::cvtColor(map, grayMap, cv::COLOR_BGR2GRAY);
     grayMap.convertTo(grayMap, CV_16UC1, 257.0f);
 
     //Define a kernel and erode the map inorder to not get close to obstacles
-    cv::Mat kernel = cv::Mat(OFF_SET*SCALE, OFF_SET*SCALE, CV_16UC1);
+    cv::Mat kernel = cv::Mat(OFF_SET*SCALE, OFF_SET*SCALE, CV_8UC1);
     cv::erode(grayMap, grayMap, kernel);
     grayMap.copyTo(grayMapCopy);
 
@@ -192,7 +192,6 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
     cv::circle(map, start, 5, cv::Scalar(0,0,255), -1);
     cv::circle(map, goalLocation, 5, cv::Scalar(0,200,0), -1);
     //cv::waitKey(0);
-
 
 
     //Start wavefront:
@@ -293,29 +292,20 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
 
         traverse += neighbours[idx];
         
-        // int prevIdxMinus = (prevIdx - 1) < 0 ? 7 : prevIdx - 1;
-        // int prevIdxPlus  = (prevIdx + 1) > 7 ? 0 : prevIdx + 1; 
-
-        //cv::circle(this->map, PH, 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
-        //goalPath.push_back(PH);
-        if(prevIdx != idx)// || (idx == prevIdxPlus && idx == prevIdxMinus))
+        if(prevIdx != idx)
         {
             cv::circle(this->map, PH, 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
             goalPath.push_back(PH);
-            //std::cout << "sub goal pixel val: " << GrayPixelVal(grayMap, PH) << std::endl;
         }
     }
-    // goalPath.push_back(goalLocation);
-    // cv::circle(this->map, goalLocation, 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
+
     //To show the point where the box needs to go:
     cv::circle(map, cv::Point(2*SCALE, 2*SCALE), 3, cv::Scalar(255,0,0),-1);
     cv::imshow("wavefront", this->map);
-    //postProcessPath = planner::PostProcessing(goalPath);
+
     for(auto goal : goalPath)
         std::cout << goal << std::endl;
 
-
-    //return postProcessPath;
     return goalPath;
 }
 
