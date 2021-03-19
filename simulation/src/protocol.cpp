@@ -155,7 +155,7 @@ bool protocol::send(cv::Point message)
 
 
 /** @name sendPosition
- * @brief sends a position (legacy code please use @ref send)
+ * @brief sends a position (legacy code please use @ref send(argos::CVector3) )
  * @param position The position to send.
  * @retval true if it has been sent false otherwise.
  */
@@ -206,6 +206,7 @@ bool protocol::recieve(argos::CByteArray& message)
     // std::cout << "recieved: " << recieved << '\n';
     if (recieved && sendt && socket->GetEvents().find(argos::CTCPSocket::EEvent::InputReady) != socket->GetEvents().end())
     {
+        
         communicate = std::thread(&protocol::recieveMessage, this);
         communicate.detach();
         recieved = false;
@@ -223,7 +224,6 @@ bool protocol::recieve(argos::CByteArray& message)
     else
         return false;
 }
-
 /** @name recieve
  * @brief Recieves a message.
  * @param message The buffer in which the message is saved.

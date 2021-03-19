@@ -87,7 +87,7 @@ public:
 
 
     /** @name sendPosition
-     * @brief sends a position (legacy code please use @ref send)
+     * @brief sends a position (legacy code please use @ref send(argos::CVector3) )
      * @param position The position to send.
      * @retval true if it has been sent false otherwise.
      */
