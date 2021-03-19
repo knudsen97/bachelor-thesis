@@ -62,7 +62,7 @@
   <loop_functions library="build/libsrc"
                   label="master_loop_function">
 
-    <server port="1024" clients="1"/>
+    <server port="1024" clients="3"/>
 
   </loop_functions>
   <!-- *********************** -->
@@ -108,6 +108,14 @@
     <!-- Place a foot-bot in the origin and bind it to the controller -->
     <foot-bot id="fb_0">
       <body position="1.5,1.5,0" orientation="0,0,0" />
+      <controller config="test"/>
+    </foot-bot>
+    <foot-bot id="fb_1">
+      <body position="1.5,2,0" orientation="0,0,0" />
+      <controller config="test"/>
+    </foot-bot>
+    <foot-bot id="fb_2">
+      <body position="1.5,1,0" orientation="0,0,0" />
       <controller config="test"/>
     </foot-bot>
 
