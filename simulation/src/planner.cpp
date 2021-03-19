@@ -100,7 +100,6 @@ std::vector<CVector3> planner::FindPushPoints(CBoxEntity* mBox, CVector3 goalPoi
     //Find pushing points by projecting dvBox vector with each corners vectors. If atleast 1 projection is negative it is a valid point.
     bool debug = false;
     bool c1Found=0, c2Found=0, c3Found=0, c4Found=0;
-    int displacement = 4;
     for(size_t i = 0; i<2; i++) //TODO: DENNE LØKKE KAN GODT TAGE DET SAMME PUNKT 2 GANGE!!!!!! //Tror det er fikset nu. Spaghetti løsning
     {
         if(Projection(dvBox, c1Vecs[i]) < 0 && !c1Found)
@@ -168,8 +167,8 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
          cv::Point(1, -1)
     }};
 
-    cv::namedWindow("wavefront", cv::WINDOW_NORMAL);
-    cv::resizeWindow("wavefront", WINDOWSIZE, WINDOWSIZE);
+    // cv::namedWindow("wavefront", cv::WINDOW_NORMAL);
+    // cv::resizeWindow("wavefront", WINDOWSIZE, WINDOWSIZE);
     //Whenever I can get map from camera class use this:
     cv::Mat grayMap;
     cv::cvtColor(map, grayMap, cv::COLOR_BGR2GRAY);
@@ -181,16 +180,16 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
     grayMap.copyTo(grayMapCopy);
 
     //cv::imshow("gray wavefront", grayMap);
-    cv::imshow("wavefront", map);
+    // cv::imshow("wavefront", map);
     //cv::waitKey(0);
 
     //Convert argos vector to cv::Point:
     cv::Point start(robot.GetX()*SCALE, robot.GetY()*SCALE);
     cv::Point goalLocation(goal.GetX()*SCALE, goal.GetY()*SCALE);
 
-    //Draw robot start and goal location
-    cv::circle(map, start, 5, cv::Scalar(0,0,255), -1);
-    cv::circle(map, goalLocation, 5, cv::Scalar(0,200,0), -1);
+    // //Draw robot start and goal location
+    // cv::circle(map, start, 5, cv::Scalar(0,0,255), -1);
+    // cv::circle(map, goalLocation, 5, cv::Scalar(0,200,0), -1);
     //cv::waitKey(0);
 
 
@@ -213,9 +212,9 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
                     pixelChange = true;
                     if(e.x + neighbours[j].x >= 0 && e.y + neighbours[j].y >= 0)
                         explorerColour.push_back(e + neighbours[j]);
-                    //Don't overdraw goal and start location for visualization:
-                    if(map.at<cv::Vec3b>(e+neighbours[j]) !=  cv::Vec3b(0,0,255) && map.at<cv::Vec3b>(e+neighbours[j]) !=  cv::Vec3b(0,200,0))//e + neighbours[j] != goalLocation && e + neighbours[j] != start)
-                        map.at<cv::Vec3b>(e + neighbours[j]) = cv::Vec3b(illustrationColor, illustrationColor, illustrationColor); 
+                    // //Don't overdraw goal and start location for visualization:
+                    // if(map.at<cv::Vec3b>(e+neighbours[j]) !=  cv::Vec3b(0,0,255) && map.at<cv::Vec3b>(e+neighbours[j]) !=  cv::Vec3b(0,200,0))//e + neighbours[j] != goalLocation && e + neighbours[j] != start)
+                    //     map.at<cv::Vec3b>(e + neighbours[j]) = cv::Vec3b(illustrationColor, illustrationColor, illustrationColor); 
                 }
             }
         }
@@ -226,10 +225,10 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
         explorerColour.clear();
 
     }
-    cv::imshow("wavefront", map);
+    // cv::imshow("wavefront", map);
     //cv::waitKey(0);
 
-    map.copyTo(this->map);
+    // map.copyTo(this->map);
 
     return grayMap;
 }
@@ -285,7 +284,7 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
             {
                 foundGoal = 1;
                 goalPath.push_back(traverse + neighbours[i]);
-                cv::circle(this->map, traverse + neighbours[i], 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
+                // cv::circle(this->map, traverse + neighbours[i], 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
                 break;
             }
         }
@@ -294,17 +293,17 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
         
         if(prevIdx != idx)
         {
-            cv::circle(this->map, PH, 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
+            // cv::circle(this->map, PH, 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
             goalPath.push_back(PH);
         }
     }
 
     //To show the point where the box needs to go:
     cv::circle(map, cv::Point(2*SCALE, 2*SCALE), 3, cv::Scalar(255,0,0),-1);
-    cv::imshow("wavefront", this->map);
+    // cv::imshow("wavefront", this->map);
 
-    for(auto goal : goalPath)
-        std::cout << goal << std::endl;
+    // for(auto goal : goalPath)
+    //     std::cout << goal << std::endl;
 
     return goalPath;
 }
@@ -391,4 +390,3 @@ argos::CVector3 planner::push(argos::CBoxEntity* mBox, argos::CVector3 currentPo
     argos::CRadians orientation = argos::ATan2(goalPoint.GetY() - boxOrigin.GetY(), goalPoint.GetX() - boxOrigin.GetX());
     return translate(currentPoint, orientation, distance);
 }
-

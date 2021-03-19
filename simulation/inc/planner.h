@@ -26,12 +26,13 @@ public:
 
     planner();
     ~planner();
-    cPositions FindCPositions(argos::CBoxEntity* mBox);
+    
+    static cPositions FindCPositions(argos::CBoxEntity* mBox);
 
     template<class V>
-    argos::Real Projection(V &v1, V &v2);
+    static argos::Real Projection(V &v1, V &v2);
 
-    std::vector<argos::CVector3> FindPushPoints(argos::CBoxEntity* mBox, argos::CVector3 goalPoint);
+    static std::vector<argos::CVector3> FindPushPoints(argos::CBoxEntity* mBox, argos::CVector3 goalPoint);
 
     cv::Mat Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3 &goal);
     std::vector<cv::Point> Pathfinder(cv::Mat &grayMap, argos::CVector3 &robot, argos::CVector3 &goal);
