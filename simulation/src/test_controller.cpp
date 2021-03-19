@@ -29,7 +29,7 @@ namespace plt = matplotlibcpp;
 #define WAIT 4
 #define PUSH_TO_GOAL 5
 
-
+int wait_time = 0;
 
 void test_controller::connect()
 {
@@ -91,12 +91,14 @@ void test_controller::ControlStep()
         connection(clientSocket);
     } 
 
+    std::cout << "waittime: " << wait_time << '\n';
     /************************* FSM START *************************/
     switch (currentState)
     {
     /************************* RECEIVE *************************/
     case RECEIVE:
     {
+        wait_time++;
         std::cout << "CLIENT RECEIVE\n";
         //protocol::dataType::
         if(connection.recieve())
@@ -120,6 +122,12 @@ void test_controller::ControlStep()
                 break;
             }
         }
+        if (wait_time > 20)
+        {
+            connection.send(robotPos.Position);
+            wait_time = 0;
+        }
+        
     }
     break;
 
@@ -144,8 +152,9 @@ void test_controller::ControlStep()
         std::cout << "CLIENT UPDATE SERVER\n";
         if(connection.send(robotPos.Position))
         {
-            currentState = RECEIVE;
+                currentState = RECEIVE;
         }
+        wait_time = 0;
     }
     break;
 
