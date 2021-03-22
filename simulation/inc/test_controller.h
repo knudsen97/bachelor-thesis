@@ -86,6 +86,7 @@ public:
    void connect();
    static size_t robotBufferSize;
    bool joined = false;
+   bool sentPosition = false;
 
 
 private:

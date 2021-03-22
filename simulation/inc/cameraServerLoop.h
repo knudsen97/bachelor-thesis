@@ -38,7 +38,7 @@ protected:
     static std::vector<cv::Point> subGoals;
     static camera C;
 
-    static int i;
+    static int curGoal;
     static bool cornerFound;
 
     static int currentState;
@@ -48,6 +48,10 @@ protected:
     static argos::CVector3 robotPosition;
 
     static bool threadsOpened;
+
+    static std::vector<bool> recievedPosition;
+
+    static bool allPositionRecieved;
 
 
 public:
