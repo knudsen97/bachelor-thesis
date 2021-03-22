@@ -212,7 +212,7 @@ bool test_controller::ReadyToPush(const CCI_PositioningSensor::SReading& robotPo
     wVel = con.angleControl(robotAngle, desiredAngle);
     //std::cout << wVel.lWheel << " " << wVel.rWheel << std::endl;
 
-    if(abs(pow(goalPoint.GetX() - robotPos.Position.GetX(), 2) + pow(goalPoint.GetY() - robotPos.Position.GetY(), 2)) <= 0.00999f)
+    if(sqrt(pow(goalPoint.GetX() - robotPos.Position.GetX(), 2) + pow(goalPoint.GetY() - robotPos.Position.GetY(), 2)) <= 0.01999f)
     {
         //i++;
         //std::cout << "i: " << this->i << std::endl;
