@@ -137,6 +137,7 @@
       <friction box_linear_friction="0.56"
                 box_angular_friction="0.1"/>
     </dynamics2d>
+  </physics_engines>
 
   <!-- ********* -->
   <!-- * Media * -->
