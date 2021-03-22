@@ -29,13 +29,11 @@ protected:
     static std::vector<protocol> clientConnections;
     static bool positionRecieved;
 
-    static bool planComplete;
     static CBoxEntity* pcBox;
     static CFootBotEntity* fBot;
 
     static std::vector<CVector3> startLocations;
     static cv::Mat map;
-    static std::vector<cv::Point> subGoals;
     static camera C;
 
     static int curGoal;
@@ -59,9 +57,10 @@ public:
     static void step();
     static void connect();
 
-    static bool Planning(argos::CVector3 &goal, argos::CVector3 &startLoc, argos::CVector3 &cornerLoc);
+    static bool Planning(argos::CVector3 goal, argos::CVector3 startLoc, argos::CVector3 cornerLoc, std::vector<cv::Point> &subGoals);
 
-    static void PrepareToPush(argos::CVector3 goal, argos::CVector3 startLoc, argos::CVector3 cornerLoc, int currentState, int id);
+    static void PrepareToPush(argos::CVector3 goal, argos::CVector3 startLoc, 
+                                argos::CVector3 cornerLoc, int currentState, int id);
 };
 
 

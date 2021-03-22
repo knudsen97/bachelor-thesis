@@ -22,6 +22,7 @@ void cameraServerLoop::init()
    std::thread connecting(connect);
    connecting.join();
    currentState = DISTRIBUTE_CORNERS;
+   startLocations.resize(clientcount);
 }
 
 void cameraServerLoop::step()
@@ -30,6 +31,7 @@ void cameraServerLoop::step()
    if (!allPositionRecieved)
    {
       allPositionRecieved = true;
+
       for (size_t i = 0; i < clientcount; i++)
       {
          if (!recievedPosition[i])
@@ -75,13 +77,12 @@ void cameraServerLoop::step()
                for(auto valid : validPushPoints)
                   std::cout << "Push point" <<valid << std::endl;
 
-                        
                for(size_t i = 0; i < validPushPoints.size(); i++)
                {
                   for(size_t j = 0; j < startLocations.size(); j++)
                   {
                      PH = abs(pow(startLocations[j].GetX() - validPushPoints[i].GetX(), 2) 
-                           + pow(startLocations[j].GetY() - validPushPoints[i].GetY(), 2));
+                            + pow(startLocations[j].GetY() - validPushPoints[i].GetY(), 2));
 
                      if(PH < shortestDistance && isRobotAssigned[j] == false)
                      {
@@ -93,11 +94,11 @@ void cameraServerLoop::step()
                   std::cout << "indexPH: " << idxPH << std::endl;
 
                   /*Start thread*/
-                  std::cout << "i: " << std::endl;
-                  robotThreads[i] = std::thread(&cameraServerLoop::PrepareToPush, goal, 
-                                       startLocations[idxPH], validPushPoints[i], threadCurrentState[i], idxPH);
-                  robotThreads[i].detach();
-                  
+                  robotThreads[idxPH] = std::thread(&cameraServerLoop::PrepareToPush, goal, 
+                                       startLocations[idxPH], validPushPoints[i], threadCurrentState[idxPH], idxPH);
+                  robotThreads[idxPH].detach();
+                  std::cout << "start: " << startLocations[idxPH] << std::endl;
+                  std::cout << "corner: " << validPushPoints[i] << std::endl;
                   /*Reset variables*/
                   PH = 0.0f;
                   shortestDistance = 9999.99f;
@@ -138,9 +139,12 @@ void cameraServerLoop::connect()
    }
 }
 
-void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 startLoc, argos::CVector3 cornerLoc, int currentState_, int id)
+void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 startLoc, 
+                                       argos::CVector3 cornerLoc, int currentState_, int id)
 {  
    int currentState = currentState_;
+   std::vector<cv::Point> subGoals;
+   bool planComplete = false;
    while(true)
    {
       threadaState = currentState;
@@ -149,7 +153,7 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 start
       /************************* PLANNING *************************/
       case PLANNING:
       {
-         planComplete = Planning(goal, startLoc, cornerLoc);
+         planComplete = Planning(goal, startLoc, cornerLoc, subGoals);
          donePlanning = planComplete;
          if(planComplete)
             currentState = SEND_GOAL;
@@ -173,7 +177,7 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 start
 
          argos::Real message;
          
-         if(clientConnections[0].recieve(robotPosition))
+         if(clientConnections[id].recieve(robotPosition))
          {
             //std::cout << robotPosition << std::endl;
             curGoal++;
@@ -189,7 +193,8 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 start
       /************************* SEND_ORIENTATION *************************/
       case SEND_ORIENTATION:
       {
-         argos::CRadians goalAngle = argos::ATan2(goal.GetY()-robotPosition.GetY(), goal.GetX()-robotPosition.GetX());
+         argos::CVector3 g = planner::push(pcBox, robotPosition, goal);
+         argos::CRadians goalAngle = argos::ATan2(g.GetY()-robotPosition.GetY(), g.GetX()-robotPosition.GetX());
          if(clientConnections[id].send(goalAngle, argos::CRadians(0), argos::CRadians(0)))
             currentState = 10;
          break;
@@ -206,18 +211,10 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 start
  * A function to call the planning algorithms such as wavefront and pathfinder
  * @param goal The goal position
 */
-bool cameraServerLoop::Planning(argos::CVector3 &goal, argos::CVector3 &startLoc, argos::CVector3 &cornerLoc)
+bool cameraServerLoop::Planning(argos::CVector3 goal, argos::CVector3 startLoc, argos::CVector3 cornerLoc, std::vector<cv::Point> &subGoals)
 {
    planner P;
-   // //Find where to push on the box to get to goal:
-   // std::vector<CVector3> validPushPoints;
-   // validPushPoints = P.FindPushPoints(pcBox, goal);
-
-   // CVector3 goalLoc, startLoc;
-   // startLoc = startLocations[0]; //startLocations found in masterLoopFunction
-   // //Assign a corner to do wavefront/pathfinder on:
-   // goalLoc = validPushPoints[0];
-
+ 
    //Find a point on the line between corner and goal
    argos::CVector3 CG = goal - cornerLoc; //Corner-Goal vector
    CG = CG.Normalize() * (-OFF_SET);
@@ -240,13 +237,13 @@ std::vector<argos::CVector3> cameraServerLoop::robotPositions;
 std::vector<protocol> cameraServerLoop::clientConnections;
 bool cameraServerLoop::positionRecieved = false;
 
-bool cameraServerLoop::planComplete = false;
+//bool cameraServerLoop::planComplete = false;
 CBoxEntity* cameraServerLoop::pcBox(NULL);
 CFootBotEntity* cameraServerLoop::fBot(NULL);
 
 std::vector<CVector3> cameraServerLoop::startLocations;
 cv::Mat cameraServerLoop::map;
-std::vector<cv::Point> cameraServerLoop::subGoals;
+//std::vector<cv::Point> cameraServerLoop::subGoals;
 int cameraServerLoop::curGoal = 0;
 bool cameraServerLoop::cornerFound = false;
 

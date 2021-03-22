@@ -54,14 +54,6 @@ void masterLoopFunction::PreStep()
          break;
    }
 
-   //Find robot position:
-   CSpace::TMapPerType& FBmap = GetSpace().GetEntitiesByType("foot-bot");
-   for (CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
-   {
-      CFootBotEntity* fBot = any_cast<CFootBotEntity*>(i->second);
-      startLocations.push_back(fBot->GetEmbodiedEntity().GetOriginAnchor().Position);
-   }
-
    cameraServerLoop::step();
 
       

@@ -92,7 +92,7 @@ void test_controller::ControlStep()
     } 
     if(!sentPosition)
         sentPosition = connection.send(robotPosition);
-    argos::LOG << "sentPosition: " << sentPosition << '\n';
+    //argos::LOG << "sentPosition: " << sentPosition << '\n';
 
 
     //std::cout << "waittime: " << wait_time << '\n';
@@ -211,8 +211,8 @@ bool test_controller::ReadyToPush(const CCI_PositioningSensor::SReading& robotPo
     controller::wVelocity wVel;
     wVel = con.angleControl(robotAngle, desiredAngle);
     //std::cout << wVel.lWheel << " " << wVel.rWheel << std::endl;
-    
-    if(abs(goalPoint.GetX() - robotPos.Position.GetX()) <= 0.01999f)
+
+    if(abs(pow(goalPoint.GetX() - robotPos.Position.GetX(), 2) + pow(goalPoint.GetY() - robotPos.Position.GetY(), 2)) <= 0.00999f)
     {
         //i++;
         //std::cout << "i: " << this->i << std::endl;

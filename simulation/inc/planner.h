@@ -40,7 +40,7 @@ public:
     std::vector<cv::Point> PostProcessing(std::vector<cv::Point> &subGoals);
     bool ValidLine(cv::Point A, cv::Point B, cv::Mat img);
 
-    argos::CVector3 push(argos::CBoxEntity* mBox, argos::CVector3 currentPoint, argos::CVector3 goalPoint);
+    static argos::CVector3 push(argos::CBoxEntity* mBox, argos::CVector3 currentPoint, argos::CVector3 goalPoint);
 
 
 
