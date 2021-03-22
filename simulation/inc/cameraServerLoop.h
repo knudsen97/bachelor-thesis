@@ -49,6 +49,10 @@ protected:
 
     static bool threadsOpened;
 
+    static std::vector<bool> recievedPosition;
+
+    static bool allPositionRecieved;
+
 
 public:
     static void init();

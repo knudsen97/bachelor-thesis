@@ -26,18 +26,11 @@ void cameraServerLoop::init()
 
 void cameraServerLoop::step()
 {
-   CVector3 goal;
-   goal.Set(2, 2, 0);
-
-   std::vector<std::thread> robotThreads;
-
-   /************************* FSM START *************************/
-   switch (currentState)
+   //get robot positions
+   if (!allPositionRecieved)
    {
-   /************************* DISTRIBUTE_CORNERS *************************/
-   case DISTRIBUTE_CORNERS:
-   {
-      if(!threadsOpened)
+      allPositionRecieved = true;
+      for (size_t i = 0; i < clientcount; i++)
       {
          std::cout << "SERVER DISTRIBUTE_CORNERS\n";
          //Find where to push on the box to get to goal:
@@ -87,32 +80,41 @@ void cameraServerLoop::step()
          threadsOpened = true;
       }
       
+            robotThreads[k].detach();
+            threadsOpened = true;
+         }
+
+
+         // if(threadCurrentState[0] == 10)
+         //    currentState = JOIN_THREADS;
+         
+      }
+      break;
+
+
+      /************************* JOIN_THREADS *************************/
+      case JOIN_THREADS:
+      {
+         std::cout << "SERVER JOIN_THREADS\n";
+      }
+      break;
+
+      /************************* WAIT *************************/
+      case WAIT:
+      {
+         std::cout << "SERVER WAIT\n";
+      }
+      break;
+
+      }
    }
-   break;
-
-
-   /************************* JOIN_THREADS *************************/
-   case JOIN_THREADS:
-   {
-      std::cout << "SERVER JOIN_THREADS\n";
-   }
-   break;
-
-   /************************* WAIT *************************/
-   case WAIT:
-   {
-      std::cout << "SERVER WAIT\n";
-   }
-   break;
-
-   }
-
 }
 
 void cameraServerLoop::connect()
 {
    serverSocket.Listen(portnumber);
    clientSockets.resize(clientcount);
+   recievedPosition.resize(clientcount);
    for (size_t i = 0; i < clientcount; i++)
    {
       serverSocket.Accept(clientSockets[i]);
@@ -241,3 +243,6 @@ argos::CVector3 cameraServerLoop::robotPosition;
 std::vector<int> cameraServerLoop::threadCurrentState;
 
 bool cameraServerLoop::threadsOpened = false;
+
+std::vector<bool> cameraServerLoop::recievedPosition;
+bool cameraServerLoop::allPositionRecieved = false;

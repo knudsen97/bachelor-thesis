@@ -90,6 +90,10 @@ void test_controller::ControlStep()
         joined = true;
         connection(clientSocket);
     } 
+    if(!sentPosition)
+        sentPosition = connection.send(robotPosition);
+    argos::LOG << "sentPosition: " << sentPosition << '\n';
+
 
     //std::cout << "waittime: " << wait_time << '\n';
     /************************* FSM START *************************/
