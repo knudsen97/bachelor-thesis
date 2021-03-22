@@ -15,7 +15,7 @@
 #include "../inc/camera.h"
 
 #define MAX_USHORT 65535
-#define OFF_SET 0.25
+#define OFF_SET 0.27
 
 class planner
 {
@@ -42,7 +42,7 @@ public:
 
     static argos::CVector3 push(argos::CBoxEntity* mBox, argos::CVector3 currentPoint, argos::CVector3 goalPoint);
 
-
+    
 
 private:
     cv::Mat map; //For illustration
