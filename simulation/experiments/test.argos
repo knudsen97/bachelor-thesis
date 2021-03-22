@@ -98,8 +98,8 @@
     <box id="wall_west" size="0.1,2,0.5" movable="false">
       <body position="0.5,1.5,0" orientation="0,0,0" />
     </box>
-    <box id="box1" size="0.1,0.4,0.5" movable="true" mass="2">
-      <body position="1, 1.7, 0.0" orientation="0,0,0" />
+    <box id="box1" size="0.5,0.25,0.2" movable="true" mass="2">
+      <body position="1.5, 1.7, 0.0" orientation="0,0,0" />
     </box>
     
     <!-- <box id="object1" size="0.2,0.2,0.5" movable="true" mass="2">
@@ -107,15 +107,15 @@
     </box> -->
     <!-- Place a foot-bot in the origin and bind it to the controller -->
     <foot-bot id="fb_0">
-      <body position="1.5,1.5,0" orientation="0,0,0" />
+      <body position="2,1.5,0" orientation="0,0,0" />
       <controller config="test"/>
     </foot-bot>
     <foot-bot id="fb_1">
-      <body position="1.5,2,0" orientation="0,0,0" />
+      <body position="2,2,0" orientation="0,0,0" />
       <controller config="test"/>
     </foot-bot>
     <foot-bot id="fb_2">
-      <body position="1.5,1,0" orientation="0,0,0" />
+      <body position="2,1,0" orientation="0,0,0" />
       <controller config="test"/>
     </foot-bot>
 
