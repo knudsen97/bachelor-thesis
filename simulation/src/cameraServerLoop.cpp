@@ -32,80 +32,96 @@ void cameraServerLoop::step()
       allPositionRecieved = true;
       for (size_t i = 0; i < clientcount; i++)
       {
-         std::cout << "SERVER DISTRIBUTE_CORNERS\n";
-         //Find where to push on the box to get to goal:
-         std::vector<CVector3> validPushPoints;
-         validPushPoints = planner::FindPushPoints(pcBox, goal);
-
-         robotThreads.resize(startLocations.size());
-         threadCurrentState.resize(startLocations.size(), PLANNING);
-
-         std::vector<bool> isRobotAssigned;
-         isRobotAssigned.resize(startLocations.size(), false);
-
-         /*Find absolute distance between point and robot and assign shortest distance to each robot*/
-         double shortestDistance = 9999.99f, PH = 0.0f;
-         int idxPH = 0;
-         for(auto valid : validPushPoints)
-            std::cout << "Push point" <<valid << std::endl;
-
-                  
-         for(size_t i = 0; i < validPushPoints.size(); i++)
+         if (!recievedPosition[i])
          {
-            for(size_t j = 0; j < startLocations.size(); j++)
+            CVector3 position;
+            recievedPosition[i] = clientConnections[i].recieve(position);
+            startLocations[i] = position;
+
+         }
+         allPositionRecieved &= recievedPosition[i];  
+         argos::LOG << "recievedPosition " << i << " :" << recievedPosition[i] << '\n';
+      }
+   }
+   else
+   {
+      CVector3 goal;
+      goal.Set(2, 2, 0);
+
+      std::vector<std::thread> robotThreads;
+
+      /************************* FSM START *************************/
+      switch (currentState)
+      {
+         /************************* DISTRIBUTE_CORNERS *************************/
+         case DISTRIBUTE_CORNERS:
+         { 
+            if(!threadsOpened)
             {
-               PH = abs(pow(startLocations[j].GetX() - validPushPoints[i].GetX(), 2) 
-                       + pow(startLocations[j].GetY() - validPushPoints[i].GetY(), 2));
+               //Find where to push on the box to get to goal:
+               std::vector<CVector3> validPushPoints;
+               validPushPoints = planner::FindPushPoints(pcBox, goal);
 
-               if(PH < shortestDistance && isRobotAssigned[j] == false)
+               std::vector<std::thread> robotThreads;
+               robotThreads.resize(startLocations.size());
+               threadCurrentState.resize(startLocations.size(), PLANNING);
+
+               std::vector<bool> isRobotAssigned;
+               isRobotAssigned.resize(startLocations.size(), false);
+
+               /*Find absolute distance between point and robot and assign shortest distance to each robot*/
+               double shortestDistance = 9999.99f, PH = 0.0f;
+               int idxPH = 0;
+               for(auto valid : validPushPoints)
+                  std::cout << "Push point" <<valid << std::endl;
+
+                        
+               for(size_t i = 0; i < validPushPoints.size(); i++)
                {
-                  shortestDistance = PH;
-                  idxPH = j;
+                  for(size_t j = 0; j < startLocations.size(); j++)
+                  {
+                     PH = abs(pow(startLocations[j].GetX() - validPushPoints[i].GetX(), 2) 
+                           + pow(startLocations[j].GetY() - validPushPoints[i].GetY(), 2));
+
+                     if(PH < shortestDistance && isRobotAssigned[j] == false)
+                     {
+                        shortestDistance = PH;
+                        idxPH = j;
+                     }
+                  }
+                  isRobotAssigned[idxPH] = true;
+                  std::cout << "indexPH: " << idxPH << std::endl;
+
+                  /*Start thread*/
+                  std::cout << "i: " << std::endl;
+                  robotThreads[i] = std::thread(&cameraServerLoop::PrepareToPush, goal, 
+                                       startLocations[idxPH], validPushPoints[i], threadCurrentState[i], idxPH);
+                  robotThreads[i].detach();
+                  
+                  /*Reset variables*/
+                  PH = 0.0f;
+                  shortestDistance = 9999.99f;
                }
+
+               threadsOpened = true;
             }
-            isRobotAssigned[idxPH] = true;
-            std::cout << "indexPH: " << idxPH << std::endl;
-
-            /*Start thread*/
-            std::cout << "i: " << std::endl;
-            robotThreads[i] = std::thread(&cameraServerLoop::PrepareToPush, goal, 
-                                 startLocations[idxPH], validPushPoints[i], threadCurrentState[i], idxPH);
-            robotThreads[i].detach();
-            
-            /*Reset variables*/
-            PH = 0.0f;
-            shortestDistance = 9999.99f;
          }
+         break;
 
-         threadsOpened = true;
-      }
-      
-            robotThreads[k].detach();
-            threadsOpened = true;
+
+         /************************* JOIN_THREADS *************************/
+         case JOIN_THREADS:
+         {
+            std::cout << "SERVER JOIN_THREADS\n";
          }
+         break;
 
-
-         // if(threadCurrentState[0] == 10)
-         //    currentState = JOIN_THREADS;
-         
-      }
-      break;
-
-
-      /************************* JOIN_THREADS *************************/
-      case JOIN_THREADS:
-      {
-         std::cout << "SERVER JOIN_THREADS\n";
-      }
-      break;
-
-      /************************* WAIT *************************/
-      case WAIT:
-      {
-         std::cout << "SERVER WAIT\n";
-      }
-      break;
-
+         /************************* WAIT *************************/
+         case WAIT:
+         {
+            std::cout << "SERVER WAIT\n";
+         }
+         break;
       }
    }
 }
@@ -123,7 +139,7 @@ void cameraServerLoop::connect()
 }
 
 void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 startLoc, argos::CVector3 cornerLoc, int currentState_, int id)
-{
+{  
    int currentState = currentState_;
    while(true)
    {
@@ -157,7 +173,7 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 start
 
          argos::Real message;
          
-         if(clientConnections[id].recieve(robotPosition))
+         if(clientConnections[0].recieve(robotPosition))
          {
             //std::cout << robotPosition << std::endl;
             curGoal++;
