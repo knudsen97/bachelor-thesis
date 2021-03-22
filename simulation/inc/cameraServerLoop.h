@@ -38,7 +38,7 @@ protected:
     static std::vector<cv::Point> subGoals;
     static camera C;
 
-    static int i;
+    static int curGoal;
     static bool cornerFound;
 
     static int currentState;
@@ -57,7 +57,7 @@ public:
 
     static bool Planning(argos::CVector3 &goal, argos::CVector3 &startLoc, argos::CVector3 &cornerLoc);
 
-    static void PrepareToPush(argos::CVector3 goal, argos::CVector3 startLoc, argos::CVector3 cornerLoc, int currentState);
+    static void PrepareToPush(argos::CVector3 goal, argos::CVector3 startLoc, argos::CVector3 cornerLoc, int currentState, int id);
 };
 
 

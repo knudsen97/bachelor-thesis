@@ -91,7 +91,7 @@ void test_controller::ControlStep()
         connection(clientSocket);
     } 
 
-    std::cout << "waittime: " << wait_time << '\n';
+    //std::cout << "waittime: " << wait_time << '\n';
     /************************* FSM START *************************/
     switch (currentState)
     {
