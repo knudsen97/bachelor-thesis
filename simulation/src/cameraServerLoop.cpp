@@ -16,6 +16,15 @@ bool donePlanning = false;
 int threadaState = 0;
 int wasHere = 0;
 bool recipocu = false;
+std::vector<cv::Mat> wavefront_debug;
+std::vector<cv::Mat> camera_debug;
+std::vector<argos::CVector3> robot_debug, corner_debug, boxGoal_debug; 
+std::vector<std::vector<cv::Point>> subgoal_debug;
+
+cv::Point convertToCV(argos::CVector3 arg)
+{
+   return {arg.GetX()*SCALE, arg.GetY()*SCALE};
+}
 
 void cameraServerLoop::init() 
 {
@@ -23,6 +32,14 @@ void cameraServerLoop::init()
    connecting.join();
    currentState = DISTRIBUTE_CORNERS;
    startLocations.resize(clientcount);
+
+   //debug
+   wavefront_debug.resize(clientcount);
+   camera_debug.resize(clientcount);
+   robot_debug.resize(clientcount);
+   corner_debug.resize(clientcount);
+   boxGoal_debug.resize(clientcount);
+   subgoal_debug.resize(clientcount);
 }
 
 void cameraServerLoop::step()
@@ -49,8 +66,6 @@ void cameraServerLoop::step()
    {
       CVector3 goal;
       goal.Set(2, 2, 0);
-
-      std::vector<std::thread> robotThreads;
 
       /************************* FSM START *************************/
       switch (currentState)
@@ -81,8 +96,8 @@ void cameraServerLoop::step()
                {
                   for(size_t j = 0; j < startLocations.size(); j++)
                   {
-                     PH = abs(pow(startLocations[j].GetX() - validPushPoints[i].GetX(), 2) 
-                            + pow(startLocations[j].GetY() - validPushPoints[i].GetY(), 2));
+                     PH = abs(startLocations[j].GetX() - validPushPoints[i].GetX() 
+                            + startLocations[j].GetY() - validPushPoints[i].GetY());
 
                      if(PH < shortestDistance && isRobotAssigned[j] == false)
                      {
@@ -106,6 +121,52 @@ void cameraServerLoop::step()
 
                threadsOpened = true;
             }
+            // for (size_t i = 0; i < clientcount; i++)
+            // {
+            //    if (wavefront_debug[i].cols > 0)
+            //    {
+            //       cv::Mat robots = camera_debug[i].clone();
+            //       // std::string name = "wavefront: " + std::to_string(i);
+            //       // std::string name2 = "camera: " + std::to_string(i);
+            //       // cv::imshow(name, wavefront_debug[i]);
+
+            //       // cv::imshow(name2, camera_debug[i]);
+
+            //       argos::LOG << "robot: " << std::to_string(i) << '\n';
+            //       argos::LOG << "boxGoal" << boxGoal_debug[i] << '\n';
+            //       argos::LOG << "robot" << robot_debug[i] << '\n';
+            //       argos::LOG << "corner" << corner_debug[i] << '\n';
+            //       argos::LOG << '\n'; 
+
+
+            //    }               
+            // }
+            // if (wavefront_debug[0].cols > 0)
+            // {
+            //    cv::Mat robots = camera_debug[0];
+            //    cv::circle(robots, convertToCV(boxGoal_debug[0]), 2, {0,0,255}, -1);
+
+            //    //draw robot
+            //    cv::circle(robots, convertToCV(robot_debug[0]), 4, {0,0,255}, -1);
+            //    cv::circle(robots, convertToCV(robot_debug[1]), 4, {0,255,0}, -1);
+            //    cv::circle(robots, convertToCV(robot_debug[2]), 4, {255,0,0}, -1);
+               
+            //    //draw robot subgoals
+
+            //    for (auto subgoal : subgoal_debug[0])
+            //       cv::circle(robots, subgoal, 4, {0,0,255}, 0);
+            //    for (auto subgoal : subgoal_debug[1])
+            //       cv::circle(robots, subgoal, 4, {0,255,0}, 0);
+            //    for (auto subgoal : subgoal_debug[2])
+            //       cv::circle(robots, subgoal, 4, {255,0,0}, 0);
+
+            //    //draw corner
+            //    cv::circle(robots, convertToCV(corner_debug[0]), 6, {0,0,255}, -1);
+            //    cv::circle(robots, convertToCV(corner_debug[1]), 6, {0,255,0}, -1);
+            //    cv::circle(robots, convertToCV(corner_debug[2]), 6, {255,0,0}, -1);
+
+            //    cv::imshow("debug", robots);
+            // }
          }
          break;
 
@@ -113,6 +174,7 @@ void cameraServerLoop::step()
          /************************* JOIN_THREADS *************************/
          case JOIN_THREADS:
          {
+
             std::cout << "SERVER JOIN_THREADS\n";
          }
          break;
@@ -145,6 +207,8 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 start
    int currentState = currentState_;
    std::vector<cv::Point> subGoals;
    bool planComplete = false;
+   int curGoal = 0;
+   argos::CVector3 robotPosition;
    while(true)
    {
       threadaState = currentState;
@@ -153,8 +217,11 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 start
       /************************* PLANNING *************************/
       case PLANNING:
       {
-         planComplete = Planning(goal, startLoc, cornerLoc, subGoals);
-         donePlanning = planComplete;
+         planComplete = Planning(goal, startLoc, cornerLoc, subGoals, id);
+         boxGoal_debug[id] = goal;
+         robot_debug[id] = startLoc;
+         corner_debug[id] = cornerLoc;
+
          if(planComplete)
             currentState = SEND_GOAL;
       }
@@ -211,20 +278,27 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 start
  * A function to call the planning algorithms such as wavefront and pathfinder
  * @param goal The goal position
 */
-bool cameraServerLoop::Planning(argos::CVector3 goal, argos::CVector3 startLoc, argos::CVector3 cornerLoc, std::vector<cv::Point> &subGoals)
+bool cameraServerLoop::Planning(argos::CVector3 goal, argos::CVector3 startLoc, argos::CVector3 cornerLoc, std::vector<cv::Point> &subGoals, int id)
 {
    planner P;
+   cv::Mat map;
+   cv::Mat gerymap;
  
    //Find a point on the line between corner and goal
-   argos::CVector3 CG = goal - cornerLoc; //Corner-Goal vector
+   argos::CVector3 CG = planner::push(pcBox,cornerLoc, goal) - cornerLoc; //Corner-Goal vector
    CG = CG.Normalize() * (-OFF_SET);
    cornerLoc += CG;
 
    //for(argos::CVector3 s : )
    C.camera::GetPlot(map);
+   camera_debug[id] = map.clone();
 
-   map = P.planner::Wavefront(map, startLoc, cornerLoc);
-   subGoals = P.planner::Pathfinder(map, startLoc, cornerLoc);
+   gerymap = P.planner::Wavefront(map, startLoc, cornerLoc);
+   wavefront_debug[id] = gerymap.clone();
+   
+   subGoals = P.planner::Pathfinder(gerymap, startLoc, cornerLoc);
+   subgoal_debug[id] = subGoals;
+
    //std::cout << "subgoals size: " << subGoals.size() << std::endl;
    return true;
 }
@@ -242,16 +316,14 @@ CBoxEntity* cameraServerLoop::pcBox(NULL);
 CFootBotEntity* cameraServerLoop::fBot(NULL);
 
 std::vector<CVector3> cameraServerLoop::startLocations;
-cv::Mat cameraServerLoop::map;
 //std::vector<cv::Point> cameraServerLoop::subGoals;
-int cameraServerLoop::curGoal = 0;
 bool cameraServerLoop::cornerFound = false;
 
 camera cameraServerLoop::C;
 
 int cameraServerLoop::currentState = 0;
 
-argos::CVector3 cameraServerLoop::robotPosition;
+
 
 std::vector<int> cameraServerLoop::threadCurrentState;
 
@@ -259,3 +331,5 @@ bool cameraServerLoop::threadsOpened = false;
 
 std::vector<bool> cameraServerLoop::recievedPosition;
 bool cameraServerLoop::allPositionRecieved = false;
+
+

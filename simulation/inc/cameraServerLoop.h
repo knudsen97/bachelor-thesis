@@ -33,17 +33,13 @@ protected:
     static CFootBotEntity* fBot;
 
     static std::vector<CVector3> startLocations;
-    static cv::Mat map;
     static camera C;
 
-    static int curGoal;
     static bool cornerFound;
 
     static int currentState;
 
     static std::vector<int> threadCurrentState;
-
-    static argos::CVector3 robotPosition;
 
     static bool threadsOpened;
 
@@ -57,7 +53,7 @@ public:
     static void step();
     static void connect();
 
-    static bool Planning(argos::CVector3 goal, argos::CVector3 startLoc, argos::CVector3 cornerLoc, std::vector<cv::Point> &subGoals);
+    static bool Planning(argos::CVector3 goal, argos::CVector3 startLoc, argos::CVector3 cornerLoc, std::vector<cv::Point> &subGoals, int id);
 
     static void PrepareToPush(argos::CVector3 goal, argos::CVector3 startLoc, 
                                 argos::CVector3 cornerLoc, int currentState, int id);
