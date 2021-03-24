@@ -93,14 +93,14 @@ std::vector<CVector3> planner::FindPushPoints(CBoxEntity* mBox, CVector3 goalPoi
     // LOG << "c4Vecs[0]: " << c4Vecs[0] << std::endl;
     // LOG << "c4Vecs[1]: " << c4Vecs[1] << std::endl;
 
-    //Create vector from box to goal:
+    /*Create vector from box to goal:*/
     CVector3 dvBox = goalPoint - mBox->GetEmbodiedEntity().GetOriginAnchor().Position;
     //LOG << "dvBox: " << dvBox << std::endl;
 
-    //Find pushing points by projecting dvBox vector with each corners vectors. If atleast 1 projection is negative it is a valid point.
+    /*Find pushing points by projecting dvBox vector with each corners vectors. If atleast 1 projection is negative it is a valid point.*/
     bool debug = false;
     bool c1Found=0, c2Found=0, c3Found=0, c4Found=0;
-    for(size_t i = 0; i<2; i++) //TODO: DENNE LØKKE KAN GODT TAGE DET SAMME PUNKT 2 GANGE!!!!!! //Tror det er fikset nu. Spaghetti løsning
+    for(size_t i = 0; i<2; i++)
     {
         if(Projection(dvBox, c1Vecs[i]) < 0 && !c1Found)
         {
@@ -180,7 +180,7 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
     grayMap.copyTo(grayMapCopy);
 
     //cv::imshow("gray wavefront", grayMap);
-    // cv::imshow("wavefront", map);
+    //cv::imshow("wavefront", map);
     //cv::waitKey(0);
 
     //Convert argos vector to cv::Point:

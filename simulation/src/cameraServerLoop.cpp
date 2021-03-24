@@ -21,6 +21,10 @@ std::vector<cv::Mat> camera_debug;
 std::vector<argos::CVector3> robot_debug, corner_debug, boxGoal_debug; 
 std::vector<std::vector<cv::Point>> subgoal_debug;
 
+/**
+ * @brief This function converts a ArgOS CVector3 to an OpenCV Point.
+ * @param arg An ArgOS CVector3
+**/
 cv::Point convertToCV(argos::CVector3 arg)
 {
    return {arg.GetX()*SCALE, arg.GetY()*SCALE};
@@ -75,7 +79,7 @@ void cameraServerLoop::step()
          { 
             if(!threadsOpened)
             {
-               //Find where to push on the box to get to goal:
+               /*Find where to push on the box to get to goal:*/
                std::vector<CVector3> validPushPoints;
                validPushPoints = planner::FindPushPoints(pcBox, goal);
 
@@ -201,6 +205,14 @@ void cameraServerLoop::connect()
    }
 }
 
+/**
+ * @brief This function makes the robot go to the desired corner location and wait there.
+ * @param goal The final goal location for the box
+ * @param startLoc The robots start position
+ * @param cornerLoc The corner location the robot needs to go to
+ * @param currentState The state the robot starts in, in the state machine
+ * @param id The id of the robot to keep track of them since they are run in a thread
+ **/
 void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 startLoc, 
                                        argos::CVector3 cornerLoc, int currentState_, int id)
 {  
@@ -275,8 +287,12 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 start
 
 
 /**
- * A function to call the planning algorithms such as wavefront and pathfinder
+ * @brief A function to call the planning algorithms such as wavefront and pathfinder
  * @param goal The goal position
+ * @param startLoc The start location of the robot
+ * @param cornerLoc The corner location the robot need to go to
+ * @param subGoals The sub goals leading up to the corner location
+ * @param id The id of the robot to keep track of them since they are run in a thread
 */
 bool cameraServerLoop::Planning(argos::CVector3 goal, argos::CVector3 startLoc, argos::CVector3 cornerLoc, std::vector<cv::Point> &subGoals, int id)
 {
@@ -303,6 +319,8 @@ bool cameraServerLoop::Planning(argos::CVector3 goal, argos::CVector3 startLoc, 
    return true;
 }
 
+
+/*Static variables definitions*/
 int cameraServerLoop::clientcount = 0;
 int cameraServerLoop::portnumber = 0;
 argos::CTCPSocket cameraServerLoop::serverSocket;

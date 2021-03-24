@@ -16,11 +16,6 @@ namespace plt = matplotlibcpp;
 
 #define SAMPLING_RATE 0.01
 #define PORT 1024
- 
-// #define PLANNING        0
-// #define READY_TO_PUSH   1
-// #define WAIT            2
-// #define PUSH            3
 
 #define RECEIVE 0
 #define GO_TO_POINT 1
@@ -51,9 +46,7 @@ test_controller::test_controller() :
     m_pcWheels(NULL),
     m_fWheelVelocity(2.5f),
     posSensor(NULL),
-    //pcBox(NULL),
     proxSensor(NULL){}
-    //camSensor(NULL){}
 
 void test_controller::Init(TConfigurationNode& t_node) 
 {
@@ -61,17 +54,8 @@ void test_controller::Init(TConfigurationNode& t_node)
     m_pcWheels = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
     posSensor = GetSensor<CCI_PositioningSensor>("positioning");
     proxSensor = GetSensor<CCI_FootBotProximitySensor>("footbot_proximity");
-    //camSensor = GetSensor<CCI_CameraSensor>("camera0");
 
     GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
-
-    // CSpace::TMapPerType& boxMap = GetSpace().GetEntitiesByType("box");
-    // for (CSpace::TMapPerType::iterator iterator = boxMap.begin(); iterator != boxMap.end(); ++iterator)
-    // {   
-    //     pcBox = any_cast<CBoxEntity*>(iterator->second);
-    //     if (pcBox->GetId() == "box1")
-    //         break;
-    // }
 
     connecting = std::thread{[=] { connect();}};
 
@@ -206,7 +190,7 @@ void test_controller::ControlStep()
 bool test_controller::ReadyToPush(const CCI_PositioningSensor::SReading& robotPos, 
                                     argos::CVector3& goalPoint, argos::CRadians& desiredAngle, argos::CRadians& robotAngle, int v0)
 {
-    //Make controller instance
+    /*Make controller instance*/
     controller con(SAMPLING_RATE*5, 2000, 100, 1);
     controller::wVelocity wVel;
     wVel = con.angleControl(robotAngle, desiredAngle);
@@ -214,26 +198,9 @@ bool test_controller::ReadyToPush(const CCI_PositioningSensor::SReading& robotPo
 
     if(sqrt(pow(goalPoint.GetX() - robotPos.Position.GetX(), 2) + pow(goalPoint.GetY() - robotPos.Position.GetY(), 2)) <= 0.01999f)
     {
-        //i++;
-        //std::cout << "i: " << this->i << std::endl;
         m_pcWheels->SetLinearVelocity(0,0);
-        //pointReached = true;
-        //std::cout << "test\n";
-        // if(i >= subGoals.size())
-        //     cornerFound = true;
         return true;
     }
-    // else if(cornerFound)
-    // {
-    //     m_pcWheels->SetLinearVelocity(0,0);
-    //     //std::cout << "CORNER FOUND\n";
-    //     //std::cout << "hej\n";
-
-    //     return true;
-    //     // plt::plot(con.getX(), "r--");
-    //     // plt::plot(con.getY());
-    //     // plt::show();
-    // }
     else if(abs(desiredAngle.GetValue()) - abs(robotAngle.GetValue()) >= ANGLE_THRESHOLD)
     {
         m_pcWheels->SetLinearVelocity(wVel.lWheel, wVel.rWheel);
