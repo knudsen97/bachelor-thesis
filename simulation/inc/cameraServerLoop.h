@@ -15,6 +15,7 @@
 #include "test_controller.h"
 #include "../inc/protocol.h"
 
+
 using namespace argos;
 
 class cameraServerLoop
@@ -47,6 +48,8 @@ protected:
 
     static bool allPositionRecieved;
 
+    static bool prepareToPushDone;
+    static int stateCheck;
 
 public:
     static void init();

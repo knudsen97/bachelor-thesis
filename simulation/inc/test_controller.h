@@ -24,64 +24,48 @@
 #include <argos3/core/utility/networking/tcp_socket.h>
 #include "../inc/protocol.h"
 
-
 #define BUFFERSIZE 4
 #define V_0 4
 
 using namespace argos;
 
 class test_controller : public CCI_Controller, public CLoopFunctions, public CBoxEntity { 
-
 public:
-
-
+   /*Constructor*/
    test_controller();
    ~test_controller(){}
 
-
+   /*ArgOS functions*/
    virtual void Init(TConfigurationNode& t_node);
-
    virtual void ControlStep();
+
+   /*Planning functions*/
    bool Planning(argos::CVector3 &goal);
    bool ReadyToPush(const CCI_PositioningSensor::SReading& robotPos, 
                      argos::CVector3& goalPoint, argos::CRadians& desiredAngle, argos::CRadians& robotAngle, int v0 = V_0);
-
-
-
 
 private:
    CCI_DifferentialSteeringActuator* m_pcWheels;
    CCI_PositioningSensor* posSensor;
    CCI_CameraSensor* camSensor;
    CCI_FootBotProximitySensor* proxSensor;
-   
    CBoxEntity* pcBox;
-
    Real m_fWheelVelocity;
    CVector3 robotPosition;
 
-   bool test = false;
-   bool test1 = false;
-
-   // planner P;
-   // camera C;
-   //cv::Mat map;
+   /*State machine variables*/
    bool pointReached = false;
    bool planComplete = false;
    bool cornerFound = false;
-
-   //std::vector<cv::Point> subGoals;
-   size_t i = 0;
-
+   bool sendWaitState = false;
    int currentState = 0;
-   bool positionSendt = false;
 
-
+   /*Protocol receive variables*/
    argos::CVector3 goalPointMessage;
    argos::CRadians goalAngle;
+   argos::Real pushVelocity;
 
-
-   //socket
+   /*Socket variables*/
 public:
    void connect();
    static size_t robotBufferSize;
@@ -90,7 +74,6 @@ public:
 
 
 private:
-
    std::thread connecting;
    argos::CByteArray argosBuffer = argos::CByteArray(BUFFERSIZE);
    argos::CTCPSocket clientSocket;
