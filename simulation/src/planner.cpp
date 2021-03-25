@@ -51,17 +51,7 @@ planner::cPositions planner::FindCPositions(CBoxEntity* mBox)
 }
 
 
-/**
- * Finds absolute value of projection between two vectors
- * @param v1 vector 1
- * @param v2 vector 2
-*/
-template<class V>
-Real planner::Projection(V &v1, V &v2)
-{
-    //return v1.DotProduct(v2)/(sqrt(pow(v2.GetX(),2)+pow(v2.GetY(),2)));   //Real value
-    return v1.DotProduct(v2)/(abs(v2.GetX()+v2.GetY()));    //Absolute value is taken since we're only interested in the sign of the value.
-}
+
 
 /**
  * Find eligible points on a CBoxEntity box to push from given a goal position.
@@ -134,17 +124,6 @@ std::vector<CVector3> planner::FindPushPoints(CBoxEntity* mBox, CVector3 goalPoi
 
     return validPushPoints;
 }
-
-/**
- * Finds the value of a pixel given a gray-scale map and a point.
- * @param map is a cv::Mat object of a given map
- * @param point is coordinate of a pixel
-*/
-ushort GrayPixelVal(cv::Mat &map, cv::Point point)
-{
-    return map.at<ushort>(point);
-}
-
 
 /**
  * Generates a wavefront starting from the goal location
@@ -233,7 +212,6 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
     return grayMap;
 }
 
-
 /**
  * Finds a path from the robot's start location to it's box' corner subgoal
  * @param grayMap is a cv::Mat object of a given map in gray-scale
@@ -256,20 +234,19 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
     }};
 
     std::vector<cv::Point> goalPath, postProcessPath;
-    cv::Point traverse;
 
-    //Convert argos vector to cv::Point:
+    /*Convert argos vector to cv::Point:*/
     cv::Point start(robot.GetX()*SCALE, robot.GetY()*SCALE);
     cv::Point goalLocation(goal.GetX()*SCALE, goal.GetY()*SCALE);
 
-    traverse = start;
-    int animationSpeed = 400;
-
+    cv::Point traverse = start;
     cv::Point PH = traverse + neighbours[0];
-    int idx = 0, prevIdx = 0;    //To keep track of which neighbour was used in order to illustrate
+
+    /*To keep track of which neighbour was used in order to illustrate*/
+    int idx = 0, prevIdx = 0;   
     bool foundGoal = 0;
 
-    while(!foundGoal)//GrayPixelVal(grayMap, traverse) != 0)//< MAX_USHORT-1)
+    while(!foundGoal)
     {
         prevIdx = idx;
         for(size_t i = 0; i < neighbours.size(); i++)
@@ -298,7 +275,7 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
         }
     }
 
-    //To show the point where the box needs to go:
+    /*To show the point where the box needs to go:*/
     cv::circle(map, cv::Point(2*SCALE, 2*SCALE), 3, cv::Scalar(255,0,0),-1);
     // cv::imshow("wavefront", this->map);
 
@@ -335,41 +312,22 @@ std::vector<cv::Point> planner::PostProcessing(std::vector<cv::Point> &subGoals)
     return subGoals;
 }
 
-/**
- * Checks if there are any obstacles between two points in a cv::Mat object
- * @param A The first point
- * @param B The second point
- * @param img The map 
- */
 
-bool planner::ValidLine(cv::Point A, cv::Point B, cv::Mat img)
-{
-    bool valid = true;
-    cv::LineIterator it(img, A, B);
-    for(size_t i = 1; i < it.count-1; i++, ++it)
-    {
-        valid = (*(const int*)* it == false) ? false : valid;
-    }
-    return valid;
-}
+/***********************************************
+******* AUXILIARY FUNCTIONS DEFINED HERE *******
+************************************************/
 
 /**
- * This function is a helper function for planner::push to calculate the robots position after pushing the object.
- * @brief Translate a point with an orientation and a distance
- * @param point The point to translate
- * @param orientation The direction to translate the point in radians
- * @param distance The distance to translate the point in said direction
+ * @brief Finds absolute value of projection between two vectors
+ * @param v1 vector 1
+ * @param v2 vector 2
 */
-argos::CVector3 translate(argos::CVector3 point, argos::CRadians orientation, argos::Real distance)
+template<class V>
+Real planner::Projection(V &v1, V &v2)
 {
-    argos::CVector3 returnPoint;
-
-    returnPoint.SetX(point.GetX() + argos::Sin(orientation)*distance);
-    returnPoint.SetY(point.GetY() + argos::Cos(orientation)*distance);
-    returnPoint.SetZ(point.GetZ());
-    return returnPoint;
+    //return v1.DotProduct(v2)/(sqrt(pow(v2.GetX(),2)+pow(v2.GetY(),2)));   //Real value
+    return v1.DotProduct(v2)/(abs(v2.GetX()+v2.GetY()));    //Absolute value is taken since we're only interested in the sign of the value.
 }
-
 
 /**
  * This function calculate where the robot should be in order to push 
@@ -388,5 +346,54 @@ argos::CVector3 planner::push(argos::CBoxEntity* mBox, argos::CVector3 currentPo
     argos::CVector3 boxOrigin = mBox->GetEmbodiedEntity().GetOriginAnchor().Position;
     argos::Real distance = argos::Distance(goalPoint, boxOrigin);
     argos::CRadians orientation = argos::ATan2(goalPoint.GetY() - boxOrigin.GetY(), goalPoint.GetX() - boxOrigin.GetX());
-    return translate(currentPoint, orientation, distance);
+    return planner::translate(currentPoint, orientation, distance);
 }
+
+/**
+ * This function is a helper function for planner::push to calculate the robots position after pushing the object.
+ * @brief Translate a point with an orientation and a distance
+ * @param point The point to translate
+ * @param orientation The direction to translate the point in radians
+ * @param distance The distance to translate the point in said direction
+*/
+argos::CVector3 planner::translate(argos::CVector3 point, argos::CRadians orientation, argos::Real distance)
+{
+    argos::CVector3 returnPoint;
+
+    returnPoint.SetX(point.GetX() + argos::Sin(orientation)*distance);
+    returnPoint.SetY(point.GetY() + argos::Cos(orientation)*distance);
+    returnPoint.SetZ(point.GetZ());
+    return returnPoint;
+}
+
+/**
+ * @brief Finds the value of a pixel given a gray-scale map and a point.
+ * @param map is a cv::Mat object of a given map
+ * @param point is coordinate of a pixel
+*/
+ushort planner::GrayPixelVal(cv::Mat &map, cv::Point point)
+{
+    return map.at<ushort>(point);
+}
+
+/**
+ * @brief Checks if there are any obstacles between two points in a cv::Mat object
+ * @param A The first point
+ * @param B The second point
+ * @param img The map 
+ */
+bool planner::ValidLine(cv::Point A, cv::Point B, cv::Mat img)
+{
+    bool valid = true;
+    cv::LineIterator it(img, A, B);
+    for(size_t i = 1; i < it.count-1; i++, ++it)
+    {
+        valid = (*(const int*)* it == false) ? false : valid;
+    }
+    return valid;
+}
+
+
+
+
+

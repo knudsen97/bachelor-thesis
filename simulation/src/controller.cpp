@@ -1,5 +1,16 @@
 #include "controller.h"
 
+/**
+ * Default controller constructor
+*/
+controller::controller() :
+    dt(0.5),
+    Kp(1),
+    Ki(1),
+    Kd(1),
+    preError(0),
+    integral(0)
+{}
 
 /**
  * Controller constructor

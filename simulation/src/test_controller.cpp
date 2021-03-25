@@ -22,7 +22,8 @@ namespace plt = matplotlibcpp;
 #define UPDATE_SERVER 2
 #define ORIENTATE 3
 #define WAIT 4
-#define PUSH_TO_GOAL 5
+#define SET_VELOCITY 5
+
 
 int wait_time = 0;
 
@@ -76,10 +77,7 @@ void test_controller::ControlStep()
     } 
     if(!sentPosition)
         sentPosition = connection.send(robotPosition);
-    //argos::LOG << "sentPosition: " << sentPosition << '\n';
 
-
-    //std::cout << "waittime: " << wait_time << '\n';
     /************************* FSM START *************************/
     switch (currentState)
     {
@@ -88,7 +86,7 @@ void test_controller::ControlStep()
     {
         wait_time++;
         std::cout << "CLIENT RECEIVE\n";
-        //protocol::dataType::
+        
         if(connection.recieve())
         {
             switch (connection.getMessageType())
@@ -106,13 +104,24 @@ void test_controller::ControlStep()
                 currentState = ORIENTATE;
                 break;
 
+            case protocol::dataType::typeReal:
+                connection.getMessage(pushVelocity);
+                currentState = SET_VELOCITY;
+                break;
+
             default:
                 break;
             }
         }
-        if (wait_time > 20)
+        if (wait_time > 20 && !sendWaitState)
         {
             connection.send(robotPos.Position);
+            wait_time = 0;
+        }
+        else if(wait_time > 20 && sendWaitState)
+        {
+            sendWaitState = false;
+            currentState = WAIT;
             wait_time = 0;
         }
         
@@ -140,7 +149,7 @@ void test_controller::ControlStep()
         std::cout << "CLIENT UPDATE SERVER\n";
         if(connection.send(robotPos.Position))
         {
-                currentState = RECEIVE;
+            currentState = RECEIVE;
         }
         wait_time = 0;
     }
@@ -174,8 +183,32 @@ void test_controller::ControlStep()
     case WAIT:
     {
         std::cout << "CLIENT WAIT\n";
+        if(connection.send("WAIT"))
+        {
+            sendWaitState = true;
+            currentState = RECEIVE;
+        }
+
+
+        break;
     }
-    break;
+
+    /************************* SET_VELOCITY *************************/
+    case SET_VELOCITY:
+    {
+        std::cout << "CLIENT SET_VELOCITY\n";
+        m_pcWheels->SetLinearVelocity(pushVelocity, pushVelocity);
+
+        std::string message;
+        if(connection.recieve(message))
+        {
+            if(message == "STOP")
+                currentState = RECEIVE;
+        }
+
+        break;
+    }
+
 
     }
 }

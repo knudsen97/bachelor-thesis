@@ -1,15 +1,19 @@
 #include "../inc/cameraServerLoop.h"
 
+
 //out of thread statemachine
 #define DISTRIBUTE_CORNERS 0
 #define JOIN_THREADS 5
 #define WAIT 6
+#define SEND_VELOCITY 7
+#define SEND_STOP 8
 
 //For thread statemachine
 #define PLANNING 1
 #define SEND_GOAL 2
 #define RECEIVE 3
 #define SEND_ORIENTATION 4
+#define RECEIVE_STATE 5
 
 //debug variables
 bool donePlanning = false;
@@ -77,6 +81,7 @@ void cameraServerLoop::step()
          /************************* DISTRIBUTE_CORNERS *************************/
          case DISTRIBUTE_CORNERS:
          { 
+            std::cout << "SERVER DIST_CORNERS\n";
             if(!threadsOpened)
             {
                /*Find where to push on the box to get to goal:*/
@@ -125,6 +130,22 @@ void cameraServerLoop::step()
 
                threadsOpened = true;
             }
+            else
+            {
+
+               stateCheck = 0;
+               for(size_t i = 0; i < clientcount; i++)
+               {
+                  if(threadCurrentState[i] == WAIT)
+                  {
+                     stateCheck++;
+                  }
+               }
+               
+               std::cout << "State check: " << stateCheck << std::endl;
+               if(stateCheck == clientcount)
+                  currentState = JOIN_THREADS;
+            }
             // for (size_t i = 0; i < clientcount; i++)
             // {
             //    if (wavefront_debug[i].cols > 0)
@@ -171,24 +192,64 @@ void cameraServerLoop::step()
 
             //    cv::imshow("debug", robots);
             // }
+            break;
          }
-         break;
-
 
          /************************* JOIN_THREADS *************************/
          case JOIN_THREADS:
          {
-
             std::cout << "SERVER JOIN_THREADS\n";
+            prepareToPushDone = true;
+
+
+            currentState = SEND_VELOCITY;
+
+            break;
          }
-         break;
+
+         /************************* SEND_VELOCITY *************************/
+         case SEND_VELOCITY:
+         {
+            std::cout << "SERVER SEND_VELOCITY\n";
+            argos::Real velocityMessage = 2.0f;
+            for(int i = 0; i < clientcount; i++)
+            {
+               if(clientConnections[i].send(velocityMessage));
+                  currentState = WAIT;
+            }
+            break;
+         }
 
          /************************* WAIT *************************/
          case WAIT:
          {
             std::cout << "SERVER WAIT\n";
+            argos::CVector3 boxOrigin;
+            boxOrigin = pcBox->GetEmbodiedEntity().GetOriginAnchor().Position;
+
+            argos::Real distanceToGoal = sqrt(pow(goal.GetX() - boxOrigin.GetX(), 2) + pow(goal.GetY() - boxOrigin.GetY(), 2));
+            if(distanceToGoal < 0.024999f)
+            {
+               for (size_t i = 0; i < clientcount; i++)
+               {
+                  if(clientConnections[i].send("STOP"));
+               }
+               currentState = SEND_STOP;
+            }
+            break;
          }
-         break;
+
+         /************************* SEND_STOP *************************/
+         case SEND_STOP:
+         {
+            std::cout << "SERVER SEND_STOP\n";
+            argos::Real velocityMessage = 0.0f;
+            for(int i = 0; i < clientcount; i++)
+            {
+               if(clientConnections[i].send(velocityMessage));
+            }
+            break;
+         }
       }
    }
 }
@@ -221,7 +282,7 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 start
    bool planComplete = false;
    int curGoal = 0;
    argos::CVector3 robotPosition;
-   while(true)
+   while(!prepareToPushDone)
    {
       threadaState = currentState;
       switch (currentState)
@@ -275,11 +336,21 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 start
          argos::CVector3 g = planner::push(pcBox, robotPosition, goal);
          argos::CRadians goalAngle = argos::ATan2(g.GetY()-robotPosition.GetY(), g.GetX()-robotPosition.GetX());
          if(clientConnections[id].send(goalAngle, argos::CRadians(0), argos::CRadians(0)))
-            currentState = 10;
+            currentState = RECEIVE_STATE;
          break;
       }
-      case 10:
-      break;
+
+      /************************* RECEIVE_STATE *************************/
+      case RECEIVE_STATE:
+      {
+         std::string message;
+         if(clientConnections[id].recieve(message))
+         {
+            if(message == "WAIT")
+               threadCurrentState[id] = WAIT;
+         }
+         break;
+      }
       }
    }
 
@@ -300,12 +371,11 @@ bool cameraServerLoop::Planning(argos::CVector3 goal, argos::CVector3 startLoc, 
    cv::Mat map;
    cv::Mat gerymap;
  
-   //Find a point on the line between corner and goal
+   /*Find a point on the line between corner and goal*/
    argos::CVector3 CG = planner::push(pcBox,cornerLoc, goal) - cornerLoc; //Corner-Goal vector
    CG = CG.Normalize() * (-OFF_SET);
    cornerLoc += CG;
 
-   //for(argos::CVector3 s : )
    C.camera::GetPlot(map);
    camera_debug[id] = map.clone();
 
@@ -315,7 +385,6 @@ bool cameraServerLoop::Planning(argos::CVector3 goal, argos::CVector3 startLoc, 
    subGoals = P.planner::Pathfinder(gerymap, startLoc, cornerLoc);
    subgoal_debug[id] = subGoals;
 
-   //std::cout << "subgoals size: " << subGoals.size() << std::endl;
    return true;
 }
 
@@ -329,12 +398,10 @@ std::vector<argos::CVector3> cameraServerLoop::robotPositions;
 std::vector<protocol> cameraServerLoop::clientConnections;
 bool cameraServerLoop::positionRecieved = false;
 
-//bool cameraServerLoop::planComplete = false;
 CBoxEntity* cameraServerLoop::pcBox(NULL);
 CFootBotEntity* cameraServerLoop::fBot(NULL);
 
 std::vector<CVector3> cameraServerLoop::startLocations;
-//std::vector<cv::Point> cameraServerLoop::subGoals;
 bool cameraServerLoop::cornerFound = false;
 
 camera cameraServerLoop::C;
@@ -350,4 +417,6 @@ bool cameraServerLoop::threadsOpened = false;
 std::vector<bool> cameraServerLoop::recievedPosition;
 bool cameraServerLoop::allPositionRecieved = false;
 
+bool cameraServerLoop::prepareToPushDone = false;
+int cameraServerLoop::stateCheck = 0;
 
