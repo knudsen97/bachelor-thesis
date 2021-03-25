@@ -10,13 +10,15 @@
 class bug
 {
 public:
+    bug();
+    ~bug();
     /**
      * This function takes in the positinoing sensor, proximity sensor and a 
      * goal to calculate the orientation, the robot need to be in to drive 
      * in a bug 0 algorithm style movement. The function returns the 
      * orientation in argos::CRadians.
      * 
-     * @brief Call bug::move() without instantiating a bug object.
+     * @brief Call move() with an instance of an object.
      * 
      * @param proximitySensor Takes the proximity sensor object to the robot.
      * @param positionSensor Takes the positioning sensor object to the robot.
@@ -24,13 +26,19 @@ public:
      * 
      * @return The orientation of the robot in argos::CRadians
     */
-    static argos::CRadians move(const argos::CCI_FootBotProximitySensor* proximitySensor, const argos::CCI_PositioningSensor* positionSensor, argos::CVector3 goal);
+    argos::CRadians move(const argos::CCI_FootBotProximitySensor* proximitySensor, const argos::CCI_PositioningSensor* positionSensor, argos::CVector3 goal);
 
+    void regulateSpeed(const argos::CCI_FootBotProximitySensor* proximitySensor, argos::Real& f_left_velocity, argos::Real& f_right_velocity );
+    
     //bug memories
-    static argos::CRadians bugMemory_robotAngle;
-    static argos::CRadians bugMemory_objectAngle;
-    static bool bugMemory_objectAngleRead;
-    static bool bugMemory_turn;
+    argos::CRadians bugMemory_robotAngle;
+    argos::CRadians bugMemory_objectAngle;
+    bool bugMemory_objectAngleRead;
+    bool bugMemory_turn;
+    int bugMemory_state;
+    float bugMemory_maxVal;
+    argos::CRadians returnAngle;
+
 
 };
 
