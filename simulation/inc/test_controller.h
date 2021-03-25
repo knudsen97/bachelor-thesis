@@ -78,8 +78,8 @@ private:
 
 
    argos::CVector3 goalPointMessage;
-   argos::CRadians goalAngle;
-
+   argos::CRadians goalAngle, bugGoalAngle;
+   bug bugAlg;
 
    //socket
 public:

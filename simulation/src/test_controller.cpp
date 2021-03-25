@@ -79,6 +79,7 @@ void test_controller::Init(TConfigurationNode& t_node)
 }
 void test_controller::ControlStep()
 {
+    argos::LOG << "foorbot id: "<< CCI_Controller::GetId() << '\n';
     const CCI_PositioningSensor::SReading& robotPos = posSensor->GetReading();
     CRadians xAngle, yAngle, zAngle;
     robotPos.Orientation.ToEulerAngles(xAngle, yAngle, zAngle);
@@ -209,9 +210,12 @@ bool test_controller::ReadyToPush(const CCI_PositioningSensor::SReading& robotPo
     //Make controller instance
     controller con(SAMPLING_RATE*5, 2000, 100, 1);
     controller::wVelocity wVel;
-    wVel = con.angleControl(robotAngle, desiredAngle);
-    //std::cout << wVel.lWheel << " " << wVel.rWheel << std::endl;
 
+    bugGoalAngle = bugAlg.move(proxSensor, posSensor, goalPoint);
+    wVel = con.angleControl(robotAngle, bugGoalAngle);
+
+    argos::Real leftWheeleVelocity;
+    argos::Real rightWheeleVelocity;
     if(sqrt(pow(goalPoint.GetX() - robotPos.Position.GetX(), 2) + pow(goalPoint.GetY() - robotPos.Position.GetY(), 2)) <= 0.01999f)
     {
         //i++;
@@ -234,13 +238,18 @@ bool test_controller::ReadyToPush(const CCI_PositioningSensor::SReading& robotPo
     //     // plt::plot(con.getY());
     //     // plt::show();
     // }
-    else if(abs(desiredAngle.GetValue()) - abs(robotAngle.GetValue()) >= ANGLE_THRESHOLD)
+    else if(abs(bugGoalAngle.GetValue() - robotAngle.GetValue()) >= ANGLE_THRESHOLD)
     {
-        m_pcWheels->SetLinearVelocity(wVel.lWheel, wVel.rWheel);
+        leftWheeleVelocity = wVel.lWheel;
+        rightWheeleVelocity = wVel.rWheel;
+        m_pcWheels->SetLinearVelocity(leftWheeleVelocity, rightWheeleVelocity);
     }
     else
     {
-        m_pcWheels->SetLinearVelocity(wVel.lWheel + v0, wVel.rWheel + v0);
+        leftWheeleVelocity = wVel.lWheel + v0;
+        rightWheeleVelocity = wVel.rWheel + v0;
+        bugAlg.regulateSpeed(proxSensor, leftWheeleVelocity, rightWheeleVelocity);
+        m_pcWheels->SetLinearVelocity(leftWheeleVelocity, rightWheeleVelocity);
     }
 
     return false;
