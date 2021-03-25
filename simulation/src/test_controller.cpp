@@ -16,18 +16,14 @@ namespace plt = matplotlibcpp;
 
 #define SAMPLING_RATE 0.01
 #define PORT 1024
- 
-// #define PLANNING        0
-// #define READY_TO_PUSH   1
-// #define WAIT            2
-// #define PUSH            3
 
 #define RECEIVE 0
 #define GO_TO_POINT 1
 #define UPDATE_SERVER 2
 #define ORIENTATE 3
 #define WAIT 4
-#define PUSH_TO_GOAL 5
+#define SET_VELOCITY 5
+
 
 int wait_time = 0;
 
@@ -51,9 +47,7 @@ test_controller::test_controller() :
     m_pcWheels(NULL),
     m_fWheelVelocity(2.5f),
     posSensor(NULL),
-    //pcBox(NULL),
     proxSensor(NULL){}
-    //camSensor(NULL){}
 
 void test_controller::Init(TConfigurationNode& t_node) 
 {
@@ -61,17 +55,8 @@ void test_controller::Init(TConfigurationNode& t_node)
     m_pcWheels = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
     posSensor = GetSensor<CCI_PositioningSensor>("positioning");
     proxSensor = GetSensor<CCI_FootBotProximitySensor>("footbot_proximity");
-    //camSensor = GetSensor<CCI_CameraSensor>("camera0");
 
     GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
-
-    // CSpace::TMapPerType& boxMap = GetSpace().GetEntitiesByType("box");
-    // for (CSpace::TMapPerType::iterator iterator = boxMap.begin(); iterator != boxMap.end(); ++iterator)
-    // {   
-    //     pcBox = any_cast<CBoxEntity*>(iterator->second);
-    //     if (pcBox->GetId() == "box1")
-    //         break;
-    // }
 
     connecting = std::thread{[=] { connect();}};
 
@@ -93,10 +78,7 @@ void test_controller::ControlStep()
     } 
     if(!sentPosition)
         sentPosition = connection.send(robotPosition);
-    //argos::LOG << "sentPosition: " << sentPosition << '\n';
 
-
-    //std::cout << "waittime: " << wait_time << '\n';
     /************************* FSM START *************************/
     switch (currentState)
     {
@@ -105,7 +87,7 @@ void test_controller::ControlStep()
     {
         wait_time++;
         std::cout << "CLIENT RECEIVE\n";
-        //protocol::dataType::
+        
         if(connection.recieve())
         {
             switch (connection.getMessageType())
@@ -123,13 +105,24 @@ void test_controller::ControlStep()
                 currentState = ORIENTATE;
                 break;
 
+            case protocol::dataType::typeReal:
+                connection.getMessage(pushVelocity);
+                currentState = SET_VELOCITY;
+                break;
+
             default:
                 break;
             }
         }
-        if (wait_time > 20)
+        if (wait_time > 20 && !sendWaitState)
         {
             connection.send(robotPos.Position);
+            wait_time = 0;
+        }
+        else if(wait_time > 20 && sendWaitState)
+        {
+            sendWaitState = false;
+            currentState = WAIT;
             wait_time = 0;
         }
         
@@ -157,7 +150,7 @@ void test_controller::ControlStep()
         std::cout << "CLIENT UPDATE SERVER\n";
         if(connection.send(robotPos.Position))
         {
-                currentState = RECEIVE;
+            currentState = RECEIVE;
         }
         wait_time = 0;
     }
@@ -191,8 +184,32 @@ void test_controller::ControlStep()
     case WAIT:
     {
         std::cout << "CLIENT WAIT\n";
+        if(connection.send("WAIT"))
+        {
+            sendWaitState = true;
+            currentState = RECEIVE;
+        }
+
+
+        break;
     }
-    break;
+
+    /************************* SET_VELOCITY *************************/
+    case SET_VELOCITY:
+    {
+        std::cout << "CLIENT SET_VELOCITY\n";
+        m_pcWheels->SetLinearVelocity(pushVelocity, pushVelocity);
+
+        std::string message;
+        if(connection.recieve(message))
+        {
+            if(message == "STOP")
+                currentState = RECEIVE;
+        }
+
+        break;
+    }
+
 
     }
 }
@@ -207,7 +224,7 @@ void test_controller::ControlStep()
 bool test_controller::ReadyToPush(const CCI_PositioningSensor::SReading& robotPos, 
                                     argos::CVector3& goalPoint, argos::CRadians& desiredAngle, argos::CRadians& robotAngle, int v0)
 {
-    //Make controller instance
+    /*Make controller instance*/
     controller con(SAMPLING_RATE*5, 2000, 100, 1);
     controller::wVelocity wVel;
 
@@ -218,27 +235,10 @@ bool test_controller::ReadyToPush(const CCI_PositioningSensor::SReading& robotPo
     argos::Real rightWheeleVelocity;
     if(sqrt(pow(goalPoint.GetX() - robotPos.Position.GetX(), 2) + pow(goalPoint.GetY() - robotPos.Position.GetY(), 2)) <= 0.01999f)
     {
-        //i++;
-        //std::cout << "i: " << this->i << std::endl;
         m_pcWheels->SetLinearVelocity(0,0);
-        //pointReached = true;
-        //std::cout << "test\n";
-        // if(i >= subGoals.size())
-        //     cornerFound = true;
         return true;
     }
-    // else if(cornerFound)
-    // {
-    //     m_pcWheels->SetLinearVelocity(0,0);
-    //     //std::cout << "CORNER FOUND\n";
-    //     //std::cout << "hej\n";
-
-    //     return true;
-    //     // plt::plot(con.getX(), "r--");
-    //     // plt::plot(con.getY());
-    //     // plt::show();
-    // }
-    else if(abs(bugGoalAngle.GetValue() - robotAngle.GetValue()) >= ANGLE_THRESHOLD)
+    else if(abs(desiredAngle.GetValue() - robotAngle.GetValue()) >= ANGLE_THRESHOLD)
     {
         leftWheeleVelocity = wVel.lWheel;
         rightWheeleVelocity = wVel.rWheel;

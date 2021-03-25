@@ -6,22 +6,21 @@
 #include "../inc/matplotlibcpp.h"
 namespace plt = matplotlibcpp;
 
-#define WHEEL_RADIUS 0.029112741f
+#define WHEEL_RADIUS 0.029112741f //Found in argos documentation
 #define INTERWHEEL_DISTANCE 0.14f 
 
 class controller
 {
-    public:
-
+public:
+    
     struct wVelocity
     {
         argos::Real lWheel;
         argos::Real rWheel;
     };
 
-    //controller();
+    controller();
     controller(argos::Real _dt, argos::Real _Kp, argos::Real _Ki, argos::Real _Kd);
-
     ~controller();
 
     wVelocity angleControl(argos::CRadians curAngle, argos::CRadians desiredAngle); 
@@ -30,15 +29,17 @@ class controller
     std::vector<double> getY(){return y;}
     std::vector<double> getX(){return x;}
 
-    private:
+private:
+    /*Controller gains & variables*/
     argos::Real Kp, Ki, Kd;
     argos::Real dt;
     argos::Real integral;
 
-    argos::Real vR, vL;
-    argos::Real angle;
+    argos::Real vR, vL; //Right and left wheel velocity
+    argos::Real angle; 
     argos::Real preError;
 
+    /*Debugging/plotting vector*/
     static std::vector<double> y,x;
 };
 

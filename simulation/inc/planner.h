@@ -15,7 +15,7 @@
 #include "../inc/camera.h"
 
 #define MAX_USHORT 65535
-#define OFF_SET 0.27
+#define OFF_SET 0.3
 
 class planner
 {
@@ -28,19 +28,21 @@ public:
     ~planner();
     
     static cPositions FindCPositions(argos::CBoxEntity* mBox);
-
-    template<class V>
-    static argos::Real Projection(V &v1, V &v2);
-
     static std::vector<argos::CVector3> FindPushPoints(argos::CBoxEntity* mBox, argos::CVector3 goalPoint);
 
     cv::Mat Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3 &goal);
     std::vector<cv::Point> Pathfinder(cv::Mat &grayMap, argos::CVector3 &robot, argos::CVector3 &goal);
     
+    /*Not used right now*/
     std::vector<cv::Point> PostProcessing(std::vector<cv::Point> &subGoals);
-    bool ValidLine(cv::Point A, cv::Point B, cv::Mat img);
-
+    
+    /*Auxiliary functions*/
+    template<class V>
+    static argos::Real Projection(V &v1, V &v2);
     static argos::CVector3 push(argos::CBoxEntity* mBox, argos::CVector3 currentPoint, argos::CVector3 goalPoint);
+    static argos::CVector3 translate(argos::CVector3 point, argos::CRadians orientation, argos::Real distance);
+    bool ValidLine(cv::Point A, cv::Point B, cv::Mat img);
+    ushort GrayPixelVal(cv::Mat &map, cv::Point point);
 
     
 
