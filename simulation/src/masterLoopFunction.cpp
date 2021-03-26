@@ -1,7 +1,7 @@
 #include "../inc/masterLoopFunction.h"
 
 
-masterLoopFunction::masterLoopFunction(/* args */) 
+masterLoopFunction::masterLoopFunction() 
 {
     
 }
@@ -25,16 +25,20 @@ void masterLoopFunction::Init(argos::TConfigurationNode& t_tree) {
             if(itDistr->Value() == "server") {
                 
                 GetNodeAttribute(tDistr, "port", cameraServerLoop::portnumber);
-                GetNodeAttribute(tDistr, "clients", cameraServerLoop::clientcount);
             }
          }
       }  
    catch(argos::CARGoSException& ex) {
       THROW_ARGOSEXCEPTION_NESTED("Error initializing the loop functions", ex);
    }
-   //std::cout << "portnumber: " << cameraServerLoop::portnumber << std::endl;
 
-   cameraServerLoop::init();
+   int footbotCount = 0;
+   CSpace::TMapPerType& FBmap = GetSpace().GetEntitiesByType("foot-bot");
+   for (CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
+      footbotCount++;
+
+   server(footbotCount);
+   server.connect();
    //std::cout << "Finish master init" << std::endl;
 
 }
@@ -54,7 +58,7 @@ void masterLoopFunction::PreStep()
          break;
    }
 
-   cameraServerLoop::step();
+   server.step();
 
       
 }

@@ -15,6 +15,7 @@ class masterLoopFunction : public cameraServerLoop, public camera
 private:
     /* data */
 public:
+    cameraServerLoop server;
     virtual void Init(argos::TConfigurationNode& t_tree);
     virtual void PreStep();
 
