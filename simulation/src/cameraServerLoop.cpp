@@ -37,11 +37,22 @@ cv::Point convertToCV(argos::CVector3 arg)
    return {arg.GetX()*SCALE, arg.GetY()*SCALE};
 }
 
-void cameraServerLoop::init() 
-{
-   std::thread connecting(connect);
-   connecting.join();
+cameraServerLoop::cameraServerLoop(){
+   /* data */
+   cameraServerLoop::positionRecieved = false;
+   cameraServerLoop::cornerFound = false;
+   cameraServerLoop::currentState = 0;
+   cameraServerLoop::threadsOpened = false;
+   cameraServerLoop::allPositionRecieved = false;
+   cameraServerLoop::prepareToPushDone = false;
+   cameraServerLoop::stateCheck = 0;
+
    currentState = DISTRIBUTE_CORNERS;
+}
+
+void cameraServerLoop::operator()(int clientcount_) 
+{
+   clientcount = clientcount_;
    startLocations.resize(clientcount);
 
    //debug
@@ -55,6 +66,12 @@ void cameraServerLoop::init()
 
    debug.resize(clientcount, false);
    debugMaps.resize(clientcount);
+}
+
+void cameraServerLoop::connect() 
+{
+   std::thread connecting(&cameraServerLoop::connect_, this);
+   connecting.join();
 }
 
 void cameraServerLoop::step()
@@ -71,7 +88,6 @@ void cameraServerLoop::step()
             CVector3 position;
             recievedPosition[i] = clientConnections[i].recieve(position);
             startLocations[i] = position;
-
          }
          allPositionRecieved &= recievedPosition[i];  
          argos::LOG << "recievedPosition " << i << " :" << recievedPosition[i] << '\n';
@@ -80,7 +96,7 @@ void cameraServerLoop::step()
    else
    {
       CVector3 goal;
-      goal.Set(2, 2, 0);
+      goal.Set(1.9, 2, 0);
 
       /************************* FSM START *************************/
       switch (currentState)
@@ -125,7 +141,7 @@ void cameraServerLoop::step()
                   std::cout << "indexPH: " << idxPH << std::endl;
 
                   /*Start thread*/
-                  robotThreads[idxPH] = std::thread(&cameraServerLoop::PrepareToPush, goal, 
+                  robotThreads[idxPH] = std::thread(&cameraServerLoop::PrepareToPush, this, goal, 
                                        startLocations[idxPH], validPushPoints[i], threadCurrentState[idxPH], idxPH);
 
                   robotThreads[idxPH].detach();
@@ -253,6 +269,7 @@ void cameraServerLoop::step()
                for (size_t i = 0; i < clientcount; i++)
                {
                   if(clientConnections[i].send("STOP"));
+                  argos::LOG << "----------------------send message-------------------------------- \n";
                }
                currentState = SEND_STOP;
             }
@@ -274,8 +291,9 @@ void cameraServerLoop::step()
    }
 }
 
-void cameraServerLoop::connect()
+void cameraServerLoop::connect_()
 {
+   clientConnected = 0;
    serverSocket.Listen(portnumber);
    clientSockets.resize(clientcount);
    recievedPosition.resize(clientcount);
@@ -283,6 +301,7 @@ void cameraServerLoop::connect()
    {
       serverSocket.Accept(clientSockets[i]);
       clientConnections.push_back(protocol(clientSockets[i]));
+      clientConnected++;
    }
 }
 
@@ -412,41 +431,13 @@ bool cameraServerLoop::Planning(argos::CVector3 goal, argos::CVector3 startLoc, 
 }
 
 
+
+
+
 /*Static variables definitions*/
 int cameraServerLoop::clientcount = 0;
 int cameraServerLoop::portnumber = 0;
-argos::CTCPSocket cameraServerLoop::serverSocket;
-std::vector<argos::CTCPSocket> cameraServerLoop::clientSockets;
-std::vector<argos::CVector3> cameraServerLoop::robotPositions;
-std::vector<protocol> cameraServerLoop::clientConnections;
-bool cameraServerLoop::positionRecieved = false;
 
 CBoxEntity* cameraServerLoop::pcBox(NULL);
 CFootBotEntity* cameraServerLoop::fBot(NULL);
-
-std::vector<CVector3> cameraServerLoop::startLocations;
-bool cameraServerLoop::cornerFound = false;
-
-camera cameraServerLoop::C;
-
-int cameraServerLoop::currentState = 0;
-
-
-
-std::vector<int> cameraServerLoop::threadCurrentState;
-
-bool cameraServerLoop::threadsOpened = false;
-
-std::vector<bool> cameraServerLoop::recievedPosition;
-bool cameraServerLoop::allPositionRecieved = false;
-
-bool cameraServerLoop::prepareToPushDone = false;
-int cameraServerLoop::stateCheck = 0;
-
-
-
-std::vector<double> cameraServerLoop::debug;
-std::vector<cv::Mat> cameraServerLoop::debugMaps;
-
-
 

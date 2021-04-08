@@ -24,32 +24,39 @@ protected:
     /* data */
     static int clientcount;
     static int portnumber;
-    static argos::CTCPSocket serverSocket;
-    static std::vector<argos::CTCPSocket> clientSockets;
-    static std::vector<argos::CVector3> robotPositions;
-    static std::vector<protocol> clientConnections;
-    static bool positionRecieved;
 
     static CBoxEntity* pcBox;
     static CFootBotEntity* fBot;
 
-    static std::vector<CVector3> startLocations;
-    static camera C;
+    /* socket stuff*/
+    argos::CTCPSocket serverSocket;
+    std::vector<argos::CTCPSocket> clientSockets;
+    std::vector<argos::CVector3> robotPositions;
+    std::vector<protocol> clientConnections;
+    int clientConnected;
 
-    static bool cornerFound;
 
-    static int currentState;
+    bool positionRecieved;
 
-    static std::vector<int> threadCurrentState;
+    std::vector<CVector3> startLocations;
+    camera C;
 
-    static bool threadsOpened;
+    bool cornerFound;
 
-    static std::vector<bool> recievedPosition;
+    int currentState;
 
-    static bool allPositionRecieved;
+    std::vector<int> threadCurrentState;
 
-    static bool prepareToPushDone;
-    static int stateCheck;
+    bool threadsOpened;
+
+    std::vector<bool> recievedPosition;
+
+    bool allPositionRecieved;
+
+    bool prepareToPushDone;
+    int stateCheck;
+
+    void connect_();
 
 
     static std::vector<double> debug;
@@ -57,14 +64,17 @@ protected:
 
 
 public:
-    static void init();
-    static void step();
-    static void connect();
+    void operator()(int clientcount_);
+    cameraServerLoop();
+    
+    void connect();
+    void step();
 
-    static bool Planning(argos::CVector3 goal, argos::CVector3 startLoc, argos::CVector3 cornerLoc, std::vector<cv::Point> &subGoals, int id);
 
-    static void PrepareToPush(argos::CVector3 goal, argos::CVector3 startLoc, 
-                                argos::CVector3 cornerLoc, int currentState, int id);
+    bool Planning(argos::CVector3 goal, argos::CVector3 startLoc, argos::CVector3 cornerLoc, std::vector<cv::Point> &subGoals, int id);
+
+    void PrepareToPush(argos::CVector3 goal, argos::CVector3 startLoc, 
+                            argos::CVector3 cornerLoc, int currentState, int id);
 };
 
 
