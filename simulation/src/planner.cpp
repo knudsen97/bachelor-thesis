@@ -189,7 +189,6 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
                 if(GrayPixelVal(grayMap, e + neighbours[j]) == MAX_USHORT) //check if the pixel is white
                 {
                     grayMap.at<ushort>(e + neighbours[j]) = calcColor;
-
                     pixelChange = true;
                     if(e.x + neighbours[j].x >= 0 && e.y + neighbours[j].y >= 0)
                         explorerColour.push_back(e + neighbours[j]);
@@ -205,8 +204,10 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
         explorer = explorerColour;
         explorerColour.clear();
 
+
     }
-    // cv::imshow("wavefront", grayMap);
+
+    //cv::imshow("wavefront", grayMap);
     // cv::waitKey(1);
     // map.copyTo(this->map);
     //debugMap = grayMap.clone();
@@ -248,28 +249,28 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
     bool foundGoal = 0;
     int diff = 0;
 
+    
     while(!foundGoal)
     {
         prevIdx = idx;
         for(size_t i = 0; i < neighbours.size(); i++)
-        {
-            ushort nextPixelVal = GrayPixelVal(grayMap, traverse + neighbours[i]);
+        {      
+            ushort nextPixelVal = GrayPixelVal(grayMap, traverse + neighbours[i]); 
 
-            //std::cout << i <<"'th goal pixel val: " << (GrayPixelVal(grayMap, traverse + neighbours[i])) << std::endl;
-
-            if(GrayPixelVal(grayMap, PH) <= nextPixelVal) 
+            //debug = GrayPixelVal(grayMap, traverse + neighbours[i]);
+            debug = GrayPixelVal(grayMap, PH);
+            if(GrayPixelVal(grayMap, PH) <= nextPixelVal && GrayPixelVal(grayMap, PH) != USHRT_MAX) 
             {
-                //debug[id] = GrayPixelVal(grayMap, traverse + neighbours[i]);
                 PH = traverse + neighbours[i];
                 idx = i;
                 //debug = GrayPixelVal(grayMap, PH);
                 //cv::circle(debugMap, PH, 3, cv::Scalar(100,100,100), -1);
             }
-            else if(GrayPixelVal(grayMap, traverse + neighbours[i]) >= 65533)
+            else if(nextPixelVal >= USHRT_MAX-2)
             {
-                foundGoal = 1;
+                foundGoal = true;
                 goalPath.push_back(traverse + neighbours[i]);
-                // cv::circle(this->map, traverse + neighbours[i], 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
+                //cv::circle(this->map, traverse + neighbours[i], 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
 
                 break;
             }
@@ -277,16 +278,18 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
 
         traverse += neighbours[idx];
         
-        if(prevIdx != idx)
+        if(prevIdx != idx && PH.x >=0 && PH.y >= 0)
         {
             // cv::circle(this->map, PH, 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
+            //debug = PH.x;
             goalPath.push_back(PH);
         }
     }
 
     /*To show the point where the box needs to go:*/
     //cv::circle(map, cv::Point(2*SCALE, 2*SCALE), 3, cv::Scalar(255,0,0),-1);
-    // cv::imshow("wavefront", this->map);
+    //cv::imshow("wavefront", grayMap);
+    //cv::waitKey(10);
 
     // for(auto goal : goalPath)
     //     std::cout << goal << std::endl;
@@ -297,12 +300,11 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
 
 /**
  * Optimizes the path generated from wavefront by deleting unneccesary points in a vector
+ * @brief not currently used
  * @param subGoals is the vector of goals
  */
 std::vector<cv::Point> planner::PostProcessing(std::vector<cv::Point> &subGoals)
 {
-
-
     for(size_t i = 0; subGoals.size()-2; i++)
     {
         if(planner::ValidLine(subGoals[i], subGoals[i+2], grayMapCopy))

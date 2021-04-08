@@ -239,7 +239,7 @@ bool test_controller::ReadyToPush(const CCI_PositioningSensor::SReading& robotPo
         m_pcWheels->SetLinearVelocity(0,0);
         return true;
     }
-    else if(abs(desiredAngle.GetValue() - robotAngle.GetValue()) >= ANGLE_THRESHOLD)
+    else if(abs(bugGoalAngle.GetValue() - robotAngle.GetValue()) >= ANGLE_THRESHOLD)
     {
         leftWheeleVelocity = wVel.lWheel;
         rightWheeleVelocity = wVel.rWheel;

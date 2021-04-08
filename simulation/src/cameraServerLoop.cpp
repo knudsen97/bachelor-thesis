@@ -96,7 +96,7 @@ void cameraServerLoop::step()
    else
    {
       CVector3 goal;
-      goal.Set(1.9, 2, 0);
+      goal.Set(2, 1, 0);
 
       /************************* FSM START *************************/
       switch (currentState)
@@ -110,6 +110,9 @@ void cameraServerLoop::step()
                /*Find where to push on the box to get to goal:*/
                std::vector<CVector3> validPushPoints;
                validPushPoints = planner::FindPushPoints(pcBox, goal);
+               // std::cout << "push points: " << validPushPoints.size() << std::endl;
+               // for(auto point : validPushPoints)
+               //    std::cout << "point: " << point << std::endl;
 
                std::vector<std::thread> robotThreads;
                robotThreads.resize(startLocations.size());
@@ -160,16 +163,20 @@ void cameraServerLoop::step()
                for (size_t i = 0; i < clientcount; i++)
                {
                   std::cout << "debug " << i << ": " << debug[i] << std::endl;
-                  if(wavefront_debug[i].cols > 0)
-                  {
-                     cv::imshow("wavefront " + std::to_string(i), wavefront_debug[i]);
-                     cv::waitKey(10);
-                  }
+                  //std::cout << "subgoals: " << subgoal_debug[i] << std::endl;
+                  // if(wavefront_debug[i].cols > 0 && !testDebug)
+                  // {
+                  //    cv::imshow("wavefront " + std::to_string(i), wavefront_debug[i]);
+                  //    cv::waitKey(1);
+                  //    if(i == clientcount - 1)
+                  //       testDebug = true;
+                  // }
                }     
 
                stateCheck = 0;
                for(size_t i = 0; i < clientcount; i++)
                {
+                  std::cout << "client " << i << ": " << threadCurrentState[i] << std::endl;
                   if(threadCurrentState[i] == WAIT)
                   {
                      stateCheck++;
@@ -323,7 +330,8 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 start
    argos::CVector3 robotPosition;
    while(!prepareToPushDone)
    {
-      threadaState = currentState;
+      threadCurrentState[id] = currentState;
+      //threadaState = currentState;
       switch (currentState)
       {
       /************************* PLANNING *************************/
@@ -355,7 +363,6 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 start
       /************************* RECEIVE *************************/
       case RECEIVE:
       {
-
          argos::Real message;
          
          if(clientConnections[id].recieve(robotPosition))

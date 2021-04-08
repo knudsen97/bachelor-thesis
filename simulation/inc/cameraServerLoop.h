@@ -59,8 +59,8 @@ protected:
     void connect_();
 
 
-    static std::vector<double> debug;
-    static std::vector<cv::Mat> debugMaps;
+    std::vector<double> debug;
+    std::vector<cv::Mat> debugMaps;
 
 
 public:
