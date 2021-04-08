@@ -99,7 +99,7 @@
       <body position="0.5,1.5,0" orientation="0,0,0" />
     </box>
     <box id="box1" size="0.5,0.5,0.2" movable="true" mass="2">
-      <body position="1.2, 1.2, 0.0" orientation="0,0,0" />
+      <body position="1.5, 1.5, 0.0" orientation="0,0,0" />
     </box>
     
     <!-- <box id="object1" size="0.2,0.2,0.5" movable="true" mass="2">
@@ -110,7 +110,7 @@
       <body position="2,1.5,0" orientation="0,0,0" />
       <controller config="test"/>
       <dynamics2d>
-        <differential_steering max_force="0.3" max_torque="0.3"/>
+        <differential_steering max_force="0.5" max_torque="0.3"/>
       </dynamics2d>
     </foot-bot>
 

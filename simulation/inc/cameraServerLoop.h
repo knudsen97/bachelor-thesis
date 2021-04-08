@@ -51,6 +51,11 @@ protected:
     static bool prepareToPushDone;
     static int stateCheck;
 
+
+    static std::vector<double> debug;
+    static std::vector<cv::Mat> debugMaps;
+
+
 public:
     static void init();
     static void step();

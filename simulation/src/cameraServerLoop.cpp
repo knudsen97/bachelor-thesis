@@ -15,6 +15,9 @@
 #define SEND_ORIENTATION 4
 #define RECEIVE_STATE 5
 
+bool testDebug = false;
+cv::Mat testMap;
+
 //debug variables
 bool donePlanning = false;
 int threadaState = 0;
@@ -48,6 +51,10 @@ void cameraServerLoop::init()
    corner_debug.resize(clientcount);
    boxGoal_debug.resize(clientcount);
    subgoal_debug.resize(clientcount);
+
+
+   debug.resize(clientcount, false);
+   debugMaps.resize(clientcount);
 }
 
 void cameraServerLoop::step()
@@ -120,9 +127,10 @@ void cameraServerLoop::step()
                   /*Start thread*/
                   robotThreads[idxPH] = std::thread(&cameraServerLoop::PrepareToPush, goal, 
                                        startLocations[idxPH], validPushPoints[i], threadCurrentState[idxPH], idxPH);
+
                   robotThreads[idxPH].detach();
-                  std::cout << "start: " << startLocations[idxPH] << std::endl;
-                  std::cout << "corner: " << validPushPoints[i] << std::endl;
+                  // std::cout << "start: " << startLocations[idxPH] << std::endl;
+                  // std::cout << "corner: " << validPushPoints[i] << std::endl;
                   /*Reset variables*/
                   PH = 0.0f;
                   shortestDistance = 9999.99f;
@@ -132,6 +140,16 @@ void cameraServerLoop::step()
             }
             else
             {
+               /*Debug*/
+               for (size_t i = 0; i < clientcount; i++)
+               {
+                  std::cout << "debug " << i << ": " << debug[i] << std::endl;
+                  if(wavefront_debug[i].cols > 0)
+                  {
+                     cv::imshow("wavefront " + std::to_string(i), wavefront_debug[i]);
+                     cv::waitKey(10);
+                  }
+               }     
 
                stateCheck = 0;
                for(size_t i = 0; i < clientcount; i++)
@@ -228,8 +246,10 @@ void cameraServerLoop::step()
             boxOrigin = pcBox->GetEmbodiedEntity().GetOriginAnchor().Position;
 
             argos::Real distanceToGoal = sqrt(pow(goal.GetX() - boxOrigin.GetX(), 2) + pow(goal.GetY() - boxOrigin.GetY(), 2));
-            if(distanceToGoal < 0.024999f)
+            std::cout << "dist: " << distanceToGoal << std::endl;
+            if(distanceToGoal < 0.049999f)
             {
+               std::cout << "IN GOAL RANGE\n";
                for (size_t i = 0; i < clientcount; i++)
                {
                   if(clientConnections[i].send("STOP"));
@@ -296,7 +316,9 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 start
          corner_debug[id] = cornerLoc;
 
          if(planComplete)
+         {
             currentState = SEND_GOAL;
+         }
       }
       break;
 
@@ -379,10 +401,11 @@ bool cameraServerLoop::Planning(argos::CVector3 goal, argos::CVector3 startLoc, 
    C.camera::GetPlot(map);
    camera_debug[id] = map.clone();
 
-   gerymap = P.planner::Wavefront(map, startLoc, cornerLoc);
+   gerymap = P.planner::Wavefront(map, startLoc, cornerLoc, debug[id], debugMaps[id]);
    wavefront_debug[id] = gerymap.clone();
-   
-   subGoals = P.planner::Pathfinder(gerymap, startLoc, cornerLoc);
+
+   subGoals = P.planner::Pathfinder(gerymap, startLoc, cornerLoc, debug[id], debugMaps[id]);
+
    subgoal_debug[id] = subGoals;
 
    return true;
@@ -419,4 +442,11 @@ bool cameraServerLoop::allPositionRecieved = false;
 
 bool cameraServerLoop::prepareToPushDone = false;
 int cameraServerLoop::stateCheck = 0;
+
+
+
+std::vector<double> cameraServerLoop::debug;
+std::vector<cv::Mat> cameraServerLoop::debugMaps;
+
+
 

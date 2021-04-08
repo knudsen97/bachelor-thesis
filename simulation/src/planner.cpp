@@ -126,12 +126,12 @@ std::vector<CVector3> planner::FindPushPoints(CBoxEntity* mBox, CVector3 goalPoi
 }
 
 /**
- * Generates a wavefront starting from the goal location
+ * @brief Generates a wavefront starting from the goal location
  * @param map is a cv::Mat object of a given map
  * @param robot is the robots start location
  * @param goal is the location of a chosen corner of the box to be pushed
 */
-cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3 &goal)
+cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3 &goal, double &debug1, cv::Mat &debugMap)
 {
 
     std::array<cv::Point, 8> neighbours =
@@ -158,9 +158,10 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
     cv::erode(grayMap, grayMap, kernel);
     grayMap.copyTo(grayMapCopy);
 
+
     //cv::imshow("gray wavefront", grayMap);
     //cv::imshow("wavefront", map);
-    //cv::waitKey(0);
+    //cv::waitKey(1);
 
     //Convert argos vector to cv::Point:
     cv::Point start(robot.GetX()*SCALE, robot.GetY()*SCALE);
@@ -188,6 +189,7 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
                 if(GrayPixelVal(grayMap, e + neighbours[j]) == MAX_USHORT) //check if the pixel is white
                 {
                     grayMap.at<ushort>(e + neighbours[j]) = calcColor;
+
                     pixelChange = true;
                     if(e.x + neighbours[j].x >= 0 && e.y + neighbours[j].y >= 0)
                         explorerColour.push_back(e + neighbours[j]);
@@ -204,23 +206,22 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
         explorerColour.clear();
 
     }
-    // cv::imshow("wavefront", map);
-    //cv::waitKey(0);
-
+    // cv::imshow("wavefront", grayMap);
+    // cv::waitKey(1);
     // map.copyTo(this->map);
-
+    //debugMap = grayMap.clone();
     return grayMap;
 }
 
 /**
- * Finds a path from the robot's start location to it's box' corner subgoal
+ * @brief Finds a path from the robot's start location to it's box' corner subgoal
  * @param grayMap is a cv::Mat object of a given map in gray-scale
  * @param robot is the location of the robot
  * @param goal is the goal location being a corner of the box.
 */
-std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &robot, argos::CVector3 &goal)
+std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &robot, argos::CVector3 &goal, double &debug, cv::Mat &debugMap)
 {
-
+    //debugMap = grayMap.clone();
     std::array<cv::Point, 8> neighbours =
     {{
          cv::Point(-1, 1),
@@ -245,23 +246,31 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
     /*To keep track of which neighbour was used in order to illustrate*/
     int idx = 0, prevIdx = 0;   
     bool foundGoal = 0;
+    int diff = 0;
 
     while(!foundGoal)
     {
         prevIdx = idx;
         for(size_t i = 0; i < neighbours.size(); i++)
         {
+            ushort nextPixelVal = GrayPixelVal(grayMap, traverse + neighbours[i]);
+
             //std::cout << i <<"'th goal pixel val: " << (GrayPixelVal(grayMap, traverse + neighbours[i])) << std::endl;
-            if(GrayPixelVal(grayMap, PH) <= GrayPixelVal(grayMap, traverse + neighbours[i])) 
+
+            if(GrayPixelVal(grayMap, PH) <= nextPixelVal) 
             {
+                //debug[id] = GrayPixelVal(grayMap, traverse + neighbours[i]);
                 PH = traverse + neighbours[i];
                 idx = i;
+                //debug = GrayPixelVal(grayMap, PH);
+                //cv::circle(debugMap, PH, 3, cv::Scalar(100,100,100), -1);
             }
-            else if (GrayPixelVal(grayMap, traverse + neighbours[i]) >= 65533)
+            else if(GrayPixelVal(grayMap, traverse + neighbours[i]) >= 65533)
             {
                 foundGoal = 1;
                 goalPath.push_back(traverse + neighbours[i]);
                 // cv::circle(this->map, traverse + neighbours[i], 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
+
                 break;
             }
         }
@@ -276,11 +285,12 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
     }
 
     /*To show the point where the box needs to go:*/
-    cv::circle(map, cv::Point(2*SCALE, 2*SCALE), 3, cv::Scalar(255,0,0),-1);
+    //cv::circle(map, cv::Point(2*SCALE, 2*SCALE), 3, cv::Scalar(255,0,0),-1);
     // cv::imshow("wavefront", this->map);
 
     // for(auto goal : goalPath)
     //     std::cout << goal << std::endl;
+    
 
     return goalPath;
 }

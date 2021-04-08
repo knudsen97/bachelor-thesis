@@ -64,7 +64,7 @@ void test_controller::Init(TConfigurationNode& t_node)
 }
 void test_controller::ControlStep()
 {
-    argos::LOG << "foorbot id: "<< CCI_Controller::GetId() << '\n';
+    //argos::LOG << "footbot id: "<< CCI_Controller::GetId() << '\n';
     const CCI_PositioningSensor::SReading& robotPos = posSensor->GetReading();
     CRadians xAngle, yAngle, zAngle;
     robotPos.Orientation.ToEulerAngles(xAngle, yAngle, zAngle);
@@ -87,7 +87,7 @@ void test_controller::ControlStep()
     {
         wait_time++;
         std::cout << "CLIENT RECEIVE\n";
-        
+
         if(connection.recieve())
         {
             switch (connection.getMessageType())
@@ -203,6 +203,7 @@ void test_controller::ControlStep()
         std::string message;
         if(connection.recieve(message))
         {
+            std::cout << message << std::endl;
             if(message == "STOP")
                 currentState = RECEIVE;
         }
