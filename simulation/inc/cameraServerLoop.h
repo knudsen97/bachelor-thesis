@@ -14,6 +14,7 @@
 #include "cameraServerLoop.h"
 #include "test_controller.h"
 #include "../inc/protocol.h"
+#include "../inc/camera.h"
 
 
 using namespace argos;
@@ -58,6 +59,11 @@ protected:
 
     void connect_();
 
+    camera cam;
+    cv::Mat cameraImage;
+
+    planner plan;
+
 
     std::vector<double> debug;
     std::vector<cv::Mat> debugMaps;
@@ -71,10 +77,10 @@ public:
     void step();
 
 
-    bool Planning(argos::CVector3 goal, argos::CVector3 startLoc, argos::CVector3 cornerLoc, std::vector<cv::Point> &subGoals, int id);
+    bool Planning(cv::Mat map, argos::CVector3 goal, argos::CVector3 startLoc, argos::CVector3 cornerLoc, std::vector<cv::Point> &subGoals, int id);
 
-    void PrepareToPush(argos::CVector3 goal, argos::CVector3 startLoc, 
-                            argos::CVector3 cornerLoc, int currentState, int id);
+    void PrepareToPush(cv::Mat map, argos::CVector3 goal, argos::CVector3 startLoc, 
+                                       argos::CVector3 cornerLoc, int currentState_, int id);
 };
 
 
