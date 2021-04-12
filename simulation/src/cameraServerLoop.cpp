@@ -27,6 +27,10 @@ std::vector<cv::Mat> wavefront_debug;
 std::vector<cv::Mat> camera_debug;
 std::vector<argos::CVector3> robot_debug, corner_debug, boxGoal_debug; 
 std::vector<std::vector<cv::Point>> subgoal_debug;
+std::vector<std::string> debugMessage;
+
+std::vector<int> numPushPoints; 
+
 
 /**
  * @brief This function converts a ArgOS CVector3 to an OpenCV Point.
@@ -46,7 +50,6 @@ cameraServerLoop::cameraServerLoop(){
    cameraServerLoop::allPositionRecieved = false;
    cameraServerLoop::prepareToPushDone = false;
    cameraServerLoop::stateCheck = 0;
-
    currentState = DISTRIBUTE_CORNERS;
 }
 
@@ -62,6 +65,8 @@ void cameraServerLoop::operator()(int clientcount_)
    corner_debug.resize(clientcount);
    boxGoal_debug.resize(clientcount);
    subgoal_debug.resize(clientcount);
+   debugMessage.resize(clientcount);
+   numPushPoints.resize(clientcount,0);
 
 
    debug.resize(clientcount, false);
@@ -96,7 +101,7 @@ void cameraServerLoop::step()
    else
    {
       CVector3 goal;
-      goal.Set(2, 1, 0);
+      goal.Set(2, 2, 0);
 
       /************************* FSM START *************************/
       switch (currentState)
@@ -160,18 +165,22 @@ void cameraServerLoop::step()
             else
             {
                /*Debug*/
-               for (size_t i = 0; i < clientcount; i++)
-               {
-                  std::cout << "debug " << i << ": " << debug[i] << std::endl;
-                  //std::cout << "subgoals: " << subgoal_debug[i] << std::endl;
-                  // if(wavefront_debug[i].cols > 0 && !testDebug)
-                  // {
-                  //    cv::imshow("wavefront " + std::to_string(i), wavefront_debug[i]);
-                  //    cv::waitKey(1);
-                  //    if(i == clientcount - 1)
-                  //       testDebug = true;
-                  // }
-               }     
+               // for (size_t i = 0; i < clientcount; i++)
+               // {
+               //    std::cout << "debug " << i << ": " << debug[i] << std::endl;
+               //    //std::cout << "subgoals: " << subgoal_debug[i] << std::endl;
+               //    // if(wavefront_debug[i].cols > 0 && !testDebug)
+               //    // {
+               //    //    cv::imshow("wavefront " + std::to_string(i), wavefront_debug[i]);
+               //    //    cv::waitKey(1);
+               //    //    if(i == clientcount - 1)
+               //    //       testDebug = true;
+               //    // }
+               // }     
+
+               for(auto goals : numPushPoints)
+                  std::cout << "# PP: " << goals << std::endl;
+
 
                stateCheck = 0;
                for(size_t i = 0; i < clientcount; i++)
@@ -330,7 +339,7 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 start
    argos::CVector3 robotPosition;
    while(!prepareToPushDone)
    {
-      threadCurrentState[id] = currentState;
+      //threadCurrentState[id] = currentState;
       //threadaState = currentState;
       switch (currentState)
       {
@@ -338,6 +347,7 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 start
       case PLANNING:
       {
          planComplete = Planning(goal, startLoc, cornerLoc, subGoals, id);
+         numPushPoints[id] = subGoals.size();
          boxGoal_debug[id] = goal;
          robot_debug[id] = startLoc;
          corner_debug[id] = cornerLoc;
@@ -395,7 +405,10 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 goal, argos::CVector3 start
          if(clientConnections[id].recieve(message))
          {
             if(message == "WAIT")
+            {
+               //debugMessage[id] = message;
                threadCurrentState[id] = WAIT;
+            }
          }
          break;
       }
