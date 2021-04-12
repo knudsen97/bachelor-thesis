@@ -29,6 +29,11 @@ std::vector<cv::Mat> camera_debug;
 std::vector<argos::CVector3> robot_debug, corner_debug, boxGoal_debug; 
 std::vector<std::vector<cv::Point>> cv_subgoal_debug;
 std::vector<std::vector<argos::CVector3>> subgoal_debug;
+std::vector<std::vector<cv::Point>> subgoal_debug;
+std::vector<std::string> debugMessage;
+
+std::vector<int> numPushPoints; 
+
 
 /**
  * @brief This function converts a ArgOS CVector3 to an OpenCV Point.
@@ -48,7 +53,6 @@ cameraServerLoop::cameraServerLoop(){
    cameraServerLoop::allPositionRecieved = false;
    cameraServerLoop::prepareToPushDone = false;
    cameraServerLoop::stateCheck = 0;
-
    currentState = DISTRIBUTE_CORNERS;
 }
 
@@ -66,6 +70,8 @@ void cameraServerLoop::operator()(int clientcount_)
    cv_subgoal_debug.resize(clientcount);
    subgoal_debug.resize(clientcount);
    planner_debug.resize(clientcount);
+   debugMessage.resize(clientcount);
+   numPushPoints.resize(clientcount,0);
 
 
    debug.resize(clientcount, false);
@@ -100,7 +106,7 @@ void cameraServerLoop::step()
    else
    {
       CVector3 goal;
-      goal.Set(1, 2, 0);
+      goal.Set(2, 2, 0);
 
       /************************* FSM START *************************/
       switch (currentState)
@@ -205,6 +211,8 @@ void cameraServerLoop::step()
                   std::cout << "\n";
                }     
 
+               for(auto goals : numPushPoints)
+                  std::cout << "# PP: " << goals << std::endl;
 
                stateCheck = 0;
                for(size_t i = 0; i < clientcount; i++)
@@ -317,7 +325,7 @@ void cameraServerLoop::PrepareToPush(cv::Mat map, argos::CVector3 goal, argos::C
    argos::CVector3 robotPosition;
    while(!prepareToPushDone)
    {
-      threadCurrentState[id] = currentState;
+      //threadCurrentState[id] = currentState;
       //threadaState = currentState;
       switch (currentState)
       {
@@ -325,6 +333,8 @@ void cameraServerLoop::PrepareToPush(cv::Mat map, argos::CVector3 goal, argos::C
       case PLANNING:
       {
          planComplete = Planning(map, goal, startLoc, cornerLoc, subGoals, id);
+         numPushPoints[id] = subGoals.size();
+         boxGoal_debug[id] = goal;
          robot_debug[id] = startLoc;
          corner_debug[id] = cornerLoc;
          subgoal_debug[id].resize(subGoals.size());
@@ -388,7 +398,10 @@ void cameraServerLoop::PrepareToPush(cv::Mat map, argos::CVector3 goal, argos::C
          if(clientConnections[id].recieve(message))
          {
             if(message == "WAIT")
+            {
+               //debugMessage[id] = message;
                threadCurrentState[id] = WAIT;
+            }
          }
          break;
       }
