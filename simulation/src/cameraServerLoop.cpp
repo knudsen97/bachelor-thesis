@@ -162,19 +162,19 @@ void cameraServerLoop::step()
                      if (k!=i)
                      {
                         robotEndPoint = plan.push(pcBox,validPushPoints[k], goal) - validPushPoints[k];
-                        robotEndPoint = robotEndPoint.Normalize() * (OFF_SET);
+                        robotEndPoint = robotEndPoint.Normalize() * (-OFF_SET);
                         robotEndPoint += validPushPoints[k];
                         cv::circle(cameraImage, convertToCV( robotEndPoint ),INTERWHEEL_DISTANCE*SCALE, cv::Scalar(0,0,0), -1 );
                      }
                   }
                   //Define a kernel and erode the map inorder to not get close to obstacles
-                  int dilation_size = 0.14*SCALE;
+                  int dilation_size = 0.15*SCALE;
                   cv::Mat kernel = cv::getStructuringElement( cv::MORPH_ELLIPSE,
                      cv::Size( 2*dilation_size + 1, 2*dilation_size+1 ),
                      cv::Point( dilation_size, dilation_size ) );
                   cv::erode(cameraImage, cameraImage, kernel);
-                  // cv::imshow("map", cameraImage);
-                  // cv::waitKey(0);
+                  cv::imshow("map", cameraImage);
+                  cv::waitKey(0);
                   /*Start thread*/
                   robotThreads[idxPH] = std::thread(&cameraServerLoop::PrepareToPush, this, cameraImage, goal, 
                                        startLocations[idxPH], validPushPoints[i], threadCurrentState[idxPH], idxPH);
@@ -191,27 +191,27 @@ void cameraServerLoop::step()
             }
             else
             {
-               /*Debug*/
-               for (size_t i = 0; i < clientcount; i++)
-               {
-                  std::cout << "id: " << i << '\n';
-                  std::cout << "argos subgoal: \n";
-                  for (size_t j = 0; j < subgoal_debug[i].size(); j++)
-                  {
-                     std::cout << "....." << subgoal_debug[i][j] << "\n";
-                  }
-                  std::cout << "\n";
+               // /*Debug*/
+               // for (size_t i = 0; i < clientcount; i++)
+               // {
+               //    std::cout << "id: " << i << '\n';
+               //    std::cout << "argos subgoal: \n";
+               //    for (size_t j = 0; j < subgoal_debug[i].size(); j++)
+               //    {
+               //       std::cout << "....." << subgoal_debug[i][j] << "\n";
+               //    }
+               //    std::cout << "\n";
                   
-                  std::cout << "cv subgoal: \n";
-                  for (size_t j = 0; j < cv_subgoal_debug[i].size(); j++)
-                  {
-                     std::cout << "....." << cv_subgoal_debug[i][j].x << " " << cv_subgoal_debug[i][j].y << "\n";
-                  }
-                  std::cout << "\n";
-               }     
+               //    std::cout << "cv subgoal: \n";
+               //    for (size_t j = 0; j < cv_subgoal_debug[i].size(); j++)
+               //    {
+               //       std::cout << "....." << cv_subgoal_debug[i][j].x << " " << cv_subgoal_debug[i][j].y << "\n";
+               //    }
+               //    std::cout << "\n";
+               // }     
 
-               for(auto goals : numPushPoints)
-                  std::cout << "# PP: " << goals << std::endl;
+               // for(auto goals : numPushPoints)
+               //    std::cout << "# PP: " << goals << std::endl;
 
                stateCheck = 0;
                for(size_t i = 0; i < clientcount; i++)
