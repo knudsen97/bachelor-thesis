@@ -131,7 +131,7 @@ std::vector<CVector3> planner::FindPushPoints(CBoxEntity* mBox, CVector3 goalPoi
  * @param robot is the robots start location
  * @param goal is the location of a chosen corner of the box to be pushed
 */
-cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3 &goal, double &debug1, cv::Mat &debugMap)
+cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3 &goal)
 {
 
     std::array<cv::Point, 8> neighbours =
@@ -153,10 +153,10 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
     cv::cvtColor(map, grayMap, cv::COLOR_BGR2GRAY);
     grayMap.convertTo(grayMap, CV_16UC1, 257.0f);
 
-    //Define a kernel and erode the map inorder to not get close to obstacles
-    cv::Mat kernel = cv::Mat(OFF_SET*SCALE, OFF_SET*SCALE, CV_8UC1);
-    cv::erode(grayMap, grayMap, kernel);
-    grayMap.copyTo(grayMapCopy);
+    // //Define a kernel and erode the map inorder to not get close to obstacles
+    // cv::Mat kernel = cv::Mat(OFF_SET*SCALE, OFF_SET*SCALE, CV_8UC1);
+    // cv::erode(grayMap, grayMap, kernel);
+    // grayMap.copyTo(grayMapCopy);
 
 
     //cv::imshow("gray wavefront", grayMap);
@@ -220,7 +220,7 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
  * @param robot is the location of the robot
  * @param goal is the goal location being a corner of the box.
 */
-std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &robot, argos::CVector3 &goal, double &debug, cv::Mat &debugMap)
+std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &robot, argos::CVector3 &goal)
 {
     //debugMap = grayMap.clone();
     std::array<cv::Point, 8> neighbours =
@@ -258,7 +258,7 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
             ushort nextPixelVal = GrayPixelVal(grayMap, traverse + neighbours[i]); 
 
             //debug = GrayPixelVal(grayMap, traverse + neighbours[i]);
-            debug = GrayPixelVal(grayMap, PH);
+            // debug = GrayPixelVal(grayMap, PH);
             if(GrayPixelVal(grayMap, PH) <= nextPixelVal && GrayPixelVal(grayMap, PH) != USHRT_MAX) 
             {
                 PH = traverse + neighbours[i];
@@ -358,7 +358,7 @@ argos::CVector3 planner::push(argos::CBoxEntity* mBox, argos::CVector3 currentPo
     argos::CVector3 boxOrigin = mBox->GetEmbodiedEntity().GetOriginAnchor().Position;
     argos::Real distance = argos::Distance(goalPoint, boxOrigin);
     argos::CRadians orientation = argos::ATan2(goalPoint.GetY() - boxOrigin.GetY(), goalPoint.GetX() - boxOrigin.GetX());
-    return planner::translate(currentPoint, orientation, distance);
+    return translate(currentPoint, orientation, distance);
 }
 
 /**
