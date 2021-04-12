@@ -29,7 +29,6 @@ std::vector<cv::Mat> camera_debug;
 std::vector<argos::CVector3> robot_debug, corner_debug, boxGoal_debug; 
 std::vector<std::vector<cv::Point>> cv_subgoal_debug;
 std::vector<std::vector<argos::CVector3>> subgoal_debug;
-std::vector<std::vector<cv::Point>> subgoal_debug;
 std::vector<std::string> debugMessage;
 
 std::vector<int> numPushPoints; 
