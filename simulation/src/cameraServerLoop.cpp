@@ -321,6 +321,7 @@ void cameraServerLoop::PrepareToPush(cv::Mat map, argos::CVector3 goal, argos::C
    std::vector<cv::Point> subGoals;
    bool planComplete = false;
    int curGoal = 0;
+   int time;
    argos::CVector3 robotPosition;
    while(!prepareToPushDone)
    {
@@ -357,7 +358,7 @@ void cameraServerLoop::PrepareToPush(cv::Mat map, argos::CVector3 goal, argos::C
 //         boxGoal_debug[id] = goalPoint;
          if(clientConnections[id].send(goalPoint))
             currentState = RECEIVE;
-         wasHere++;
+         time = std::time(NULL);
       }
       break;
 
@@ -365,7 +366,11 @@ void cameraServerLoop::PrepareToPush(cv::Mat map, argos::CVector3 goal, argos::C
       case RECEIVE:
       {
          argos::Real message;
-         
+         if ((std::time(NULL) - time) > 2)
+         {
+            currentState = SEND_GOAL;
+            wasHere++;
+         }
          
          if(clientConnections[id].recieve(robotPosition))
          {
