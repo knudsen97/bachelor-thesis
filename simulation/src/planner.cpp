@@ -223,16 +223,27 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
 std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &robot, argos::CVector3 &goal)
 {
     //debugMap = grayMap.clone();
+    // std::array<cv::Point, 8> neighbours =
+    // {{
+    //      cv::Point(-1, 1),
+    //      cv::Point(0,  1),
+    //      cv::Point(1,  1),
+    //      cv::Point(1,  0),
+    //      cv::Point(1,  -1),
+    //      cv::Point(0,  -1),
+    //      cv::Point(-1, -1),
+    //      cv::Point(-1, 0)
+    // }};
     std::array<cv::Point, 8> neighbours =
     {{
-         cv::Point(-1, 1),
-         cv::Point(0,  1),
-         cv::Point(1,  1),
-         cv::Point(1,  0),
-         cv::Point(1,  -1),
-         cv::Point(0,  -1),
-         cv::Point(-1, -1),
-         cv::Point(-1, 0)
+        cv::Point(-1, 1),
+        cv::Point(1,  1),
+        cv::Point(1,  -1),
+        cv::Point(-1, -1),
+        cv::Point(0,  1),
+        cv::Point(1,  0),
+        cv::Point(0,  -1),
+        cv::Point(-1, 0)
     }};
 
     std::vector<cv::Point> goalPath, postProcessPath;
@@ -249,7 +260,7 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
     bool foundGoal = 0;
     int diff = 0;
 
-    
+    int test = 0;
     while(!foundGoal)
     {
         prevIdx = idx;
@@ -263,6 +274,7 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
             {
                 PH = traverse + neighbours[i];
                 idx = i;
+                test++;
                 //debug = GrayPixelVal(grayMap, PH);
                 //cv::circle(debugMap, PH, 3, cv::Scalar(100,100,100), -1);
             }
@@ -276,14 +288,17 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
             }
         }
 
-        traverse += neighbours[idx];
-        
-        if(prevIdx != idx && PH.x >=0 && PH.y >= 0)
+        //std::cout << "test: " <<test << std::endl;
+        if((prevIdx != idx && PH.x >=0 && PH.y >= 0) && test > 50)
         {
+            test = 0;
             // cv::circle(this->map, PH, 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
             //debug = PH.x;
             goalPath.push_back(PH);
         }
+
+        traverse += neighbours[idx];
+
     }
 
     /*To show the point where the box needs to go:*/

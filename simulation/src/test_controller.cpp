@@ -123,7 +123,6 @@ void test_controller::ControlStep()
         {
             sendWaitState = false;
             currentState = WAIT;
-            wait_time = 0;
         }
         
     }
@@ -189,7 +188,7 @@ void test_controller::ControlStep()
             sendWaitState = true;
             currentState = RECEIVE;
         }
-
+        wait_time = 0;
 
         break;
     }
