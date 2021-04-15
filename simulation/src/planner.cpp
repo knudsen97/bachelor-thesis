@@ -152,7 +152,7 @@ cv::Mat planner::Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3
     cv::Mat grayMap;
     cv::cvtColor(map, grayMap, cv::COLOR_BGR2GRAY);
     grayMap.convertTo(grayMap, CV_16UC1, 257.0f);
-
+    
     // //Define a kernel and erode the map inorder to not get close to obstacles
     // cv::Mat kernel = cv::Mat(OFF_SET*SCALE, OFF_SET*SCALE, CV_8UC1);
     // cv::erode(grayMap, grayMap, kernel);
@@ -372,12 +372,12 @@ argos::CVector3 planner::push(argos::CBoxEntity* mBox, argos::CVector3 currentPo
 {
     argos::CVector3 boxOrigin = mBox->GetEmbodiedEntity().GetOriginAnchor().Position;
     argos::Real distance = argos::Distance(goalPoint, boxOrigin);
-    argos::CRadians orientation;
-    if((boxOrigin - goalPoint).GetX() < 0 ^ (boxOrigin - goalPoint).GetY() < 0)
-        orientation = argos::ATan2(boxOrigin.GetY() - goalPoint.GetY(), boxOrigin.GetX() - goalPoint.GetX());
-    else
-        orientation = argos::ATan2(goalPoint.GetY() - boxOrigin.GetY(), goalPoint.GetX() - boxOrigin.GetX());
-
+    argos::CRadians orientation = argos::ATan2(goalPoint.GetX() - boxOrigin.GetX(), goalPoint.GetY() - boxOrigin.GetY());
+    // if((boxOrigin - goalPoint).GetX() < 0 ^ (boxOrigin - goalPoint).GetY() < 0)
+    //     orientation = argos::ATan2(boxOrigin.GetY() - goalPoint.GetY(), boxOrigin.GetX() - goalPoint.GetX());
+    // else
+    //     orientation = argos::ATan2(goalPoint.GetY() - boxOrigin.GetY(), goalPoint.GetX() - boxOrigin.GetX());
+    //orientation = argos::ATan2(boxOrigin.GetY() - goalPoint.GetY(), boxOrigin.GetX() - goalPoint.GetX());
     return translate(currentPoint, orientation, distance);
 }
 
