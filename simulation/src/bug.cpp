@@ -120,22 +120,24 @@ argos::CRadians bug::move(const argos::CCI_FootBotProximitySensor* proximitySens
     
             for(size_t i = 0; i < tProxReads.size(); i++)
             {
-                //find which beam angle is closest to objectiveangle
+                //calculate beamangle relative to global coordinate.
                 int index = (i%24);
                 argos::CRadians beamAngle = tProxReads[index].Angle+robotAngle;
+
+                //wrap beamangle arround to +- pi
                 while (beamAngle > argos::CRadians(M_PI))
                     beamAngle -= argos::CRadians(M_PI*2);
 
                 while (beamAngle < argos::CRadians(-M_PI))
                     beamAngle += argos::CRadians(M_PI*2);
-
                 
-
+                //calculate angle difference (taking into account the +- PI angle)
                 argos::CRadians angleDifference = argos::CRadians{objectiveAngle.GetValue() - beamAngle.GetValue()};
                 angleDifference += 
                     (angleDifference > argos::CRadians(M_PI)) ? (argos::CRadians(-M_PI*2)) : 
                     (angleDifference < argos::CRadians{-M_PI}) ? (argos::CRadians(M_PI*2)) : argos::CRadians(0);      
 
+                //calculate the index for which beam leads to objective
                 if (abs(angleDifference.GetValue()) < closestToObjectiveAngleAngle.GetValue())
                 {
                     indexObjectiveAngle = index;
@@ -143,19 +145,22 @@ argos::CRadians bug::move(const argos::CCI_FootBotProximitySensor* proximitySens
                 }
 
                 //check front beam for more obstacles
-                if (i < beamcount)
+                if (i < beamcount) 
                 {
                     index = ((i+beamOffset)%24);
                     if (tProxReads[index].Value > bugMemory_maxVal)
                     {
                         indexMax = index;
                         bugMemory_maxVal = tProxReads[index].Value;
-                        returnAngle = tProxReads[indexMax].Angle + robotAngle + argos::CRadians(M_PI_2);
+                        if (index > 11)
+                            returnAngle = tProxReads[indexMax].Angle + robotAngle + argos::CRadians(M_PI_2); //turn left
+                        else
+                            returnAngle = tProxReads[indexMax].Angle + robotAngle + argos::CRadians(-M_PI_2); //turn right
                     }
                 }
             }
 
-            //check is obstacle is still in the way
+            //check if obstacle is still in the way
             int cone = 4;
             int index = 0;
             int tempIndex = 0;
@@ -181,7 +186,7 @@ argos::CRadians bug::move(const argos::CCI_FootBotProximitySensor* proximitySens
         default:
         {
             returnAngle = objectiveAngle;
-            argos::LOGERR << "error in bug: bugMemory_state was " << bugMemory_state << '\n';;
+            argos::LOGERR << "error in bug: bug Memory_state was " << bugMemory_state << '\n';;
             break;
         }
     }
