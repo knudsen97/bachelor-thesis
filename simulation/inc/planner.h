@@ -15,7 +15,7 @@
 #include "../inc/camera.h"
 
 #define MAX_USHORT 65535
-#define OFF_SET 0.3
+#define OFF_SET 0.35
 
 class planner
 {

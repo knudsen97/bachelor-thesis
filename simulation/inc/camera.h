@@ -20,7 +20,7 @@
 
 #define IMAGESIZE 700
 #define WINDOWSIZE 500
-#define ARENASIZE 3
+#define ARENASIZE 6
 #define SCALE (IMAGESIZE/ARENASIZE)
 
 class camera : public argos::CLoopFunctions

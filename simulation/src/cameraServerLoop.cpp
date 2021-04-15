@@ -104,7 +104,7 @@ void cameraServerLoop::step()
    else
    {
       CVector3 boxGoal;
-      boxGoal.Set(2, 1, 0);
+      boxGoal.Set(1, 1, 0);
 
       std::cout << "Server state: "<< currentState << std::endl;
       /************************* FSM START *************************/
