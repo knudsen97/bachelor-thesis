@@ -104,7 +104,7 @@ void cameraServerLoop::step()
    else
    {
       CVector3 boxGoal;
-      boxGoal.Set(1, 1, 0);
+      boxGoal.Set(5.5, 5.5, 0);
 
       std::cout << "Server state: "<< currentState << std::endl;
       /************************* FSM START *************************/
@@ -132,7 +132,7 @@ void cameraServerLoop::step()
                isRobotAssigned.resize(startLocations.size(), false);
 
                /*Find absolute distance between point and robot and assign shortest distance to each robot*/
-               double shortestDistance = 9999.99f, PH = 0.0f;
+               double shortestDistance = 999999.99f, PH = 0.0f;
                int idxPH = 0;
                cameraImage = cam.GetPlot();
                
@@ -162,15 +162,12 @@ void cameraServerLoop::step()
 
                   for (size_t k = 0; k < validPushPoints.size(); k++)
                   {
-                     robotEndPoint = plan.push(pcBox, validPushPoints[k], boxGoal);
-                     cv::circle(cameraImage, convertToCV(robotEndPoint), 3, cv::Scalar(255,0,0), -1);
-
                      if (k!=i)
                      {
                         robotEndPoint = plan.push(pcBox, validPushPoints[k], boxGoal) - validPushPoints[k];
                         robotEndPoint = robotEndPoint.Normalize() * (-OFF_SET);
                         robotEndPoint += validPushPoints[k];
-                        //cv::circle(cameraImage, convertToCV(robotEndPoint), 7, cv::Scalar(255,0,0), -1);
+                        cv::circle(cameraImage, convertToCV(robotEndPoint), INTERWHEEL_DISTANCE*SCALE/2.0f, cv::Scalar(0,0,0), -1);
                      }
                   }
 
@@ -206,7 +203,7 @@ void cameraServerLoop::step()
                   // std::cout << "corner: " << validPushPoints[i] << std::endl;
                   /*Reset variables*/
                   PH = 0.0f;
-                  shortestDistance = 9999.99f;
+                  shortestDistance = 999999.99f;
                }
 
                threadsOpened = true;
@@ -289,7 +286,7 @@ void cameraServerLoop::step()
 
             argos::Real distanceToGoal = sqrt(pow(boxGoal.GetX() - boxOrigin.GetX(), 2) + pow(boxGoal.GetY() - boxOrigin.GetY(), 2));
             std::cout << "dist: " << distanceToGoal << std::endl;
-            if(distanceToGoal < 0.049999f)
+            if(distanceToGoal < 0.19999f)
             {
                std::cout << "IN GOAL RANGE\n";
                for (size_t i = 0; i < clientcount; i++)
