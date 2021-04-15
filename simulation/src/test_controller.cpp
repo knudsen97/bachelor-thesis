@@ -70,6 +70,9 @@ void test_controller::ControlStep()
     robotPos.Orientation.ToEulerAngles(xAngle, yAngle, zAngle);
     robotPosition = robotPos.Position; 
 
+    controller control(SAMPLING_RATE*5, 2000, 100, 1);
+    controller::wVelocity wVel;
+
     if (!joined)
     {
         connecting.join();
@@ -116,8 +119,9 @@ void test_controller::ControlStep()
         }
         if (wait_time > 20 && !sendWaitState)
         {
-            connection.send(robotPos.Position);
-            wait_time = 0;
+            // connection.send(robotPos.Position);
+            // wait_time = 0;
+            currentState = UPDATE_SERVER;
         }
         else if(wait_time > 20 && sendWaitState)
         {
@@ -160,9 +164,8 @@ void test_controller::ControlStep()
     {
         std::cout << "CLIENT ORIENTATE\n";
 
-        controller con(SAMPLING_RATE*5, 2000, 100, 1);
-        controller::wVelocity wVel;
-        wVel = con.angleControl(xAngle, goalAngle);
+
+        wVel = control.angleControl(xAngle, goalAngle);
 
         // std::cout << "ROBOT ORIEN: " << abs(goalAngle.GetValue()) - abs(xAngle.GetValue()) << std::endl;
         // std::cout << "ANGLE THRES: " << ANGLE_THRESHOLD << std::endl;
@@ -197,7 +200,9 @@ void test_controller::ControlStep()
     case SET_VELOCITY:
     {
         std::cout << "CLIENT SET_VELOCITY\n";
-        m_pcWheels->SetLinearVelocity(pushVelocity, pushVelocity);
+        wVel = control.angleControl(xAngle, goalAngle);
+
+        m_pcWheels->SetLinearVelocity(pushVelocity + wVel.lWheel, pushVelocity + wVel.rWheel);
 
         std::string message;
         if(connection.recieve(message))
@@ -205,6 +210,7 @@ void test_controller::ControlStep()
             std::cout << message << std::endl;
             if(message == "STOP")
                 currentState = RECEIVE;
+            
         }
 
         break;
