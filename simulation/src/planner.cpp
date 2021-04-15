@@ -372,7 +372,12 @@ argos::CVector3 planner::push(argos::CBoxEntity* mBox, argos::CVector3 currentPo
 {
     argos::CVector3 boxOrigin = mBox->GetEmbodiedEntity().GetOriginAnchor().Position;
     argos::Real distance = argos::Distance(goalPoint, boxOrigin);
-    argos::CRadians orientation = argos::ATan2(goalPoint.GetY() - boxOrigin.GetY(), goalPoint.GetX() - boxOrigin.GetX());
+    argos::CRadians orientation;
+    if((boxOrigin - goalPoint).GetX() < 0 ^ (boxOrigin - goalPoint).GetY() < 0)
+        orientation = argos::ATan2(boxOrigin.GetY() - goalPoint.GetY(), boxOrigin.GetX() - goalPoint.GetX());
+    else
+        orientation = argos::ATan2(goalPoint.GetY() - boxOrigin.GetY(), goalPoint.GetX() - boxOrigin.GetX());
+
     return translate(currentPoint, orientation, distance);
 }
 
@@ -386,7 +391,7 @@ argos::CVector3 planner::push(argos::CBoxEntity* mBox, argos::CVector3 currentPo
 argos::CVector3 planner::translate(argos::CVector3 point, argos::CRadians orientation, argos::Real distance)
 {
     argos::CVector3 returnPoint;
-
+    
     returnPoint.SetX(point.GetX() + argos::Sin(orientation)*distance);
     returnPoint.SetY(point.GetY() + argos::Cos(orientation)*distance);
     returnPoint.SetZ(point.GetZ());

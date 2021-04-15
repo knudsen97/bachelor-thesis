@@ -39,7 +39,7 @@ std::vector<int> numPushPoints;
 **/
 cv::Point convertToCV(argos::CVector3 arg)
 {
-   return {arg.GetX()*SCALE, arg.GetY()*SCALE};
+   return cv::Point(arg.GetX()*SCALE, arg.GetY()*SCALE);
 }
 
 cameraServerLoop::cameraServerLoop(){
@@ -104,7 +104,7 @@ void cameraServerLoop::step()
    else
    {
       CVector3 boxGoal;
-      boxGoal.Set(1, 2, 0);
+      boxGoal.Set(2, 1, 0);
 
       std::cout << "Server state: "<< currentState << std::endl;
       /************************* FSM START *************************/
@@ -157,18 +157,24 @@ void cameraServerLoop::step()
                   std::cout << "indexPH: " << idxPH << std::endl;
 
                   cameraImage = cam.GetPlot();
+                  cv::circle(cameraImage, convertToCV( boxGoal ), 7, cv::Scalar(0,200,255), -1 );
+
+
                   for (size_t k = 0; k < validPushPoints.size(); k++)
                   {
+                     robotEndPoint = plan.push(pcBox, validPushPoints[k], boxGoal);
+                     cv::circle(cameraImage, convertToCV(robotEndPoint), 3, cv::Scalar(255,0,0), -1);
+
                      if (k!=i)
                      {
-                        robotEndPoint = plan.push(pcBox,validPushPoints[k], boxGoal) - validPushPoints[k];
-                        double sign = pcBox->GetEmbodiedEntity().GetOriginAnchor().Position.GetX() - boxGoal.GetX() < 0 ? -1 : 1;
-                        robotEndPoint = robotEndPoint.Normalize() * (OFF_SET);
+                        robotEndPoint = plan.push(pcBox, validPushPoints[k], boxGoal) - validPushPoints[k];
+                        robotEndPoint = robotEndPoint.Normalize() * (-OFF_SET);
                         robotEndPoint += validPushPoints[k];
-                        cv::circle(cameraImage, convertToCV( robotEndPoint ),INTERWHEEL_DISTANCE*SCALE/2.0f, cv::Scalar(0,0,0), -1 );
+                        //cv::circle(cameraImage, convertToCV(robotEndPoint), 7, cv::Scalar(255,0,0), -1);
                      }
                   }
-                  /*Define a kernel and erode the map inorder to not get close to obstacles*/
+
+                  /* Define a kernel and erode the map in order to not get close to obstacles */
                   int dilation_size = 0.15*SCALE;
                   cv::Mat kernel = cv::getStructuringElement( cv::MORPH_ELLIPSE,
                      cv::Size( 2*dilation_size + 1, 2*dilation_size+1 ),
