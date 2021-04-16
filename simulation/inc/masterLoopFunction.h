@@ -10,7 +10,7 @@
 
 using namespace argos;
 
-class masterLoopFunction : public cameraServerLoop, public camera  
+class masterLoopFunction : public camera  
 {
 private:
     /* data */

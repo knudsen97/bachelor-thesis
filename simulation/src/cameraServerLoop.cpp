@@ -64,19 +64,20 @@ void debugFun(int _clientcount, bool a = true)
 
 cameraServerLoop::cameraServerLoop(){
    /* data */
-   cameraServerLoop::positionRecieved = false;
-   cameraServerLoop::cornerFound = false;
    cameraServerLoop::currentState = 0;
    cameraServerLoop::threadsOpened = false;
    cameraServerLoop::allPositionRecieved = false;
    cameraServerLoop::prepareToPushDone = false;
    cameraServerLoop::stateCheck = 0;
+   connected = false;
    currentState = DISTRIBUTE_CORNERS;
 }
 
-void cameraServerLoop::operator()(int clientcount_) 
+void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, argos::CBoxEntity* pcBox_)
 {
    clientcount = clientcount_;
+   boxGoal = boxGoal_;
+   pcBox = pcBox_;
    startLocations.resize(clientcount);
 
    //debug
@@ -99,169 +100,170 @@ void cameraServerLoop::operator()(int clientcount_)
 void cameraServerLoop::connect() 
 {
    std::thread connecting(&cameraServerLoop::connect_, this);
-   connecting.join();
+   connecting.detach();
 }
 
 
 
 void cameraServerLoop::step()
 {
-   //get robot positions
-   if (!allPositionRecieved)
+   if (connected)
    {
-      allPositionRecieved = true;
-
-      for (size_t i = 0; i < clientcount; i++)
+      //get robot positions
+      if (!allPositionRecieved)
       {
-         if (!recievedPosition[i])
+         allPositionRecieved = true;
+
+         for (size_t i = 0; i < clientcount; i++)
          {
-            argos::CVector3 position;
-            recievedPosition[i] = clientConnections[i].recieve(position);
-            startLocations[i] = position;
-         }
-         allPositionRecieved &= recievedPosition[i];  
-         argos::LOG << "recievedPosition " << i << " :" << recievedPosition[i] << '\n';
-      }
-   }
-   else
-   {
-      argos::CVector3 boxGoal;
-      boxGoal.Set(5.5, 5.5, 0);
-
-      std::cout << "Server state: "<< currentState << std::endl;
-      /************************* FSM START *************************/
-      switch (currentState)
-      {
-         /************************* DISTRIBUTE_CORNERS *************************/
-         case DISTRIBUTE_CORNERS:
-         { 
-            std::cout << "SERVER DIST_CORNERS\n";
-            if(!threadsOpened)
+            if (!recievedPosition[i])
             {
-               /* Define containers */
-               std::vector<argos::CVector3> validPushPoints;
-               std::vector<std::thread> robotThreads;
-               std::vector<bool> isRobotAssigned;
-
-               /* Find where to push on the box to get to goal */
-               validPushPoints = plan.FindPushPoints(pcBox, boxGoal);
-               std::cout << "push points: " << validPushPoints.size() << std::endl;
-               for(auto point : validPushPoints)
-                  std::cout << "point: " << point << std::endl;
-
-               robotThreads.resize(startLocations.size());
-               threadCurrentState.resize(startLocations.size(), PLANNING);
-               isRobotAssigned.resize(startLocations.size(), false);
-
-               /* Find absolute distance between point and robot and assign shortest distance to each robot */               
-               for(size_t i = 0; i < validPushPoints.size(); i++)
-               {
-                  int idxPH = cornerAllocation(startLocations, validPushPoints[i], isRobotAssigned);
-                  isRobotAssigned[idxPH] = true;
-                  std::cout << "indexPH: " << idxPH << std::endl;
-
-                  /* Get image of the current map & draw endpoints */
-                  cameraImage = cam.GetPlot();
-                  cv::circle(cameraImage, convertToCV( boxGoal ), 7, cv::Scalar(0,200,255), -1 );
-                  drawEndPoints(i, plan, pcBox, validPushPoints, boxGoal, cameraImage);
-
-                  /* Define a kernel and erode the map in order to not get close to obstacles */
-                  int dilation_size = 0.15*SCALE;
-                  cv::Mat kernel = cv::getStructuringElement( cv::MORPH_ELLIPSE,
-                     cv::Size( 2*dilation_size + 1, 2*dilation_size+1 ),
-                     cv::Point( dilation_size, dilation_size ) );
-                  cv::erode(cameraImage, cameraImage, kernel);
-
-                  /* Planning */
-                  std::vector<cv::Point> subGoals;
-                  bool planComplete = Planning(cameraImage, boxGoal, startLocations[idxPH], validPushPoints[i], subGoals);
-
-                  /* Visualization */
-                  for(auto point : subGoals)
-                     cv::circle(cameraImage, point, 5, cv::Scalar(0,200,200), -1);
-                  cv::circle(cameraImage, cv::Point(startLocations[idxPH].GetX()*SCALE, startLocations[idxPH].GetY()*SCALE) , 5, cv::Scalar(0,0,255), -1);
-                  cv::circle(cameraImage, subGoals.back(), 5, cv::Scalar(0,255,0), -1);
-                  cv::imshow("map", cameraImage);
-                  cv::waitKey(0);
-
-                  /* Start thread */
-                  std::cout << "subGoals: " << subGoals.size() << std::endl;
-                  robotThreads[idxPH] = std::thread(&cameraServerLoop::PrepareToPush, this, boxGoal, 
-                                                         subGoals, threadCurrentState[idxPH], idxPH);
-                  robotThreads[idxPH].detach();
-
-               }
-
-               threadsOpened = true;
+               argos::CVector3 position;
+               recievedPosition[i] = clientConnections[i].recieve(position);
+               startLocations[i] = position;
             }
-            else
-            {
-               /*Debug*/
-               debugFun(clientcount, false);
+            allPositionRecieved &= recievedPosition[i];  
+            argos::LOG << "recievedPosition " << i << " :" << recievedPosition[i] << '\n';
+         }
+      }
+      else
+      {
 
-               /* Checks for the robots' states and moves on if all are in WAIT state */
-               stateCheck = 0;
-               for(size_t i = 0; i < clientcount; i++)
+         std::cout << "Server state: "<< currentState << std::endl;
+         /************************* FSM START *************************/
+         switch (currentState)
+         {
+            /************************* DISTRIBUTE_CORNERS *************************/
+            case DISTRIBUTE_CORNERS:
+            { 
+               std::cout << "SERVER DIST_CORNERS\n";
+               if(!threadsOpened)
                {
-                  if(threadCurrentState[i] == WAIT)
+                  /* Define containers */
+                  std::vector<argos::CVector3> validPushPoints;
+                  std::vector<std::thread> robotThreads;
+                  std::vector<bool> isRobotAssigned;
+
+                  /* Find where to push on the box to get to goal */
+                  validPushPoints = plan.FindPushPoints(pcBox, boxGoal);
+                  std::cout << "push points: " << validPushPoints.size() << std::endl;
+                  for(auto point : validPushPoints)
+                     std::cout << "point: " << point << std::endl;
+
+                  robotThreads.resize(startLocations.size());
+                  threadCurrentState.resize(startLocations.size(), PLANNING);
+                  isRobotAssigned.resize(startLocations.size(), false);
+
+                  /* Find absolute distance between point and robot and assign shortest distance to each robot */               
+                  for(size_t i = 0; i < validPushPoints.size(); i++)
                   {
-                     stateCheck++;
+                     int idxPH = cornerAllocation(startLocations, validPushPoints[i], isRobotAssigned);
+                     isRobotAssigned[idxPH] = true;
+                     std::cout << "indexPH: " << idxPH << std::endl;
+
+                     /* Get image of the current map & draw endpoints */
+                     cameraImage = cam.GetPlot();
+                     cv::circle(cameraImage, convertToCV( boxGoal ), 7, cv::Scalar(0,200,255), -1 );
+                     drawEndPoints(i, plan, pcBox, validPushPoints, boxGoal, cameraImage);
+
+                     /* Define a kernel and erode the map in order to not get close to obstacles */
+                     int dilation_size = 0.15*SCALE;
+                     cv::Mat kernel = cv::getStructuringElement( cv::MORPH_ELLIPSE,
+                        cv::Size( 2*dilation_size + 1, 2*dilation_size+1 ),
+                        cv::Point( dilation_size, dilation_size ) );
+                     cv::erode(cameraImage, cameraImage, kernel);
+
+                     /* Planning */
+                     std::vector<cv::Point> subGoals;
+                     bool planComplete = Planning(cameraImage, boxGoal, startLocations[idxPH], validPushPoints[i], subGoals);
+
+                     /* Visualization */
+                     for(auto point : subGoals)
+                        cv::circle(cameraImage, point, 5, cv::Scalar(0,200,200), -1);
+                     cv::circle(cameraImage, cv::Point(startLocations[idxPH].GetX()*SCALE, startLocations[idxPH].GetY()*SCALE) , 5, cv::Scalar(0,0,255), -1);
+                     cv::circle(cameraImage, subGoals.back(), 5, cv::Scalar(0,255,0), -1);
+                     cv::imshow("map", cameraImage);
+                     cv::waitKey(0);
+
+                     /* Start thread */
+                     std::cout << "subGoals: " << subGoals.size() << std::endl;
+                     robotThreads[idxPH] = std::thread(&cameraServerLoop::PrepareToPush, this, boxGoal, 
+                                                            subGoals, threadCurrentState[idxPH], idxPH);
+                     robotThreads[idxPH].detach();
+
+                  }
+
+                  threadsOpened = true;
+               }
+               else
+               {
+                  /*Debug*/
+                  debugFun(clientcount, false);
+
+                  /* Checks for the robots' states and moves on if all are in WAIT state */
+                  stateCheck = 0;
+                  for(size_t i = 0; i < clientcount; i++)
+                  {
+                     if(threadCurrentState[i] == WAIT)
+                     {
+                        stateCheck++;
+                     }
+                  }
+                  
+                  if(stateCheck == clientcount)
+                     currentState = JOIN_THREADS;
+               }
+               break;
+            }
+
+            /************************* JOIN_THREADS *************************/
+            case JOIN_THREADS:
+            {
+               std::cout << "SERVER JOIN_THREADS\n";
+
+               /* This will end the while loop running in the thread making them exit */
+               prepareToPushDone = true;
+               currentState = SEND_VELOCITY;
+               break;
+            }
+
+            /************************* SEND_VELOCITY *************************/
+            case SEND_VELOCITY:
+            {
+               std::cout << "SERVER SEND_VELOCITY\n";
+               argos::Real velocityMessage = 2.0f;
+               for(int i = 0; i < clientcount; i++)
+               {
+                  if(clientConnections[i].send(velocityMessage));
+                  {
+                     currentState = WAIT;
                   }
                }
-               
-               if(stateCheck == clientcount)
-                  currentState = JOIN_THREADS;
+               break;
             }
-            break;
-         }
 
-         /************************* JOIN_THREADS *************************/
-         case JOIN_THREADS:
-         {
-            std::cout << "SERVER JOIN_THREADS\n";
-
-            /* This will end the while loop running in the thread making them exit */
-            prepareToPushDone = true;
-            currentState = SEND_VELOCITY;
-            break;
-         }
-
-         /************************* SEND_VELOCITY *************************/
-         case SEND_VELOCITY:
-         {
-            std::cout << "SERVER SEND_VELOCITY\n";
-            argos::Real velocityMessage = 2.0f;
-            for(int i = 0; i < clientcount; i++)
+            /************************* WAIT *************************/
+            case WAIT:
             {
-               if(clientConnections[i].send(velocityMessage));
+               std::cout << "SERVER WAIT\n";
+
+               bool inRange = serverWaitState(pcBox, boxGoal, clientcount, clientConnections, true);
+               if(inRange)
+                  currentState = SEND_STOP;
+               break;
+            }
+
+            /************************* SEND_STOP *************************/
+            case SEND_STOP:
+            {
+               std::cout << "SERVER SEND_STOP\n";
+               argos::Real velocityMessage = 0.0f;
+               for(int i = 0; i < clientcount; i++)
                {
-                  currentState = WAIT;
+                  if(clientConnections[i].send(velocityMessage));
                }
+               break;
             }
-            break;
-         }
-
-         /************************* WAIT *************************/
-         case WAIT:
-         {
-            std::cout << "SERVER WAIT\n";
-
-            bool inRange = serverWaitState(pcBox, boxGoal, clientcount, clientConnections, true);
-            if(inRange)
-               currentState = SEND_STOP;
-            break;
-         }
-
-         /************************* SEND_STOP *************************/
-         case SEND_STOP:
-         {
-            std::cout << "SERVER SEND_STOP\n";
-            argos::Real velocityMessage = 0.0f;
-            for(int i = 0; i < clientcount; i++)
-            {
-               if(clientConnections[i].send(velocityMessage));
-            }
-            break;
          }
       }
    }
@@ -279,6 +281,7 @@ void cameraServerLoop::connect_()
       clientConnections.push_back(protocol(clientSockets[i]));
       clientConnected++;
    }
+   connected = true;
 }
 
 /**
@@ -425,9 +428,4 @@ bool cameraServerLoop::Planning(cv::Mat &map_, argos::CVector3 goal, argos::CVec
 
 
 /*Static variables definitions*/
-int cameraServerLoop::clientcount = 0;
 int cameraServerLoop::portnumber = 0;
-
-argos::CBoxEntity* cameraServerLoop::pcBox(NULL);
-argos::CFootBotEntity* cameraServerLoop::fBot(NULL);
-

@@ -40,7 +40,7 @@ void test_controller::connect()
             ;
         }
     }
-    
+    connected = true;
 }
 
 test_controller::test_controller() :
@@ -58,166 +58,175 @@ void test_controller::Init(argos::TConfigurationNode& t_node)
 
     argos::GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
 
-    connecting = std::thread{[=] { connect();}};
+
 
     currentState = RECEIVE;
 }
 void test_controller::ControlStep()
 {
-    //argos::LOG << "footbot id: "<< CCI_Controller::GetId() << '\n';
-    const argos::CCI_PositioningSensor::SReading& robotPos = posSensor->GetReading();
-    argos::CRadians xAngle, yAngle, zAngle;
-    robotPos.Orientation.ToEulerAngles(xAngle, yAngle, zAngle);
-    robotPosition = robotPos.Position; 
-
-    controller control(SAMPLING_RATE*5, 2000, 100, 1);
-    controller::wVelocity wVel;
-
-    if (!joined)
+    if (!connected)
     {
-        connecting.join();
-        joined = true;
-        connection(clientSocket);
-    } 
-    if(!sentPosition)
-        sentPosition = connection.send(robotPosition);
-
-    /************************* FSM START *************************/
-    switch (currentState)
+        connecting = std::thread(&test_controller::connect, this);
+        connecting.detach();
+    }
+    else
     {
-    /************************* RECEIVE *************************/
-    case RECEIVE:
-    {
-        wait_time++;
-        std::cout << "CLIENT RECEIVE\n";
+        //argos::LOG << "footbot id: "<< CCI_Controller::GetId() << '\n';
+        const argos::CCI_PositioningSensor::SReading& robotPos = posSensor->GetReading();
+        argos::CRadians xAngle, yAngle, zAngle;
+        robotPos.Orientation.ToEulerAngles(xAngle, yAngle, zAngle);
+        robotPosition = robotPos.Position; 
 
-        if(connection.recieve())
+        controller control(SAMPLING_RATE*5, 2000, 100, 1);
+        controller::wVelocity wVel;
+
+        if (!joined)
         {
-            switch (connection.getMessageType())
+            joined = true;
+            connection(clientSocket);
+        } 
+        if(!sentPosition)
+            sentPosition = connection.send(robotPosition);
+
+        /************************* FSM START *************************/
+        switch (currentState)
+        {
+        /************************* RECEIVE *************************/
+        case RECEIVE:
+        {
+            wait_time++;
+            std::cout << "CLIENT RECEIVE\n";
+
+            if(connection.recieve())
             {
-            case protocol::dataType::typeCVector3:
-                connection.getMessage(goalPointMessage);
-                if(goalPointMessage != argos::CVector3(0,0,0))
+                switch (connection.getMessageType())
                 {
-                    currentState = GO_TO_POINT;
+                case protocol::dataType::typeCVector3:
+                    connection.getMessage(goalPointMessage);
+                    if(goalPointMessage != argos::CVector3(0,0,0))
+                    {
+                        currentState = GO_TO_POINT;
+                    }
+                    break;
+                
+                case protocol::dataType::typeCRadians:
+                    connection.getMessage(goalAngle);
+                    currentState = ORIENTATE;
+                    break;
+
+                case protocol::dataType::typeReal:
+                    connection.getMessage(pushVelocity);
+                    currentState = SET_VELOCITY;
+                    break;
+
+                default:
+                    break;
                 }
-                break;
-            
-            case protocol::dataType::typeCRadians:
-                connection.getMessage(goalAngle);
-                currentState = ORIENTATE;
-                break;
-
-            case protocol::dataType::typeReal:
-                connection.getMessage(pushVelocity);
-                currentState = SET_VELOCITY;
-                break;
-
-            default:
-                break;
             }
-        }
-        if (wait_time > 20 && !sendWaitState)
-        {
-            // connection.send(robotPos.Position);
-            // wait_time = 0;
-            currentState = UPDATE_SERVER;
-        }
-        else if(wait_time > 20 && sendWaitState)
-        {
-            sendWaitState = false;
-            currentState = WAIT;
-        }
-        
-    }
-    break;
-
-    /************************* GO TO POINT *************************/
-    case GO_TO_POINT:
-    {
-        std::cout << "CLIENT GO_TO_POINT\n";
-
-        argos::CRadians desiredAngle;
-        desiredAngle = argos::ATan2(goalPointMessage.GetY() - robotPos.Position.GetY(), goalPointMessage.GetX() - robotPos.Position.GetX());
-        pointReached = test_controller::ReadyToPush(robotPos, goalPointMessage, desiredAngle, xAngle);
-       
-        if(pointReached)
-            currentState = UPDATE_SERVER;
-
-    }
-    break;
-
-    /************************* UPDATE SERVER *************************/
-    case UPDATE_SERVER:
-    {
-        std::cout << "CLIENT UPDATE SERVER\n";
-        if(connection.send(robotPos.Position))
-        {
-            currentState = RECEIVE;
-        }
-        wait_time = 0;
-    }
-    break;
-
-    /************************* ORIENTATE *************************/
-    case ORIENTATE:
-    {
-        std::cout << "CLIENT ORIENTATE\n";
-
-
-        wVel = control.angleControl(xAngle, goalAngle);
-
-        // std::cout << "ROBOT ORIEN: " << abs(goalAngle.GetValue()) - abs(xAngle.GetValue()) << std::endl;
-        // std::cout << "ANGLE THRES: " << ANGLE_THRESHOLD << std::endl;
-        if(abs(goalAngle.GetValue() - xAngle.GetValue()) >= 0.024999f)
-        {
-            m_pcWheels->SetLinearVelocity(wVel.lWheel, wVel.rWheel);
-        }
-        else
-        {
-            m_pcWheels->SetLinearVelocity(0,0);
-            currentState = WAIT;
-        }
-
-    }
-    break;
-
-    /************************* WAIT *************************/
-    case WAIT:
-    {
-        std::cout << "CLIENT WAIT\n";
-        if(connection.send("WAIT"))
-        {
-            sendWaitState = true;
-            currentState = RECEIVE;
-        }
-        wait_time = 0;
-
-        break;
-    }
-
-    /************************* SET_VELOCITY *************************/
-    case SET_VELOCITY:
-    {
-        std::cout << "CLIENT SET_VELOCITY\n";
-        wVel = control.angleControl(xAngle, goalAngle);
-
-        m_pcWheels->SetLinearVelocity(pushVelocity + wVel.lWheel, pushVelocity + wVel.rWheel);
-
-        std::string message;
-        if(connection.recieve(message))
-        {
-            std::cout << message << std::endl;
-            if(message == "STOP")
-                currentState = RECEIVE;
+            if (wait_time > 20 && !sendWaitState)
+            {
+                // connection.send(robotPos.Position);
+                // wait_time = 0;
+                currentState = UPDATE_SERVER;
+            }
+            else if(wait_time > 20 && sendWaitState)
+            {
+                sendWaitState = false;
+                currentState = WAIT;
+            }
             
         }
-
         break;
-    }
+
+        /************************* GO TO POINT *************************/
+        case GO_TO_POINT:
+        {
+            std::cout << "CLIENT GO_TO_POINT\n";
+
+            argos::CRadians desiredAngle;
+            desiredAngle = argos::ATan2(goalPointMessage.GetY() - robotPos.Position.GetY(), goalPointMessage.GetX() - robotPos.Position.GetX());
+            pointReached = test_controller::ReadyToPush(robotPos, goalPointMessage, desiredAngle, xAngle);
+        
+            if(pointReached)
+                currentState = UPDATE_SERVER;
+
+        }
+        break;
+
+        /************************* UPDATE SERVER *************************/
+        case UPDATE_SERVER:
+        {
+            std::cout << "CLIENT UPDATE SERVER\n";
+            if(connection.send(robotPos.Position))
+            {
+                currentState = RECEIVE;
+            }
+            wait_time = 0;
+        }
+        break;
+
+        /************************* ORIENTATE *************************/
+        case ORIENTATE:
+        {
+            std::cout << "CLIENT ORIENTATE\n";
 
 
+            wVel = control.angleControl(xAngle, goalAngle);
+
+            // std::cout << "ROBOT ORIEN: " << abs(goalAngle.GetValue()) - abs(xAngle.GetValue()) << std::endl;
+            // std::cout << "ANGLE THRES: " << ANGLE_THRESHOLD << std::endl;
+            if(abs(goalAngle.GetValue() - xAngle.GetValue()) >= 0.024999f)
+            {
+                m_pcWheels->SetLinearVelocity(wVel.lWheel, wVel.rWheel);
+            }
+            else
+            {
+                m_pcWheels->SetLinearVelocity(0,0);
+                currentState = WAIT;
+            }
+
+        }
+        break;
+
+        /************************* WAIT *************************/
+        case WAIT:
+        {
+            std::cout << "CLIENT WAIT\n";
+            if(connection.send("WAIT"))
+            {
+                sendWaitState = true;
+                currentState = RECEIVE;
+            }
+            wait_time = 0;
+
+            break;
+        }
+
+        /************************* SET_VELOCITY *************************/
+        case SET_VELOCITY:
+        {
+            std::cout << "CLIENT SET_VELOCITY\n";
+            wVel = control.angleControl(xAngle, goalAngle);
+
+            m_pcWheels->SetLinearVelocity(pushVelocity + wVel.lWheel, pushVelocity + wVel.rWheel);
+
+            std::string message;
+            if(connection.recieve(message))
+            {
+                std::cout << message << std::endl;
+                if(message == "STOP")
+                    currentState = RECEIVE;
+                
+            }
+
+            break;
+        }
+
+
+        }
     }
+    
+
 }
 
 /**
