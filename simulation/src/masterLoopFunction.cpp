@@ -39,7 +39,11 @@ void masterLoopFunction::Init(argos::TConfigurationNode& t_tree) {
 
    server(footbotCount);
    server.connect();
-   //std::cout << "Finish master init" << std::endl;
+
+   /* Set goals for white and blue boxes */
+   argos::CVector3 blueGoal (1,5,0);
+   argos::CVector3 whiteGoal(5,1,0);
+   swarmMan.setGoals(blueGoal, whiteGoal);
 
 }
 
@@ -51,16 +55,35 @@ void masterLoopFunction::PreStep()
       camera::objectContainer[i]->step();
       
    argos::CSpace::TMapPerType& boxMap = GetSpace().GetEntitiesByType("box");
-   for (argos::CSpace::TMapPerType::iterator iterator = boxMap.begin(); iterator != boxMap.end(); ++iterator)
-   {   
-      pcBox = argos::any_cast<argos::CBoxEntity*>(iterator->second);
-      if (pcBox->GetId() == "box1")
-         break;
+   
+   size_t i = 0;
+   for(argos::CSpace::TMapPerType::iterator iterator = boxMap.begin(); iterator != boxMap.end(); ++iterator, i++)
+   {
+      argos::CBoxEntity* box = argos::any_cast<argos::CBoxEntity*>(iterator->second);
+
+      std::string boxId = box->GetId();
+      if(firstIteration)
+      {
+         if(boxId.compare(0,3,"box") == 0)
+            swarmMan.swarmBoxes.push_back(box);
+      }
+      else
+      {
+         if(boxId.compare(0,3,"box") == 0)
+            swarmMan.swarmBoxes[i] = box;
+      }
+      i++;
+   }
+   if(firstIteration)
+   {
+      numBoxes = swarmMan.swarmBoxes.size();
+      firstIteration = false;
    }
 
-   server.step();
+   pcBox = swarmMan.swarmBoxes[0];
 
-      
+   server.step();
+   swarmMan.step();
 }
 
 

@@ -7,15 +7,19 @@
 
 #include "cameraServerLoop.h"
 #include "camera.h"
+#include "swarmManager.h"
 
 using namespace argos;
 
-class masterLoopFunction : public cameraServerLoop, public camera  
+class masterLoopFunction : public cameraServerLoop, public camera, public swarmManager  
 {
 private:
     /* data */
+    bool firstIteration = true;
+    int numBoxes = 0;
 public:
     cameraServerLoop server;
+    swarmManager swarmMan;
     virtual void Init(argos::TConfigurationNode& t_tree);
     virtual void PreStep();
 
