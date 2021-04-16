@@ -1,5 +1,4 @@
 #include "../inc/masterLoopFunction.h"
-bool firstRun = true;
 int footbotCount = 0;
 
 masterLoopFunction::masterLoopFunction() 
@@ -38,8 +37,8 @@ void masterLoopFunction::Init(argos::TConfigurationNode& t_tree) {
    for (argos::CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
       footbotCount++;
 
-   server(footbotCount);
-   server.connect();
+   // server(footbotCount);
+   // server.connect();
 
    /* Set goals for white and blue boxes */
    argos::CVector3 blueGoal (1,5,0);
@@ -80,18 +79,13 @@ void masterLoopFunction::PreStep()
    if(firstIteration)
    {
       numBoxes = swarmMan.swarmBoxes.size();
-      firstIteration = false;
-   }
-   if (firstRun)
-   {
       server(footbotCount, {2,2,0}, pcBox);
       server.connect();
-      firstRun = false;
+      firstIteration = false;
    }
 
-   pcBox = swarmMan.swarmBoxes[0];
-
-   server.step();
+   //pcBox = swarmMan.swarmBoxes[0];
+   //server.step(); //Den crasher programmet
    swarmMan.step();
 }
 
