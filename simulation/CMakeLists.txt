@@ -65,6 +65,7 @@ add_library(src MODULE
   ${simulation_SOURCE_DIR}/src/protocol.cpp
   ${simulation_SOURCE_DIR}/src/sort_loop_function.cpp
   ${simulation_SOURCE_DIR}/inc/matplotlibcpp.h
+  ${simulation_SOURCE_DIR}/src/swarmManager.cpp
 )
 
 
