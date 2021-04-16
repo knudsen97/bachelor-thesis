@@ -20,11 +20,10 @@
 class cameraServerLoop {
 protected:
     /* data */
-    static int clientcount;
-    static int portnumber;
+    int clientcount;
 
-    static argos::CBoxEntity* pcBox;
-    static argos::CFootBotEntity* fBot;
+    argos::CBoxEntity* pcBox;
+    argos::CFootBotEntity* fBot;
 
     /* socket stuff*/
     argos::CTCPSocket serverSocket;
@@ -32,42 +31,36 @@ protected:
     std::vector<argos::CVector3> robotPositions;
     std::vector<protocol> clientConnections;
     int clientConnected;
-
-
-    bool positionRecieved;
-
-    std::vector<argos::CVector3> startLocations;
-    camera C;
-
-    bool cornerFound;
-
-    int currentState;
-
-    std::vector<int> threadCurrentState;
-
-    bool threadsOpened;
-
-    std::vector<bool> recievedPosition;
-
-    bool allPositionRecieved;
-
-    bool prepareToPushDone;
-    int stateCheck;
-
+    bool connected;
     void connect_();
 
+    /* camera stuff */
+    camera C;
     camera cam;
     cv::Mat cameraImage;
 
-    planner plan;
-
-
+    /* debug stuff */
     std::vector<double> debug;
     std::vector<cv::Mat> debugMaps;
 
+    /* uncategorized stuff */
+    argos::CVector3 boxGoal;                            //final destination for the box
+    std::vector<argos::CVector3> startLocations;        //robot location
+    int currentState;                                   //cameraServerloop state
+    std::vector<int> threadCurrentState;                //to check if thread is in wait state
+    int stateCheck;                                     //to check if all thread is in wait state
+    bool threadsOpened;                                 //used to open threads 1 time only
+    std::vector<bool> recievedPosition;                 //to check if bots position has been recieved
+    bool allPositionRecieved;                           //to check if all bots position has been recieved
+    bool prepareToPushDone;                             //to stop all thread from running
+    planner plan;                                       //plan
+
+
 
 public:
-    void operator()(int clientcount_);
+    static int portnumber;
+
+    void operator()(int clientcount_, argos::CVector3 boxGoal_, argos::CBoxEntity* pcBox_);
     cameraServerLoop();
     
     void connect();

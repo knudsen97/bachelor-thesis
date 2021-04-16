@@ -1,5 +1,6 @@
 #include "../inc/masterLoopFunction.h"
-
+bool firstRun = true;
+int footbotCount = 0;
 
 masterLoopFunction::masterLoopFunction() 
 {
@@ -32,7 +33,7 @@ void masterLoopFunction::Init(argos::TConfigurationNode& t_tree) {
       THROW_ARGOSEXCEPTION_NESTED("Error initializing the loop functions", ex);
    }
 
-   int footbotCount = 0;
+
    argos::CSpace::TMapPerType& FBmap = GetSpace().GetEntitiesByType("foot-bot");
    for (argos::CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
       footbotCount++;
@@ -49,6 +50,8 @@ void masterLoopFunction::Init(argos::TConfigurationNode& t_tree) {
 
 void masterLoopFunction::PreStep() 
 {
+
+   argos::CBoxEntity* pcBox;
    //std::cout << "Loopfunction PreStep" << std::endl;
    //std::cout << "client count: " << cameraServerLoop::clientcount << std::endl;   
    for (size_t i = 0; i < camera::objectContainer.size(); i++)
@@ -78,6 +81,12 @@ void masterLoopFunction::PreStep()
    {
       numBoxes = swarmMan.swarmBoxes.size();
       firstIteration = false;
+   }
+   if (firstRun)
+   {
+      server(footbotCount, {2,2,0}, pcBox);
+      server.connect();
+      firstRun = false;
    }
 
    pcBox = swarmMan.swarmBoxes[0];

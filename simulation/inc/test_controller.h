@@ -74,6 +74,7 @@ public:
    static size_t robotBufferSize;
    bool joined = false;
    bool sentPosition = false;
+   bool connected = false;
 
 
 private:
