@@ -17,8 +17,6 @@
 #include "../inc/camera.h"
 
 
-using namespace argos;
-
 class cameraServerLoop
 {
 protected:
@@ -26,8 +24,8 @@ protected:
     static int clientcount;
     static int portnumber;
 
-    static CBoxEntity* pcBox;
-    static CFootBotEntity* fBot;
+    static argos::CBoxEntity* pcBox;
+    static argos::CFootBotEntity* fBot;
 
     /* socket stuff*/
     argos::CTCPSocket serverSocket;
@@ -39,7 +37,7 @@ protected:
 
     bool positionRecieved;
 
-    std::vector<CVector3> startLocations;
+    std::vector<argos::CVector3> startLocations;
     camera C;
 
     bool cornerFound;

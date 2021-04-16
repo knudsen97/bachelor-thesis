@@ -27,31 +27,31 @@
 #define BUFFERSIZE 4
 #define V_0 4
 
-using namespace argos;
+//using namespace argos;
 
-class test_controller : public CCI_Controller, public CLoopFunctions, public CBoxEntity { 
+class test_controller : public argos::CCI_Controller, public argos::CLoopFunctions, public argos::CBoxEntity { 
 public:
    /*Constructor*/
    test_controller();
    ~test_controller(){}
 
    /*ArgOS functions*/
-   virtual void Init(TConfigurationNode& t_node);
+   virtual void Init(argos::TConfigurationNode& t_node);
    virtual void ControlStep();
 
    /*Planning functions*/
    bool Planning(argos::CVector3 &goal);
-   bool ReadyToPush(const CCI_PositioningSensor::SReading& robotPos, 
+   bool ReadyToPush(const argos::CCI_PositioningSensor::SReading& robotPos, 
                      argos::CVector3& goalPoint, argos::CRadians& desiredAngle, argos::CRadians& robotAngle, int v0 = V_0);
 
 private:
-   CCI_DifferentialSteeringActuator* m_pcWheels;
-   CCI_PositioningSensor* posSensor;
-   CCI_CameraSensor* camSensor;
-   CCI_FootBotProximitySensor* proxSensor;
-   CBoxEntity* pcBox;
-   Real m_fWheelVelocity;
-   CVector3 robotPosition;
+   argos::CCI_DifferentialSteeringActuator* m_pcWheels;
+   argos::CCI_PositioningSensor* posSensor;
+   argos::CCI_CameraSensor* camSensor;
+   argos::CCI_FootBotProximitySensor* proxSensor;
+   argos::CBoxEntity* pcBox;
+   argos::Real m_fWheelVelocity;
+   argos::CVector3 robotPosition;
 
    /*State machine variables*/
    bool pointReached = false;

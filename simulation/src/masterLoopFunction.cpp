@@ -15,16 +15,16 @@ void masterLoopFunction::Init(argos::TConfigurationNode& t_tree) {
 
    
    try {
-         TConfigurationNodeIterator itDistr;         
+         argos::TConfigurationNodeIterator itDistr;         
          /* Get current node */
          for(itDistr = itDistr.begin(&t_tree);
             itDistr != itDistr.end();
             ++itDistr) 
             {
-            TConfigurationNode& tDistr = *itDistr;
+            argos::TConfigurationNode& tDistr = *itDistr;
             if(itDistr->Value() == "server") {
                 
-                GetNodeAttribute(tDistr, "port", cameraServerLoop::portnumber);
+               argos::GetNodeAttribute(tDistr, "port", cameraServerLoop::portnumber);
             }
          }
       }  
@@ -33,8 +33,8 @@ void masterLoopFunction::Init(argos::TConfigurationNode& t_tree) {
    }
 
    int footbotCount = 0;
-   CSpace::TMapPerType& FBmap = GetSpace().GetEntitiesByType("foot-bot");
-   for (CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
+   argos::CSpace::TMapPerType& FBmap = GetSpace().GetEntitiesByType("foot-bot");
+   for (argos::CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
       footbotCount++;
 
    server(footbotCount);
@@ -50,10 +50,10 @@ void masterLoopFunction::PreStep()
    for (size_t i = 0; i < camera::objectContainer.size(); i++)
       camera::objectContainer[i]->step();
       
-   CSpace::TMapPerType& boxMap = GetSpace().GetEntitiesByType("box");
-   for (CSpace::TMapPerType::iterator iterator = boxMap.begin(); iterator != boxMap.end(); ++iterator)
+   argos::CSpace::TMapPerType& boxMap = GetSpace().GetEntitiesByType("box");
+   for (argos::CSpace::TMapPerType::iterator iterator = boxMap.begin(); iterator != boxMap.end(); ++iterator)
    {   
-      pcBox = any_cast<CBoxEntity*>(iterator->second);
+      pcBox = argos::any_cast<argos::CBoxEntity*>(iterator->second);
       if (pcBox->GetId() == "box1")
          break;
    }

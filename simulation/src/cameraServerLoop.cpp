@@ -115,7 +115,7 @@ void cameraServerLoop::step()
       {
          if (!recievedPosition[i])
          {
-            CVector3 position;
+            argos::CVector3 position;
             recievedPosition[i] = clientConnections[i].recieve(position);
             startLocations[i] = position;
          }
@@ -125,7 +125,7 @@ void cameraServerLoop::step()
    }
    else
    {
-      CVector3 boxGoal;
+      argos::CVector3 boxGoal;
       boxGoal.Set(5.5, 5.5, 0);
 
       std::cout << "Server state: "<< currentState << std::endl;
@@ -139,7 +139,7 @@ void cameraServerLoop::step()
             if(!threadsOpened)
             {
                /* Define containers */
-               std::vector<CVector3> validPushPoints;
+               std::vector<argos::CVector3> validPushPoints;
                std::vector<std::thread> robotThreads;
                std::vector<bool> isRobotAssigned;
 
@@ -428,6 +428,6 @@ bool cameraServerLoop::Planning(cv::Mat &map_, argos::CVector3 goal, argos::CVec
 int cameraServerLoop::clientcount = 0;
 int cameraServerLoop::portnumber = 0;
 
-CBoxEntity* cameraServerLoop::pcBox(NULL);
-CFootBotEntity* cameraServerLoop::fBot(NULL);
+argos::CBoxEntity* cameraServerLoop::pcBox(NULL);
+argos::CFootBotEntity* cameraServerLoop::fBot(NULL);
 

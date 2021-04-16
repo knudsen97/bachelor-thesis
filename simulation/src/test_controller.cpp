@@ -49,14 +49,14 @@ test_controller::test_controller() :
     posSensor(NULL),
     proxSensor(NULL){}
 
-void test_controller::Init(TConfigurationNode& t_node) 
+void test_controller::Init(argos::TConfigurationNode& t_node) 
 {
 
-    m_pcWheels = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
-    posSensor = GetSensor<CCI_PositioningSensor>("positioning");
-    proxSensor = GetSensor<CCI_FootBotProximitySensor>("footbot_proximity");
+    m_pcWheels = GetActuator<argos::CCI_DifferentialSteeringActuator>("differential_steering");
+    posSensor = GetSensor<argos::CCI_PositioningSensor>("positioning");
+    proxSensor = GetSensor<argos::CCI_FootBotProximitySensor>("footbot_proximity");
 
-    GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
+    argos::GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
 
     connecting = std::thread{[=] { connect();}};
 
@@ -65,8 +65,8 @@ void test_controller::Init(TConfigurationNode& t_node)
 void test_controller::ControlStep()
 {
     //argos::LOG << "footbot id: "<< CCI_Controller::GetId() << '\n';
-    const CCI_PositioningSensor::SReading& robotPos = posSensor->GetReading();
-    CRadians xAngle, yAngle, zAngle;
+    const argos::CCI_PositioningSensor::SReading& robotPos = posSensor->GetReading();
+    argos::CRadians xAngle, yAngle, zAngle;
     robotPos.Orientation.ToEulerAngles(xAngle, yAngle, zAngle);
     robotPosition = robotPos.Position; 
 
@@ -97,7 +97,7 @@ void test_controller::ControlStep()
             {
             case protocol::dataType::typeCVector3:
                 connection.getMessage(goalPointMessage);
-                if(goalPointMessage != CVector3(0,0,0))
+                if(goalPointMessage != argos::CVector3(0,0,0))
                 {
                     currentState = GO_TO_POINT;
                 }
@@ -227,7 +227,7 @@ void test_controller::ControlStep()
  * @param desiredAngle The desired angle to reach goal
  * @param robotAngle The robots current angle
  */
-bool test_controller::ReadyToPush(const CCI_PositioningSensor::SReading& robotPos, 
+bool test_controller::ReadyToPush(const argos::CCI_PositioningSensor::SReading& robotPos, 
                                     argos::CVector3& goalPoint, argos::CRadians& desiredAngle, argos::CRadians& robotAngle, int v0)
 {
     /*Make controller instance*/
