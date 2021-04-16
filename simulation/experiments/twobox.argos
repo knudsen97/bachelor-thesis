@@ -37,6 +37,8 @@
                      label="test_controller">
       <actuators>
         <differential_steering implementation="default" />
+        <leds                  implementation="default" medium="leds" />
+
       </actuators>
       <sensors>
         <footbot_proximity implementation="default" show_rays="true" />
@@ -103,12 +105,18 @@
     <!-- place boxes      -->
     <box id="box1" size="0.5,0.5,0.2" movable="true" mass="5">
       <body position="1.5, 1.5, 0.0" orientation="0,0,0" />
+      <leds medium="leds">
+        <led offset="0,0,0.2" anchor="origin" color="white"/>
+      </leds>
     </box>
     
-    <!--
+    
     <box id="box2" size="0.5,0.5,0.2" movable="true" mass="2">
       <body position="4, 1.5, 0.0" orientation="0,0,0" />
-    </box> -->
+      <leds medium="leds">
+        <led offset="0,0,0.2" anchor="origin" color="blue" />
+      </leds>
+    </box>
 
     <!-- Place a foot-bot in the origin and bind it to the controller -->
     <foot-bot id="fb_0">
@@ -166,7 +174,9 @@
 
       $ argos3 -q media
   -->
-  <media />
+  <media>
+    <led id="leds" />
+  </media>
 
   <!-- ****************** -->
   <!-- * Visualization * -->
