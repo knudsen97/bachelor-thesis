@@ -51,8 +51,6 @@ planner::cPositions planner::FindCPositions(CBoxEntity* mBox)
 }
 
 
-
-
 /**
  * Find eligible points on a CBoxEntity box to push from given a goal position.
  * @param mBox is the box entity in argos

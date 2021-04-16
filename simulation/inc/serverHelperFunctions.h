@@ -73,11 +73,12 @@ bool serverWaitState(argos::CBoxEntity *pcBox, argos::CVector3 _boxGoal, int _cl
 {
     bool _inRange;
     argos::CVector3 boxOrigin = pcBox->GetEmbodiedEntity().GetOriginAnchor().Position;
+    argos::Real distanceToGoal = argos::Distance(_boxGoal, boxOrigin);
 
-    argos::Real distanceToGoal = sqrt(pow(_boxGoal.GetX() - boxOrigin.GetX(), 2) + pow(_boxGoal.GetY() - boxOrigin.GetY(), 2));
-    
     if(_debug)
-        std::cout << "dist: " << distanceToGoal << std::endl;
+    {
+        std::cout << "dist2goal: " << distanceToGoal << std::endl;
+    }
     
     if(distanceToGoal < 0.19999f)
     {
