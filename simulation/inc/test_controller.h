@@ -14,6 +14,8 @@
 #include <argos3/plugins/robots/foot-bot/control_interface/ci_footbot_proximity_sensor.h>
 #include <argos3/core/utility/logging/argos_log.h>
 #include <argos3/plugins/simulator/entities/box_entity.h>
+#include <argos3/plugins/simulator/entities/led_entity.h>
+#include <argos3/plugins/simulator/media/directional_led_medium.h>
 #include <argos3/core/simulator/loop_functions.h>
 #include <argos3/plugins/robots/generic/simulator/camera_default_sensor.h>
 #include <argos3/core/utility/networking/tcp_socket.h>
