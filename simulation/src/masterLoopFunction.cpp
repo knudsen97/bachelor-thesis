@@ -45,6 +45,13 @@ void masterLoopFunction::Init(argos::TConfigurationNode& t_tree) {
    argos::CVector3 whiteGoal(5,1,0);
    swarmMan.setGoals(blueGoal, whiteGoal);
 
+   CSortLoopFunction S;
+
+   S.PlaceBox(argos::CVector3(0.5,0.5,0), 
+              argos::CVector3(4,5.5,0), 
+              argos::CVector3(0.3, 0.3, 0.2), 
+              argos::CVector3(0.5, 0.5, 0.2), 
+              whiteGoal, blueGoal, 6, 0.9999f);
 }
 
 void masterLoopFunction::PreStep() 
@@ -88,6 +95,7 @@ void masterLoopFunction::PreStep()
    //server.step(); //Den crasher programmet
    swarmMan.step();
 }
+
 
 
 
