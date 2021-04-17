@@ -1,5 +1,4 @@
 #include "../inc/masterLoopFunction.h"
-bool firstRun = true;
 int footbotCount = 0;
 
 masterLoopFunction::masterLoopFunction() 
@@ -38,9 +37,21 @@ void masterLoopFunction::Init(argos::TConfigurationNode& t_tree) {
    for (argos::CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
       footbotCount++;
 
+   // server(footbotCount);
+   // server.connect();
 
-   //std::cout << "Finish master init" << std::endl;
+   /* Set goals for white and blue boxes */
+   argos::CVector3 blueGoal (1,5,0);
+   argos::CVector3 whiteGoal(5,1,0);
+   swarmMan.setGoals(blueGoal, whiteGoal);
 
+   CSortLoopFunction S;
+
+   S.PlaceBox(argos::CVector3(0.5,0.5,0), 
+              argos::CVector3(4,5.5,0), 
+              argos::CVector3(0.3, 0.3, 0.2), 
+              argos::CVector3(0.5, 0.5, 0.2), 
+              whiteGoal, blueGoal, 6, 0.9999f);
 }
 
 void masterLoopFunction::PreStep() 
@@ -53,23 +64,38 @@ void masterLoopFunction::PreStep()
       camera::objectContainer[i]->step();
       
    argos::CSpace::TMapPerType& boxMap = GetSpace().GetEntitiesByType("box");
-   for (argos::CSpace::TMapPerType::iterator iterator = boxMap.begin(); iterator != boxMap.end(); ++iterator)
-   {   
-      pcBox = argos::any_cast<argos::CBoxEntity*>(iterator->second);
-      if (pcBox->GetId() == "box1")
-         break;
-   }
-   if (firstRun)
+   
+   size_t i = 0;
+   for(argos::CSpace::TMapPerType::iterator iterator = boxMap.begin(); iterator != boxMap.end(); ++iterator, i++)
    {
+      argos::CBoxEntity* box = argos::any_cast<argos::CBoxEntity*>(iterator->second);
+
+      std::string boxId = box->GetId();
+      if(firstIteration)
+      {
+         if(boxId.compare(0,3,"box") == 0)
+            swarmMan.swarmBoxes.push_back(box);
+      }
+      else
+      {
+         if(boxId.compare(0,3,"box") == 0)
+            swarmMan.swarmBoxes[i] = box;
+      }
+      i++;
+   }
+   if(firstIteration)
+   {
+      numBoxes = swarmMan.swarmBoxes.size();
       server(footbotCount, {2,2,0}, pcBox);
       server.connect();
-      firstRun = false;
+      firstIteration = false;
    }
 
-   server.step();
-
-      
+   //pcBox = swarmMan.swarmBoxes[0];
+   //server.step(); //Den crasher programmet
+   swarmMan.step();
 }
+
 
 
 

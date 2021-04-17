@@ -13,12 +13,11 @@
 #include <argos3/core/utility/logging/argos_log.h>
 #include "cameraServerLoop.h"
 #include "test_controller.h"
-#include "../inc/protocol.h"
-#include "../inc/camera.h"
+#include "protocol.h"
+#include "camera.h"
 
 
-class cameraServerLoop
-{
+class cameraServerLoop {
 protected:
     /* data */
     int clientcount;

@@ -37,6 +37,8 @@
                      label="test_controller">
       <actuators>
         <differential_steering implementation="default" />
+        <leds                  implementation="default" medium="leds" />
+
       </actuators>
       <sensors>
         <footbot_proximity implementation="default" show_rays="true" />
@@ -101,18 +103,27 @@
       <body position="6,3,0" orientation="90,0,0" />
     </box>
     <!-- place boxes      -->
+    <!--
     <box id="box1" size="0.5,0.5,0.2" movable="true" mass="5">
       <body position="1.5, 1.5, 0.0" orientation="0,0,0" />
+      <leds medium="leds">
+        <led offset="0,0,0.2" anchor="origin" color="white"/>
+      </leds>
     </box>
     
-    <!--
+    
     <box id="box2" size="0.5,0.5,0.2" movable="true" mass="2">
       <body position="4, 1.5, 0.0" orientation="0,0,0" />
-    </box> -->
+      <leds medium="leds">
+        <led offset="0,0,0.2" anchor="origin" color="blue" />
+      </leds>
+    </box>
+    -->
+
 
     <!-- Place a foot-bot in the origin and bind it to the controller -->
     <foot-bot id="fb_0">
-      <body position="3,2,0" orientation="0,0,0" />
+      <body position="5,3.5,0" orientation="0,0,0" />
       <controller config="test"/>
       <dynamics2d>
         <differential_steering max_force="0.3" max_torque="0.3"/>
@@ -120,7 +131,7 @@
     </foot-bot>
 
     <foot-bot id="fb_1">
-      <body position="3,1.5,0" orientation="0,0,0" />
+      <body position="5,3,0" orientation="0,0,0" />
       <controller config="test"/>
       <dynamics2d>
         <differential_steering max_force="0.3" max_torque="0.3"/>
@@ -128,7 +139,7 @@
     </foot-bot>
 
     <foot-bot id="fb_2">
-      <body position="3,1,0" orientation="0,0,0" />
+      <body position="5,2.5,0" orientation="0,0,0" />
       <controller config="test"/>
         <dynamics2d>
         <differential_steering max_force="0.3" max_torque="0.3"/>
@@ -166,7 +177,9 @@
 
       $ argos3 -q media
   -->
-  <media />
+  <media>
+    <led id="leds" />
+  </media>
 
   <!-- ****************** -->
   <!-- * Visualization * -->
