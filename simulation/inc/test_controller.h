@@ -24,7 +24,6 @@
 #include <argos3/core/utility/networking/tcp_socket.h>
 #include "../inc/protocol.h"
 
-#define BUFFERSIZE 4
 #define V_0 4
 
 //using namespace argos;
@@ -69,15 +68,14 @@ private:
    /*Socket variables*/
 public:
    void connect();
-   static size_t robotBufferSize;
    bool joined = false;
    bool sentPosition = false;
    bool connected = false;
+   bool threadOpen = false;
 
 
 private:
    std::thread connecting;
-   argos::CByteArray argosBuffer = argos::CByteArray(BUFFERSIZE);
    argos::CTCPSocket clientSocket;
    protocol connection;
    int m_nStream = 0;

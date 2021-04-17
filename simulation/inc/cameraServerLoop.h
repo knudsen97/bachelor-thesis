@@ -63,6 +63,7 @@ public:
 
     void operator()(int clientcount_, argos::CVector3 boxGoal_, argos::CBoxEntity* pcBox_);
     cameraServerLoop();
+    ~cameraServerLoop();
     
     void connect();
     void step();

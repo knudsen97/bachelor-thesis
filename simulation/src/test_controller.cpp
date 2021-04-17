@@ -29,6 +29,7 @@ int wait_time = 0;
 
 void test_controller::connect()
 {
+    threadOpen = true;
     while (!this->clientSocket.IsConnected())
     {
         try
@@ -41,6 +42,7 @@ void test_controller::connect()
         }
     }
     connected = true;
+    threadOpen = false;
 }
 
 test_controller::test_controller() :
@@ -64,10 +66,17 @@ void test_controller::Init(argos::TConfigurationNode& t_node)
 }
 void test_controller::ControlStep()
 {
+    if (!clientSocket.IsConnected())
+    {
+        connected = false;
+    }
     if (!connected)
     {
-        connecting = std::thread(&test_controller::connect, this);
-        connecting.detach();
+        if (!threadOpen)
+        {
+            connecting = std::thread(&test_controller::connect, this);
+            connecting.detach();
+        }
     }
     else
     {
@@ -270,6 +279,5 @@ bool test_controller::ReadyToPush(const argos::CCI_PositioningSensor::SReading& 
     return false;
 }
 
-size_t test_controller::robotBufferSize = BUFFERSIZE;
 
 REGISTER_CONTROLLER(test_controller, "test_controller")

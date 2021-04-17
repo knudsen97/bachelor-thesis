@@ -15,6 +15,7 @@
 #define SEND_ORIENTATION 4
 #define RECEIVE_STATE 5
 
+
 bool testDebug = false;
 cv::Mat testMap;
 
@@ -71,6 +72,13 @@ cameraServerLoop::cameraServerLoop(){
    cameraServerLoop::stateCheck = 0;
    connected = false;
    currentState = DISTRIBUTE_CORNERS;
+}
+
+cameraServerLoop::~cameraServerLoop() 
+{
+   for (size_t i = 0; i < clientSockets.size(); i++)
+      if (clientSockets[i].IsConnected())
+         clientSockets[i].Disconnect();
 }
 
 void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, argos::CBoxEntity* pcBox_)
