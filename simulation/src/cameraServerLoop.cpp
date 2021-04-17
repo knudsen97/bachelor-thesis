@@ -16,10 +16,9 @@
 #define RECEIVE_STATE 5
 
 
+//debug variables
 bool testDebug = false;
 cv::Mat testMap;
-
-//debug variables
 bool donePlanning = false;
 int threadaState = 0;
 int wasHere = 0;
@@ -31,7 +30,6 @@ std::vector<argos::CVector3> robot_debug, corner_debug, boxGoal_debug;
 std::vector<std::vector<cv::Point>> cv_subgoal_debug;
 std::vector<std::vector<argos::CVector3>> subgoal_debug;
 std::vector<std::string> debugMessage;
-
 std::vector<int> numPushPoints; 
 
 void debugFun(int _clientcount, bool a = true)
@@ -64,26 +62,33 @@ void debugFun(int _clientcount, bool a = true)
 
 
 cameraServerLoop::cameraServerLoop(){
-   /* data */
+}
+
+cameraServerLoop::~cameraServerLoop() 
+{
+}
+
+void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, argos::CBoxEntity* pcBox_)
+{
+   //reset
    cameraServerLoop::currentState = 0;
    cameraServerLoop::threadsOpened = false;
    cameraServerLoop::allPositionRecieved = false;
    cameraServerLoop::prepareToPushDone = false;
    cameraServerLoop::stateCheck = 0;
-   connected = false;
-   currentState = DISTRIBUTE_CORNERS;
-}
+   cameraServerLoop::connected = false;
+   cameraServerLoop::currentState = DISTRIBUTE_CORNERS;
 
-cameraServerLoop::~cameraServerLoop() 
-{
-   for (size_t i = 0; i < clientSockets.size(); i++)
-      if (clientSockets[i].IsConnected())
-         clientSockets[i].Disconnect();
-}
+   if (clientcount != clientcount_)
+   {
+      if (clientcount > 0)
+         serverSocket.Disconnect();
+      
+      clientcount = clientcount_;
+      connect();
+   }
 
-void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, argos::CBoxEntity* pcBox_)
-{
-   clientcount = clientcount_;
+   //assign variables
    boxGoal = boxGoal_;
    pcBox = pcBox_;
    startLocations.resize(clientcount);

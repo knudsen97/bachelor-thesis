@@ -86,14 +86,14 @@ void masterLoopFunction::PreStep()
    if(firstIteration)
    {
       numBoxes = swarmMan.swarmBoxes.size();
-      server(footbotCount, {2,2,0}, pcBox);
-      server.connect();
+      server(footbotCount, {2,2,0}, swarmMan.swarmBoxes[0]);
       firstIteration = false;
    }
 
    //pcBox = swarmMan.swarmBoxes[0];
    //server.step(); //Den crasher programmet
    swarmMan.step();
+   server.step();
 }
 
 
