@@ -42,7 +42,7 @@ void masterLoopFunction::Init(argos::TConfigurationNode& t_tree) {
 
    /* Set goals for white and blue boxes */
    argos::CVector3 blueGoal (1,5,0);
-   argos::CVector3 whiteGoal(5,1,0);
+   argos::CVector3 whiteGoal(5,5,0);
    swarmMan.setGoals(blueGoal, whiteGoal);
 
    CSortLoopFunction S;
