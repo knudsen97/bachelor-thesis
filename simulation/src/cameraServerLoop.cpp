@@ -219,18 +219,18 @@ void cameraServerLoop::step()
                      std::vector<cv::Point> subGoals;
                      bool planComplete = Planning(cameraImage, boxGoal, startLocations[idxPH], validPushPoints[i], subGoals);
 
-                     /* Visualization */
-                     for(auto point : subGoals)
-                        cv::circle(cameraImage, point, 5, cv::Scalar(0,200,200), -1);
-                     cv::circle(cameraImage, cv::Point(startLocations[idxPH].GetX()*SCALE, startLocations[idxPH].GetY()*SCALE) , 5, cv::Scalar(0,0,255), -1);
-                     cv::circle(cameraImage, subGoals.back(), 5, cv::Scalar(0,255,0), -1);
-                     cv::imshow("map", cameraImage);
-                     cv::waitKey(0);
+                     // /* Visualization */
+                     // for(auto point : subGoals)
+                     //    cv::circle(cameraImage, point, 5, cv::Scalar(0,200,200), -1);
+                     // cv::circle(cameraImage, cv::Point(startLocations[idxPH].GetX()*SCALE, startLocations[idxPH].GetY()*SCALE) , 5, cv::Scalar(0,0,255), -1);
+                     // cv::circle(cameraImage, subGoals.back(), 5, cv::Scalar(0,255,0), -1);
+                     // cv::imshow("map", cameraImage);
+                     // cv::waitKey(0);
 
                      /* Start thread */
                      std::cout << "subGoals: " << subGoals.size() << std::endl;
                      robotThreads[idxPH] = std::thread(&cameraServerLoop::PrepareToPush, this, boxGoal, 
-                                                            subGoals, threadCurrentState[idxPH], idxPH);
+                                                            subGoals, PLANNING, idxPH);
                      robotThreads[idxPH].detach();
 
                   }
@@ -244,7 +244,7 @@ void cameraServerLoop::step()
 
                   /* Checks for the robots' states and moves on if all are in WAIT state */
                   stateCheck = 0;
-                  for(size_t i = 0; i < clientcount; i++)
+                  for(size_t i = 0; i < threadCurrentState.size(); i++)
                   {
                      if(threadCurrentState[i] == WAIT)
                      {
@@ -322,6 +322,7 @@ void cameraServerLoop::step()
                //send STOP message
                if (!stopSent_)
                {
+                  cv::waitKey(10);
                   stopSent = true;
                   for(int i = 0; i < clientcount && !stopSent_; i++)
                   {
@@ -336,6 +337,7 @@ void cameraServerLoop::step()
                {
                   if (time(0)-backTime > 2)
                   {
+                     cv::waitKey(10);
                      footbotStoped = true;
                      for(int i = 0; i < clientcount && !footbotStoped_; i++) 
                      {
@@ -350,7 +352,7 @@ void cameraServerLoop::step()
                //back away from box
                if (!rewind_  && stopSent_)
                {
-                  
+                  cv::waitKey(10);
                   for(int i = 0; i < clientcount; i++)
                   {
                      rewind &= clientConnections[i].send(velocityMessage);
@@ -406,11 +408,14 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 boxGoal, std::vector<cv::Po
    int currentState = currentState_;
    //std::vector<cv::Point> subGoals;
    bool planComplete = true;
+   bool threadDone = false;
    int curGoal = 0;
    int time;
    argos::CVector3 robotPosition;
    while(!prepareToPushDone)
    {
+      if (threadDone)
+         break;      
       //threadCurrentState[id] = currentState;
       //threadaState = currentState;
       switch (currentState)
@@ -492,6 +497,7 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 boxGoal, std::vector<cv::Po
             if(message == "WAIT")
             {
                //debugMessage[id] = message;
+               threadDone = true;
                threadCurrentState[id] = WAIT;
             }
          }
