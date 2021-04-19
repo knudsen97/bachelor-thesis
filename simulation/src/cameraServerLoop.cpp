@@ -88,10 +88,7 @@ void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, ar
    cameraServerLoop::footbotStoped_ = false;
    cameraServerLoop::inRange_ = false;
    cameraServerLoop::jobsDone = false;
-   cameraServerLoop::threadCurrentState.clear();
-   cameraServerLoop::startLocations.clear();
-   cameraServerLoop::robotThreads.clear();
-
+   cameraServerLoop::threadClosed.clear();
 
 
    if (clientcount != clientcount_)
@@ -126,6 +123,9 @@ void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, ar
    planner_debug.resize(clientcount);
    debugMessage.resize(clientcount);
    numPushPoints.resize(clientcount,0);
+   
+
+
    debug.resize(clientcount, false);
    debugMaps.resize(clientcount);
 }
@@ -174,6 +174,7 @@ void cameraServerLoop::step()
                {
                   /* Define containers */
                   std::vector<argos::CVector3> validPushPoints;
+                  std::vector<std::thread> robotThreads;
                   std::vector<bool> isRobotAssigned;
 
                   /* Find where to push on the box to get to goal */
@@ -185,6 +186,14 @@ void cameraServerLoop::step()
                   robotThreads.resize(startLocations.size());
                   threadCurrentState.resize(startLocations.size(), PLANNING);
                   isRobotAssigned.resize(startLocations.size(), false);
+                  threadClosed.resize(startLocations.size(), false);
+
+                  for(auto threadState : threadCurrentState)
+                     threadaState = 1;
+                  for(auto threadState : threadCurrentState)
+                     argos::LOG << "thread state: " << threadState << '\n';
+
+                  argos::LOG << "prepare to push done: " << prepareToPushDone << '\n';
 
                   /* Find absolute distance between point and robot and assign shortest distance to each robot */               
                   for(size_t i = 0; i < validPushPoints.size(); i++)
@@ -214,8 +223,8 @@ void cameraServerLoop::step()
                         cv::circle(cameraImage, point, 5, cv::Scalar(0,200,200), -1);
                      cv::circle(cameraImage, cv::Point(startLocations[idxPH].GetX()*SCALE, startLocations[idxPH].GetY()*SCALE) , 5, cv::Scalar(0,0,255), -1);
                      cv::circle(cameraImage, subGoals.back(), 5, cv::Scalar(0,255,0), -1);
-                     // cv::imshow("map", cameraImage);
-                     // cv::waitKey(0);
+                     cv::imshow("map", cameraImage);
+                     cv::waitKey(0);
 
                      /* Start thread */
                      std::cout << "subGoals: " << subGoals.size() << std::endl;
@@ -254,18 +263,15 @@ void cameraServerLoop::step()
                std::cout << "SERVER JOIN_THREADS\n";
 
                /* This will end the while loop running in the thread making them exit */
-               bool closeThreads = true;
                prepareToPushDone = true;
-               for (size_t i = 0; i < debug.size(); i++)
-                  closeThreads &= debug[i];
-               
-
-               if (closeThreads)
-                  currentState = SEND_VELOCITY;
-
-               for (size_t i = 0; i < debug.size(); i++)
+               bool closed = true;
+               for (size_t i = 0; i < threadClosed.size(); i++)
                {
-                  argos::LOG << "debug: " << debug[i] << '\n';
+                  closed &= threadClosed[i];
+               }
+               if (closed)
+               {
+                  currentState = SEND_VELOCITY;
                }
                
                break;
@@ -492,8 +498,7 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 boxGoal, std::vector<cv::Po
       }
       }
    }
-   debug[id] = true;
-
+   threadClosed[id] = true;
 }
 
 

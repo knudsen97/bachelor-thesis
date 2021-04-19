@@ -47,7 +47,6 @@ protected:
     argos::CVector3 boxGoal;                            //final destination for the box
     std::vector<argos::CVector3> startLocations;        //robot location
     std::vector<int> threadCurrentState;                //to check if thread is in wait state
-    std::vector<std::thread> robotThreads;
     int stateCheck;                                     //to check if all thread is in wait state
     planner plan;                                       //plan
 
@@ -56,6 +55,7 @@ protected:
     bool prepareToPushDone;                             //to stop all thread from running
     bool threadsOpened;                                 //used to open threads 1 time only
     std::vector<bool> recievedPosition;                 //to check if bots position has been recieved
+    std::vector<bool> threadClosed;
 
 public:    
     bool rewind, rewind_;                               //set if the footbot needs to go backwards
