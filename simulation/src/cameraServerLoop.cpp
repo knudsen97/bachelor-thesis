@@ -503,6 +503,8 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 boxGoal, std::vector<cv::Po
          }
          break;
       }
+      default:
+      break;
       }
    }
    threadClosed[id] = true;
