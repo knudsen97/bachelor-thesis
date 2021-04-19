@@ -89,6 +89,7 @@ void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, ar
    cameraServerLoop::inRange_ = false;
    cameraServerLoop::jobsDone = false;
    cameraServerLoop::threadClosed.clear();
+   cameraServerLoop::threadCurrentState.clear();
 
 
    if (clientcount != clientcount_)
