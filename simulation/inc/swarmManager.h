@@ -15,6 +15,8 @@ public:
 
     std::vector<argos::CBoxEntity*> swarmBoxes;
 
+    cameraServerLoop blueServer, redServer;
+
 private:
     std::vector<argos::CBoxEntity*> whiteBoxes, blueBoxes;
     argos::CVector3 blueGoal, whiteGoal;

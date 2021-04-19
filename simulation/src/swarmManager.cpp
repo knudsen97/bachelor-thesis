@@ -1,6 +1,7 @@
 #include "swarmManager.h"
 
 bool test = false;
+bool test2 = false;
 
 swarmManager::swarmManager() :
                             blueGoal (argos::CVector3(0,0,0)),
@@ -23,7 +24,17 @@ void swarmManager::step()
     {
         classifyBoxes(swarmBoxes, whiteBoxes, blueBoxes);
         test = true;
+        blueServer(3, blueGoal, blueBoxes[0]);
     }
+    if (blueServer.jobsDone && !test2)
+    {
+        argos::LOG << "-----------------------------------------------------------------------------\n";
+        test2 = true;
+        blueServer(3, whiteGoal, whiteBoxes[0]);
+    }
+    argos::LOG << "server done: " << blueServer.jobsDone << '\n';
+    blueServer.step();
+    
     // std::cout << "white: " << whiteBoxes.size() << std::endl;
     // std::cout << "blue: " << blueBoxes.size() << std::endl;
     // std::cout << "wGoal: " << whiteGoal << std::endl;

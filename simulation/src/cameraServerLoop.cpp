@@ -7,6 +7,7 @@
 #define WAIT 6
 #define SEND_VELOCITY 7
 #define SEND_STOP 8
+#define DONE 9
 
 //For thread statemachine
 #define PLANNING 1
@@ -70,6 +71,7 @@ cameraServerLoop::~cameraServerLoop()
 
 void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, argos::CBoxEntity* pcBox_)
 {
+   argos::LOG << "---------------------reseb serber------------------------\n";
    //reset
    cameraServerLoop::currentState = 0;
    cameraServerLoop::threadsOpened = false;
@@ -78,15 +80,35 @@ void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, ar
    cameraServerLoop::stateCheck = 0;
    cameraServerLoop::connected = false;
    cameraServerLoop::currentState = DISTRIBUTE_CORNERS;
+   cameraServerLoop::stopSent = true;
+   cameraServerLoop::stopSent_ = false;
+   cameraServerLoop::rewind = true;
+   cameraServerLoop::rewind_ = false;
+   cameraServerLoop::footbotStoped = true;
+   cameraServerLoop::footbotStoped_ = false;
+   cameraServerLoop::inRange_ = false;
+   cameraServerLoop::jobsDone = false;
+   cameraServerLoop::threadCurrentState.clear();
+   cameraServerLoop::startLocations.clear();
+   cameraServerLoop::robotThreads.clear();
+
+
 
    if (clientcount != clientcount_)
    {
       if (clientcount > 0)
+      {
          serverSocket.Disconnect();
+      }
       
       clientcount = clientcount_;
       connect();
    }
+   else
+   {
+      connected = true;
+   }
+   
 
    //assign variables
    boxGoal = boxGoal_;
@@ -104,8 +126,6 @@ void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, ar
    planner_debug.resize(clientcount);
    debugMessage.resize(clientcount);
    numPushPoints.resize(clientcount,0);
-
-
    debug.resize(clientcount, false);
    debugMaps.resize(clientcount);
 }
@@ -154,7 +174,6 @@ void cameraServerLoop::step()
                {
                   /* Define containers */
                   std::vector<argos::CVector3> validPushPoints;
-                  std::vector<std::thread> robotThreads;
                   std::vector<bool> isRobotAssigned;
 
                   /* Find where to push on the box to get to goal */
@@ -195,8 +214,8 @@ void cameraServerLoop::step()
                         cv::circle(cameraImage, point, 5, cv::Scalar(0,200,200), -1);
                      cv::circle(cameraImage, cv::Point(startLocations[idxPH].GetX()*SCALE, startLocations[idxPH].GetY()*SCALE) , 5, cv::Scalar(0,0,255), -1);
                      cv::circle(cameraImage, subGoals.back(), 5, cv::Scalar(0,255,0), -1);
-                     cv::imshow("map", cameraImage);
-                     cv::waitKey(0);
+                     // cv::imshow("map", cameraImage);
+                     // cv::waitKey(0);
 
                      /* Start thread */
                      std::cout << "subGoals: " << subGoals.size() << std::endl;
@@ -235,8 +254,20 @@ void cameraServerLoop::step()
                std::cout << "SERVER JOIN_THREADS\n";
 
                /* This will end the while loop running in the thread making them exit */
+               bool closeThreads = true;
                prepareToPushDone = true;
-               currentState = SEND_VELOCITY;
+               for (size_t i = 0; i < debug.size(); i++)
+                  closeThreads &= debug[i];
+               
+
+               if (closeThreads)
+                  currentState = SEND_VELOCITY;
+
+               for (size_t i = 0; i < debug.size(); i++)
+               {
+                  argos::LOG << "debug: " << debug[i] << '\n';
+               }
+               
                break;
             }
 
@@ -263,6 +294,8 @@ void cameraServerLoop::step()
                bool inRange = serverWaitState(pcBox, boxGoal, clientcount, clientConnections, true);
                if(inRange)
                   currentState = SEND_STOP;
+
+               stopSent_ = true;
                break;
             }
 
@@ -270,12 +303,66 @@ void cameraServerLoop::step()
             case SEND_STOP:
             {
                std::cout << "SERVER SEND_STOP\n";
-               argos::Real velocityMessage = 0.0f;
-               for(int i = 0; i < clientcount; i++)
+               rewind = true;
+               argos::Real velocityMessage = -2.0f;
+               argos::Real velocityStopMessage = 0.0f;
+
+               if (rewind_ && footbotStoped_ && stopSent_)
                {
-                  if(clientConnections[i].send(velocityMessage));
+                  currentState = DONE;
                }
+
+               //send STOP message
+               if (!stopSent_)
+               {
+                  stopSent = true;
+                  for(int i = 0; i < clientcount && !stopSent_; i++)
+                  {
+                     stopSent &= clientConnections[i].send("STOP");
+                     argos::LOG << "send STOP message\n";
+                  }
+                  stopSent_ = stopSent;// true if all bots have recieved 
+               }
+
+               //set velocity to 0
+               if (!footbotStoped_ && rewind_ && stopSent_)
+               {
+                  if (time(0)-backTime > 2)
+                  {
+                     footbotStoped = true;
+                     for(int i = 0; i < clientcount && !footbotStoped_; i++) 
+                     {
+                        footbotStoped &= clientConnections[i].send(velocityStopMessage);
+                        argos::LOG << "---- send footbot Stoped message\n";
+                     }
+                     footbotStoped_ = footbotStoped; // true if all bots have recieved
+                     stopSent_ = !footbotStoped_; //set stopSet to false to it sents stop again
+                  }
+               }
+
+               //back away from box
+               if (!rewind_  && stopSent_)
+               {
+                  
+                  for(int i = 0; i < clientcount; i++)
+                  {
+                     rewind &= clientConnections[i].send(velocityMessage);
+                     backTime = time(0);
+                     argos::LOG << "send rewind message\n";
+                  }
+                  rewind_ = rewind;// true if all bots have recieved 
+                  stopSent_ = !rewind_; //set stopSet to false to it sents stop again
+
+               }
+               
+               
+               
                break;
+            }
+            case DONE:
+            {
+               std::cout << "SERVER DONE\n";
+               jobsDone = true;
             }
          }
       }
@@ -405,6 +492,7 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 boxGoal, std::vector<cv::Po
       }
       }
    }
+   debug[id] = true;
 
 }
 
