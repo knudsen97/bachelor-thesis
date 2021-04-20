@@ -63,7 +63,8 @@ public:
     bool inRange_;                                      //set if box is in range
     bool jobsDone;                                      //set if servers jobe is done
     int currentState;                                   //cameraServerloop state
-    time_t backTime;                                    //time to back away from box
+    size_t backTime;                                    //time to back away from box
+    size_t argosTime;                                   //time unit in argos
 
 public:
     static int portnumber;

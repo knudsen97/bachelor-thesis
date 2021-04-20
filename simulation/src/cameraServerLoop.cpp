@@ -90,7 +90,8 @@ void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, ar
    cameraServerLoop::jobsDone = false;
    cameraServerLoop::threadClosed.clear();
    cameraServerLoop::threadCurrentState.clear();
-   cameraServerLoop::recievedPosition.clear();                           
+   cameraServerLoop::recievedPosition.clear();           
+   cameraServerLoop::argosTime = 0;         
 
 
    if (clientcount != clientcount_)
@@ -143,6 +144,7 @@ void cameraServerLoop::connect()
 
 void cameraServerLoop::step()
 {
+   argosTime++;
    if (connected)
    {
       //get robot positions
@@ -339,7 +341,7 @@ void cameraServerLoop::step()
                //set velocity to 0
                if (!footbotStopped_ && rewind_ && stopSent_)
                {
-                  if (time(0)-backTime > 2)
+                  if (argosTime-backTime > 335)
                   {
                      cv::waitKey(10);
                      footbotStopped = true;
@@ -360,7 +362,7 @@ void cameraServerLoop::step()
                   for(int i = 0; i < clientcount; i++)
                   {
                      rewind &= clientConnections[i].send(velocityMessage);
-                     backTime = time(0);
+                     backTime = argosTime;
                      argos::LOG << "send rewind message\n";
                   }
                   rewind_ = rewind;// true if all bots have recieved 
