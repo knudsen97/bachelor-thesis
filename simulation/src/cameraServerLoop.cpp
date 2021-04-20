@@ -1,5 +1,6 @@
 #include "cameraServerLoop.h"
 #include "serverHelperFunctions.h"
+#include "masterLoopFunction.h"
 
 //out of thread statemachine
 #define DISTRIBUTE_CORNERS 0
@@ -298,7 +299,7 @@ void cameraServerLoop::step()
             {
                std::cout << "SERVER WAIT\n";
 
-               bool inRange = serverWaitState(pcBox, boxGoal, clientcount, clientConnections, true);
+               bool inRange = serverWaitState(pcBox, boxGoal, clientcount, clientConnections, GOAL_THRESHOLD, true);
                if(inRange)
                   currentState = SEND_STOP;
 

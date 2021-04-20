@@ -10,6 +10,9 @@
 #include "swarmManager.h"
 #include "sort_loop_function.h"
 
+#define GOAL_THRESHOLD 0.19999f
+#define BOX_TTL 200
+
 using namespace argos;
 
 class masterLoopFunction : public cameraServerLoop, public camera, public swarmManager  
@@ -27,6 +30,19 @@ public:
     void placeBox();
     masterLoopFunction(/* args */);
     ~masterLoopFunction();
+
+/*remove box at goal stuff*/
+    struct boxAtGoal
+    {
+        int time;
+        std::string name;
+        argos::CBoxEntity* box;
+    };
+    void removeBoxAtGoal(argos::CBoxEntity* box);
+    std::vector<boxAtGoal> boxesToRemove;
+
+
+
 };
 
 

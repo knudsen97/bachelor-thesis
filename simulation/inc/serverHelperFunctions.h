@@ -69,7 +69,7 @@ void drawEndPoints(int _i, planner &_plan, argos::CBoxEntity* _pcBox,
  * @param _clientConnections Each individual instance of protocol
  * @param _debug Parameter to write things to the log
 */
-bool serverWaitState(argos::CBoxEntity *pcBox, argos::CVector3 _boxGoal, int _clientcount, std::vector<protocol> &_clientConnections, bool _debug = false)
+bool serverWaitState(argos::CBoxEntity *pcBox, argos::CVector3 _boxGoal, int _clientcount, std::vector<protocol> &_clientConnections, double threshold, bool _debug = false)
 {
     bool _inRange;
     argos::CVector3 boxOrigin = pcBox->GetEmbodiedEntity().GetOriginAnchor().Position;
@@ -80,7 +80,7 @@ bool serverWaitState(argos::CBoxEntity *pcBox, argos::CVector3 _boxGoal, int _cl
         std::cout << "dist2goal: " << distanceToGoal << std::endl;
     }
     
-    if(distanceToGoal < 0.19999f)
+    if(distanceToGoal < threshold)
     {
         if(_debug)
             std::cout << "IN GOAL RANGE\n";
