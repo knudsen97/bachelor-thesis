@@ -60,7 +60,7 @@ void masterLoopFunction::PreStep()
    for (size_t i = 0; i < camera::objectContainer.size(); i++)
       camera::objectContainer[i]->step();
       
-
+   
    /* First iteration scan the map for boxes and update swarmManger */
    if(firstIteration)
    {
@@ -73,11 +73,13 @@ void masterLoopFunction::PreStep()
 
          if(boxId.compare(0,3,"box") == 0) // Check that box is not a wall
             swarmMan.swarmBoxes.push_back(box);
-         removeBoxAtGoal(box);
       }
       numBoxes = swarmMan.swarmBoxes.size();
       firstIteration = false;
    }
+
+   for(auto box : swarmMan.swarmBoxes)
+      removeBoxAtGoal(box);
    
    swarmMan.step();
 }
