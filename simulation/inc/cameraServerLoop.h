@@ -47,7 +47,6 @@ protected:
     argos::CVector3 boxGoal;                            //final destination for the box
     std::vector<argos::CVector3> startLocations;        //robot location
     std::vector<int> threadCurrentState;                //to check if thread is in wait state
-    int stateCheck;                                     //to check if all thread is in wait state
     planner plan;                                       //plan
 
     /* flags */
@@ -60,7 +59,7 @@ protected:
 public:    
     bool rewind, rewind_;                               //set if the footbot needs to go backwards
     bool stopSent, stopSent_;                           //set if "STOP" has been sent to the footbot
-    bool footbotStoped, footbotStoped_;                 //set if the velocity sent to footbot is 0
+    bool footbotStopped, footbotStopped_;                 //set if the velocity sent to footbot is 0
     bool inRange_;                                      //set if box is in range
     bool jobsDone;                                      //set if servers jobe is done
     int currentState;                                   //cameraServerloop state
