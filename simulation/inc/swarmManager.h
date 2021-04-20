@@ -15,11 +15,14 @@ public:
 
     std::vector<argos::CBoxEntity*> swarmBoxes;
 
-    cameraServerLoop blueServer, redServer;
+    cameraServerLoop blueServer, whiteServer;
+    int blueBoxIdx, whiteBoxIdx;
+    bool firstRun;
 
-private:
     std::vector<argos::CBoxEntity*> whiteBoxes, blueBoxes;
     argos::CVector3 blueGoal, whiteGoal;
+private:
+
 };
 
 #endif //SWARMMANGER

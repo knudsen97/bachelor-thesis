@@ -1,11 +1,27 @@
 #include "swarmManager.h"
 
 bool test = false;
-bool test2 = false;
+
+void sortClosestBox(std::vector<argos::CBoxEntity*> &boxes, const argos::CVector3& goal)
+{
+    std::sort(
+        std::begin(boxes), 
+        std::end(boxes), 
+        [goal](argos::CBoxEntity* a, argos::CBoxEntity* b) {
+            return 
+            argos::Distance(a->GetEmbodiedEntity().GetOriginAnchor().Position, goal) 
+            <
+            argos::Distance(b->GetEmbodiedEntity().GetOriginAnchor().Position, goal); 
+        }
+    );
+}
 
 swarmManager::swarmManager() :
                             blueGoal (argos::CVector3(0,0,0)),
-                            whiteGoal(argos::CVector3(0,0,0))
+                            whiteGoal(argos::CVector3(0,0,0)),
+                            blueBoxIdx(0),
+                            whiteBoxIdx(0),
+                            firstRun(false)
                             {}
 
 swarmManager::~swarmManager()
@@ -20,19 +36,21 @@ void swarmManager::setGoals(argos::CVector3 _blueGoal, argos::CVector3 _whiteGoa
 
 void swarmManager::step()
 {
-    if(!test)
+    if(!firstRun)
     {
         classifyBoxes(swarmBoxes, whiteBoxes, blueBoxes);
-        test = true;
-        blueServer(3, blueGoal, blueBoxes[0]);
+        std::thread sortBlue(sortClosestBox, std::ref(blueBoxes), std::ref(blueGoal));
+        std::thread sortWhite(sortClosestBox, std::ref(whiteBoxes), std::ref(whiteGoal));
+        sortBlue.join();
+        sortWhite.join();
+        blueServer(3, blueGoal, blueBoxes[blueBoxIdx++]);
+        firstRun = true;
     }
-    if (blueServer.jobsDone && !test2)
+
+    if (blueServer.jobsDone)
     {
-        argos::LOG << "-----------------------------------------------------------------------------\n";
-        test2 = true;
-        blueServer(3, whiteGoal, whiteBoxes[0]);
+        blueServer(3, blueGoal, blueBoxes[blueBoxIdx++]);
     }
-    argos::LOG << "server done: " << blueServer.jobsDone << '\n';
     blueServer.step();
     
     // std::cout << "white: " << whiteBoxes.size() << std::endl;
