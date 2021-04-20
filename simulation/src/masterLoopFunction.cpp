@@ -81,6 +81,9 @@ void masterLoopFunction::PreStep()
          if(boxId.compare(0,3,"box") == 0)
             swarmMan.swarmBoxes[i] = box;
       }
+
+      /*remove boxes*/
+      removeBoxAtGoal(box);
       i++;
    }
    if(firstIteration)
@@ -97,6 +100,46 @@ void masterLoopFunction::PreStep()
 }
 
 
+void masterLoopFunction::removeBoxAtGoal(argos::CBoxEntity* box)
+{
+   argos::CVector3 boxPosition = box->GetEmbodiedEntity().GetOriginAnchor().Position;
+   
+
+   std::vector<boxAtGoal>::iterator boxFinder = std::find_if(
+      boxesToRemove.begin(), 
+      boxesToRemove.end(), 
+      [box](const boxAtGoal& boxesToRemove)
+		{return boxesToRemove.name == box->GetId(); }
+   );
+
+   if (
+      argos::Distance(boxPosition, swarmMan.blueGoal) < GOAL_THRESHOLD ||
+      argos::Distance(boxPosition, swarmMan.whiteGoal) < GOAL_THRESHOLD
+   )
+   {
+      //if box not found, add bot to "soon to remove" list
+      if(boxFinder == boxesToRemove.end())
+      {
+         boxesToRemove.push_back({0, box->GetId(), box});
+      }
+      else //destory if it has lived its live
+      {
+         if (boxFinder->time++ > BOX_TTL)
+         {
+            boxesToRemove.erase(boxFinder);
+            boxFinder->box->GetEmbodiedEntity().MoveTo({-1,-1,0}, {0,0,0,0}, false, true);
+            // argos::CLoopFunctions::RemoveEntity(boxFinder->box->GetEmbodiedEntity());
+         }
+         
+      }
+      
+   }
+   
+   
+
+   
+
+}
 
 
 /****************************************/
