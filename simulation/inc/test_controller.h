@@ -75,6 +75,8 @@ public:
    bool connected = false;
    bool threadOpen = false;
 
+   bool boxDone = false;
+
 
 private:
    std::thread connecting;

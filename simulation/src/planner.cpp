@@ -258,7 +258,7 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
     bool foundGoal = 0;
     int diff = 0;
 
-    int test = 0;
+    int spacing = 0;
     while(!foundGoal)
     {
         prevIdx = idx;
@@ -272,7 +272,7 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
             {
                 PH = traverse + neighbours[i];
                 idx = i;
-                test++;
+                spacing++;
                 //debug = GrayPixelVal(grayMap, PH);
                 //cv::circle(debugMap, PH, 3, cv::Scalar(100,100,100), -1);
             }
@@ -287,9 +287,9 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
         }
 
         //std::cout << "test: " <<test << std::endl;
-        if((prevIdx != idx && PH.x >=0 && PH.y >= 0) && test > 50)
+        if((prevIdx != idx && PH.x >=0 && PH.y >= 0) && spacing > 30)
         {
-            test = 0;
+            spacing = 0;
             // cv::circle(this->map, PH, 3, cv::Scalar(0,255,255), -1);    //Illustration purpose
             //debug = PH.x;
             goalPath.push_back(PH);
@@ -312,7 +312,7 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
 }
 
 /**
- * Optimizes the path generated from wavefront by deleting unneccesary points in a vector
+ * Optimizes the path generated from wavefront by deleting unneccesary points in a vector. Is not currently in use
  * @brief not currently used
  * @param subGoals is the vector of goals
  */
@@ -341,7 +341,6 @@ std::vector<cv::Point> planner::PostProcessing(std::vector<cv::Point> &subGoals)
 /***********************************************
 ******* AUXILIARY FUNCTIONS DEFINED HERE *******
 ************************************************/
-
 /**
  * @brief Finds absolute value of projection between two vectors
  * @param v1 vector 1
