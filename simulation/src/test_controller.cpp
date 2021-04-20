@@ -13,6 +13,7 @@ namespace plt = matplotlibcpp;
 
 #define PI 3.14159265
 #define ANGLE_THRESHOLD 2*M_PI/32
+#define IDLE_TIME 50
 
 #define SAMPLING_RATE 0.01
 #define PORT 1024
@@ -24,7 +25,7 @@ namespace plt = matplotlibcpp;
 #define WAIT 4
 #define SET_VELOCITY 5
 
-
+bool boxDone = false;
 int wait_time = 0;
 
 void test_controller::connect()
@@ -53,14 +54,10 @@ test_controller::test_controller() :
 
 void test_controller::Init(argos::TConfigurationNode& t_node) 
 {
-
     m_pcWheels = GetActuator<argos::CCI_DifferentialSteeringActuator>("differential_steering");
     posSensor = GetSensor<argos::CCI_PositioningSensor>("positioning");
     proxSensor = GetSensor<argos::CCI_FootBotProximitySensor>("footbot_proximity");
-
     argos::GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
-
-
 
     currentState = RECEIVE;
 }
@@ -111,41 +108,41 @@ void test_controller::ControlStep()
                 switch (connection.getMessageType())
                 {
                 case protocol::dataType::typeCVector3:
+                {
                     connection.getMessage(goalPointMessage);
                     if(goalPointMessage != argos::CVector3(0,0,0))
                     {
                         currentState = GO_TO_POINT;
                     }
                     break;
-                
+                }
                 case protocol::dataType::typeCRadians:
+                {
                     connection.getMessage(goalAngle);
                     currentState = ORIENTATE;
                     break;
-
+                }
                 case protocol::dataType::typeReal:
+                {
                     connection.getMessage(pushVelocity);
                     currentState = SET_VELOCITY;
                     break;
-
+                }
                 default:
                     break;
                 }
             }
-            if (wait_time > 20 && !sendWaitState)
+            if (wait_time > IDLE_TIME && !sendWaitState)
             {
-                // connection.send(robotPos.Position);
-                // wait_time = 0;
                 currentState = UPDATE_SERVER;
             }
-            else if(wait_time > 20 && sendWaitState)
+            else if(wait_time > IDLE_TIME && sendWaitState)
             {
-                sendWaitState = false;
+                //sendWaitState = false;
                 currentState = WAIT;
             }
-            
+            break;
         }
-        break;
 
         /************************* GO TO POINT *************************/
         case GO_TO_POINT:
@@ -224,7 +221,10 @@ void test_controller::ControlStep()
             {
                 std::cout << message << std::endl;
                 if(message == "STOP")
+                {
                     currentState = RECEIVE;
+                    sendWaitState = false;
+                }
                 
             }
 
