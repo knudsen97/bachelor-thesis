@@ -49,7 +49,10 @@ void swarmManager::step()
 
     if (blueServer.jobsDone)
     {
-        blueServer(3, blueGoal, blueBoxes[blueBoxIdx++]);
+        if (blueBoxIdx < blueBoxes.size())
+        {
+            blueServer(3, blueGoal, blueBoxes[blueBoxIdx++]);
+        }
     }
     blueServer.step();
     
