@@ -1,7 +1,5 @@
 #include "swarmManager.h"
 
-bool test = false;
-
 void sortClosestBox(std::vector<argos::CBoxEntity*> &boxes, const argos::CVector3& goal)
 {
     std::sort(
@@ -53,6 +51,10 @@ void swarmManager::step()
         if (blueBoxIdx < blueBoxes.size())
         {
             blueServer(3, blueGoal, blueBoxes[blueBoxIdx++]);
+        }
+        else if(whiteBoxIdx < whiteBoxes.size())
+        {
+            blueServer(3, whiteGoal, whiteBoxes[whiteBoxIdx++]);
         }
     }
     if (whiteServer.jobsDone)
