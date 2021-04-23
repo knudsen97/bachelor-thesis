@@ -64,7 +64,7 @@
   <loop_functions library="build/libsrc"
                   label="master_loop_function">
 
-    <server port="1024" clients="3"/>
+    <server port="1024" clients="6"/>
 
   </loop_functions>
   <!-- *********************** -->
@@ -140,6 +140,30 @@
 
     <foot-bot id="fb_2">
       <body position="5,2.5,0" orientation="0,0,0" />
+      <controller config="test"/>
+        <dynamics2d>
+        <differential_steering max_force="0.3" max_torque="0.3"/>
+      </dynamics2d>
+    </foot-bot>
+
+    <foot-bot id="fb_3">
+      <body position="5,2,0" orientation="0,0,0" />
+      <controller config="test"/>
+      <dynamics2d>
+        <differential_steering max_force="0.3" max_torque="0.3"/>
+      </dynamics2d>
+    </foot-bot>
+
+    <foot-bot id="fb_4">
+      <body position="5,1.5,0" orientation="0,0,0" />
+      <controller config="test"/>
+      <dynamics2d>
+        <differential_steering max_force="0.3" max_torque="0.3"/>
+      </dynamics2d>
+    </foot-bot>
+
+    <foot-bot id="fb_5">
+      <body position="5,1,0" orientation="0,0,0" />
       <controller config="test"/>
         <dynamics2d>
         <differential_steering max_force="0.3" max_torque="0.3"/>

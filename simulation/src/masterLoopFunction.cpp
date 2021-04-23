@@ -51,6 +51,7 @@ void masterLoopFunction::Init(argos::TConfigurationNode& t_tree) {
               argos::CVector3(0.3, 0.3, 0.2), 
               argos::CVector3(0.5, 0.5, 0.2), 
               whiteGoal, blueGoal, 6, 0.9999f);
+   cameraServerLoop::establishConnection(footbotCount);
 }
 
 void masterLoopFunction::PreStep() 
