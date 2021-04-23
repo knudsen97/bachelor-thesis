@@ -64,6 +64,7 @@ void debugFun(int _clientcount, bool a = true)
 
 
 cameraServerLoop::cameraServerLoop(){
+   everyoneIsConected = false;
 }
 
 cameraServerLoop::~cameraServerLoop() 
@@ -134,10 +135,31 @@ void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, ar
    debugMaps.resize(clientcount);
 }
 
+void cameraServerLoop::establishConnection(int totalClientCount)
+{
+   everyoneIsConected = false;
+   std::thread connecting(&cameraServerLoop::connect_, totalClientCount);
+   connecting.detach();
+}
+
 void cameraServerLoop::connect() 
 {
-   std::thread connecting(&cameraServerLoop::connect_, this);
-   connecting.detach();
+   connected = true;
+   if (everyoneIsConected)   
+      for (size_t i = 0; i < clientcount; i++)
+      {
+         if (!clientSockets.empty())
+         {
+         clientConnections.push_back(protocol(*(clientSockets[clientSockets.size()-1])));
+         clientSockets.pop_back();
+         }
+      }
+   else
+   {
+      argos::LOG << "false\n";
+      connected = false;
+   }
+      
 }
 
 
@@ -383,21 +405,24 @@ void cameraServerLoop::step()
          }
       }
    }
+   else
+   {
+      connect();
+   }
+   
 }
 
-void cameraServerLoop::connect_()
+void cameraServerLoop::connect_(int totalClientCount)
 {
-   clientConnected = 0;
    serverSocket.Listen(portnumber);
-   clientSockets.resize(clientcount);
-   recievedPosition.resize(clientcount);
-   for (size_t i = 0; i < clientcount; i++)
+   clientSockets.resize(totalClientCount);
+   clients.resize(totalClientCount);
+   for (size_t i = 0; i < totalClientCount; i++)
    {
-      serverSocket.Accept(clientSockets[i]);
-      clientConnections.push_back(protocol(clientSockets[i]));
-      clientConnected++;
+      serverSocket.Accept(clients[i]);
+      clientSockets.push_back(&clients[i]);
    }
-   connected = true;
+   everyoneIsConected = true;
 }
 
 /**
@@ -551,3 +576,7 @@ bool cameraServerLoop::Planning(cv::Mat &map_, argos::CVector3 goal, argos::CVec
 
 /*Static variables definitions*/
 int cameraServerLoop::portnumber = 0;
+argos::CTCPSocket cameraServerLoop::serverSocket;
+std::vector<argos::CTCPSocket*> cameraServerLoop::clientSockets;
+std::vector<argos::CTCPSocket> cameraServerLoop::clients;
+bool cameraServerLoop::everyoneIsConected;

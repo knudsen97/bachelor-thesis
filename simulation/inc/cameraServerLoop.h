@@ -26,15 +26,24 @@ protected:
     argos::CFootBotEntity* fBot;
 
     /* socket stuff*/
-    argos::CTCPSocket serverSocket;
-    std::vector<argos::CTCPSocket> clientSockets;
+protected:
+    static argos::CTCPSocket serverSocket;
+    static std::vector<argos::CTCPSocket> clients;
+    static std::vector<argos::CTCPSocket*> clientSockets;
     std::vector<argos::CVector3> robotPositions;
     std::vector<protocol> clientConnections;
     int clientConnected;
     bool connected;
-    void connect_();
+    static void connect_(int totalClientCount);
+
+public:
+    void connect();
+    static void establishConnection(int totalClientCount);
+    static int portnumber;
+    static bool everyoneIsConected;
 
     /* camera stuff */
+protected:
     camera C;
     camera cam;
     cv::Mat cameraImage;
@@ -67,13 +76,10 @@ public:
     size_t argosTime;                                   //time unit in argos
 
 public:
-    static int portnumber;
-
     void operator()(int clientcount_, argos::CVector3 boxGoal_, argos::CBoxEntity* pcBox_);
     cameraServerLoop();
     ~cameraServerLoop();
     
-    void connect();
     void step();
 
 

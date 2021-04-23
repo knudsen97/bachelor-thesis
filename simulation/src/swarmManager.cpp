@@ -42,6 +42,7 @@ void swarmManager::step()
         sortBlue.join();
         sortWhite.join();
         blueServer(3, blueGoal, blueBoxes[blueBoxIdx++]);
+        whiteServer(3, whiteGoal, whiteBoxes[whiteBoxIdx++]);
         firstRun = true;
     }
 
@@ -56,6 +57,14 @@ void swarmManager::step()
             blueServer(3, whiteGoal, whiteBoxes[whiteBoxIdx++]);
         }
     }
+    if (whiteServer.jobsDone)
+    {
+        if (whiteBoxIdx < whiteBoxes.size())
+        {
+            whiteServer(3, whiteGoal, whiteBoxes[whiteBoxIdx++]);
+        }
+    }
+    whiteServer.step();
     blueServer.step();
     
     // std::cout << "white: " << whiteBoxes.size() << std::endl;
