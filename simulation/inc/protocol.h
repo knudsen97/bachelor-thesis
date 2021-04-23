@@ -163,12 +163,12 @@ public:
     argos::Real getMessage(argos::Real& message = dummy_Real);
     cv::Point getMessage(cv::Point& message = dummy_Point);
 
-    bool debug_sendt = true;
+    bool debug_sent = true;
     bool debug_recieved = true;
 
 private:
     argos::CTCPSocket* socket;
-    bool sendt = true;
+    bool sent = true;
     bool recieved = true;
     void sendMessage(argos::CByteArray message, dataType type);
 
