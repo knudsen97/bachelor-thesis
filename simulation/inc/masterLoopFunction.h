@@ -26,6 +26,7 @@ public:
     swarmManager swarmMan;
     virtual void Init(argos::TConfigurationNode& t_tree);
     virtual void PreStep();
+    virtual void PostStep();
 
     void placeBox();
     masterLoopFunction(/* args */);

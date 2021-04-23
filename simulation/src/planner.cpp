@@ -286,7 +286,7 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
             }
         }
 
-        //std::cout << "test: " <<test << std::endl;
+        //argos::LOG << "test: " <<test << std::endl;
         if((prevIdx != idx && PH.x >=0 && PH.y >= 0) && spacing > 30)
         {
             spacing = 0;
@@ -305,7 +305,7 @@ std::vector<cv::Point> planner::Pathfinder(cv::Mat &grayMap, argos::CVector3 &ro
     //cv::waitKey(10);
 
     // for(auto goal : goalPath)
-    //     std::cout << goal << std::endl;
+    //     argos::LOG << goal << std::endl;
     
 
     return goalPath;

@@ -72,8 +72,8 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::
     // x.push_back(M_PI);
     // x.push_back(abs(desiredAngle.GetValue()));
     
-    // std::cout << "cur: " << curAngle << std::endl;
-    // std::cout << "des: " << desiredAngle << std::endl;
+    // argos::LOG << "cur: " << curAngle << std::endl;
+    // argos::LOG << "des: " << desiredAngle << std::endl;
 
 
     preError = error;
@@ -123,7 +123,7 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, const a
 
     /*Plot error:*/
     // y.push_back(K);
-    // std::cout << "error: " << error << std::endl;
+    // argos::LOG << "error: " << error << std::endl;
 
     preError = error;
     return vel;

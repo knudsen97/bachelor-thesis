@@ -5,12 +5,16 @@ protocol::protocol(argos::CTCPSocket& socket_)
     socket = &socket_;
     preMessageRecieved[0] = 0;
     preMessageRecieved[1] = typeError;
+    sendt = true;
+    recieved = true;
 }
 void protocol::operator()(argos::CTCPSocket& socket_)
 {
     socket = &socket_;
     preMessageRecieved[0] = 0;
     preMessageRecieved[1] = typeError;
+    sendt = true;
+    recieved = true;
 }
 
 protocol::protocol(){}
@@ -65,6 +69,9 @@ bool protocol::send(std::string message)
  */
 bool protocol::send(argos::CVector3 message) 
 {
+    debug_sendt= sendt;
+    debug_recieved= recieved;
+    
     if (sendt && recieved)
     {        
         std::string strMessage;
@@ -202,8 +209,8 @@ void protocol::sendMessage(argos::CByteArray message, dataType type)
  */
 bool protocol::recieve(argos::CByteArray& message) 
 {
-    // std::cout << "sendt: " << sendt << '\n';
-    // std::cout << "recieved: " << recieved << '\n';
+    debug_sendt= sendt;
+    debug_recieved= recieved;
     if (recieved && sendt && socket->GetEvents().find(argos::CTCPSocket::EEvent::InputReady) != socket->GetEvents().end())
     {
         

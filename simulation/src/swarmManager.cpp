@@ -41,8 +41,8 @@ void swarmManager::step()
         std::thread sortWhite(sortClosestBox, std::ref(whiteBoxes), std::ref(whiteGoal));
         sortBlue.join();
         sortWhite.join();
-        blueServer(3, blueGoal, blueBoxes[blueBoxIdx++]);
-        whiteServer(3, whiteGoal, whiteBoxes[whiteBoxIdx++]);
+        blueServer(3, blueGoal, blueBoxes[blueBoxIdx++], "blue server");
+        whiteServer(3, whiteGoal, whiteBoxes[whiteBoxIdx++], "white server");
         firstRun = true;
     }
 
@@ -50,27 +50,27 @@ void swarmManager::step()
     {
         if (blueBoxIdx < blueBoxes.size())
         {
-            blueServer(3, blueGoal, blueBoxes[blueBoxIdx++]);
+            blueServer( blueGoal, blueBoxes[blueBoxIdx++]);
         }
         else if(whiteBoxIdx < whiteBoxes.size())
         {
-            blueServer(3, whiteGoal, whiteBoxes[whiteBoxIdx++]);
+            blueServer( whiteGoal, whiteBoxes[whiteBoxIdx++]);
         }
     }
     if (whiteServer.jobsDone)
     {
         if (whiteBoxIdx < whiteBoxes.size())
         {
-            whiteServer(3, whiteGoal, whiteBoxes[whiteBoxIdx++]);
+            whiteServer( whiteGoal, whiteBoxes[whiteBoxIdx++]);
         }
     }
-    whiteServer.step();
     blueServer.step();
+    whiteServer.step();
     
-    // std::cout << "white: " << whiteBoxes.size() << std::endl;
-    // std::cout << "blue: " << blueBoxes.size() << std::endl;
-    // std::cout << "wGoal: " << whiteGoal << std::endl;
-    // std::cout << "bGoal: " << blueGoal << std::endl;
+    // argos::LOG << "white: " << whiteBoxes.size() << std::endl;
+    // argos::LOG << "blue: " << blueBoxes.size() << std::endl;
+    // argos::LOG << "wGoal: " << whiteGoal << std::endl;
+    // argos::LOG << "bGoal: " << blueGoal << std::endl;
 
 }
 

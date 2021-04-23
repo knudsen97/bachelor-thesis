@@ -127,7 +127,7 @@ void CSortLoopFunction::PlaceBox( const CVector3& min_range,
                }
                if(count == boxLocations.size())
                {
-                  //std::cout << "dist: " << dist <<std::endl;
+                  //argos::LOG << "dist: " << dist <<std::endl;
                   boxLocations.push_back(c_position);
 
                   dist = 0;

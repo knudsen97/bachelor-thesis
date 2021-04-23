@@ -70,7 +70,7 @@ camera::polygon findCPositions(argos::CBoxEntity* mBox)
 
 camera::camera()
 {
-    //std::cout << "Make camera obj" << std::endl;
+    //argos::LOG << "Make camera obj" << std::endl;
 
     std::string name;
     name.append(camera::windowNameTemp);
@@ -84,7 +84,7 @@ camera::camera()
 }
 camera::camera(std::string name)
 {
-    //std::cout << "Make camera obj with arg" << std::endl;
+    //argos::LOG << "Make camera obj with arg" << std::endl;
     cv::resizeWindow(name, WINDOWSIZE, WINDOWSIZE);
     camera::windowName = name;
     frame = emptyFrame.clone();
@@ -92,7 +92,7 @@ camera::camera(std::string name)
 }
 
 camera::~camera(){
-    std::cout << "Destroy camera obj" << std::endl;
+    argos::LOG << "Destroy camera obj" << std::endl;
 
     try
     {

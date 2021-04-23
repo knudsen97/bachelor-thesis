@@ -77,13 +77,13 @@ bool serverWaitState(argos::CBoxEntity *pcBox, argos::CVector3 _boxGoal, int _cl
 
     if(_debug)
     {
-        std::cout << "dist2goal: " << distanceToGoal << std::endl;
+        argos::LOG << "dist2goal: " << distanceToGoal << std::endl;
     }
     
     if(distanceToGoal < threshold)
     {
         if(_debug)
-            std::cout << "IN GOAL RANGE\n";
+            argos::LOG << "IN GOAL RANGE\n";
         for (size_t i = 0; i < _clientcount; i++)
         {
             if(_clientConnections[i].send("STOP"));

@@ -42,6 +42,9 @@ void test_controller::connect()
             ;
         }
     }
+    connection(clientSocket);
+    while(!connection.send(CCI_Controller::GetId()))
+        ;
     connected = true;
     threadOpen = false;
 }
@@ -63,6 +66,7 @@ void test_controller::Init(argos::TConfigurationNode& t_node)
 }
 void test_controller::ControlStep()
 {
+    argos::LOG << "footbot: " << CCI_Controller::GetId() << '\n';
     if (!clientSocket.IsConnected())
     {
         connected = false;
@@ -86,11 +90,6 @@ void test_controller::ControlStep()
         controller control(SAMPLING_RATE*5, 2000, 100, 1);
         controller::wVelocity wVel;
 
-        if (!joined)
-        {
-            joined = true;
-            connection(clientSocket);
-        } 
         if(!sentPosition)
             sentPosition = connection.send(robotPosition);
 
@@ -100,8 +99,11 @@ void test_controller::ControlStep()
         /************************* RECEIVE *************************/
         case RECEIVE:
         {
+            argos::LOG << "sendt: " << connection.debug_sendt <<'\n'; 
+            argos::LOG << "recieved: " << connection.debug_recieved <<'\n'; 
+
             wait_time++;
-            std::cout << "CLIENT RECEIVE\n";
+            argos::LOG << "CLIENT RECEIVE\n";
 
             if(connection.recieve())
             {
@@ -147,7 +149,7 @@ void test_controller::ControlStep()
         /************************* GO TO POINT *************************/
         case GO_TO_POINT:
         {
-            std::cout << "CLIENT GO_TO_POINT\n";
+            argos::LOG << "CLIENT GO_TO_POINT\n";
 
             argos::CRadians desiredAngle;
             desiredAngle = argos::ATan2(goalPointMessage.GetY() - robotPos.Position.GetY(), goalPointMessage.GetX() - robotPos.Position.GetX());
@@ -162,7 +164,9 @@ void test_controller::ControlStep()
         /************************* UPDATE SERVER *************************/
         case UPDATE_SERVER:
         {
-            std::cout << "CLIENT UPDATE SERVER\n";
+            argos::LOG << "CLIENT UPDATE SERVER\n";
+            argos::LOG << "sendt: " << connection.debug_sendt <<'\n'; 
+            argos::LOG << "recieved: " << connection.debug_recieved <<'\n'; 
             if(connection.send(robotPos.Position))
             {
                 currentState = RECEIVE;
@@ -174,13 +178,13 @@ void test_controller::ControlStep()
         /************************* ORIENTATE *************************/
         case ORIENTATE:
         {
-            std::cout << "CLIENT ORIENTATE\n";
+            argos::LOG << "CLIENT ORIENTATE\n";
 
 
             wVel = control.angleControl(xAngle, goalAngle);
 
-            // std::cout << "ROBOT ORIEN: " << abs(goalAngle.GetValue()) - abs(xAngle.GetValue()) << std::endl;
-            // std::cout << "ANGLE THRES: " << ANGLE_THRESHOLD << std::endl;
+            // argos::LOG << "ROBOT ORIEN: " << abs(goalAngle.GetValue()) - abs(xAngle.GetValue()) << std::endl;
+            // argos::LOG << "ANGLE THRES: " << ANGLE_THRESHOLD << std::endl;
             if(abs(goalAngle.GetValue() - xAngle.GetValue()) >= 0.024999f)
             {
                 m_pcWheels->SetLinearVelocity(wVel.lWheel, wVel.rWheel);
@@ -197,7 +201,7 @@ void test_controller::ControlStep()
         /************************* WAIT *************************/
         case WAIT:
         {
-            std::cout << "CLIENT WAIT\n";
+            argos::LOG << "CLIENT WAIT\n";
             if(connection.send("WAIT"))
             {
                 sendWaitState = true;
@@ -211,7 +215,7 @@ void test_controller::ControlStep()
         /************************* SET_VELOCITY *************************/
         case SET_VELOCITY:
         {
-            std::cout << "CLIENT SET_VELOCITY\n";
+            argos::LOG << "CLIENT SET_VELOCITY\n";
             wVel = control.angleControl(xAngle, goalAngle);
 
             m_pcWheels->SetLinearVelocity(pushVelocity + wVel.lWheel, pushVelocity + wVel.rWheel);
@@ -219,7 +223,7 @@ void test_controller::ControlStep()
             std::string message;
             if(connection.recieve(message))
             {
-                std::cout << message << std::endl;
+                argos::LOG << message << std::endl;
                 if(message == "STOP")
                 {
                     currentState = RECEIVE;
@@ -235,7 +239,7 @@ void test_controller::ControlStep()
         }
     }
     
-
+    argos::LOG << '\n';
 }
 
 /**
