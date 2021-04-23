@@ -99,7 +99,7 @@ void test_controller::ControlStep()
         /************************* RECEIVE *************************/
         case RECEIVE:
         {
-            argos::LOG << "sendt: " << connection.debug_sendt <<'\n'; 
+            argos::LOG << "sent: " << connection.debug_sent <<'\n'; 
             argos::LOG << "recieved: " << connection.debug_recieved <<'\n'; 
 
             wait_time++;
@@ -165,7 +165,7 @@ void test_controller::ControlStep()
         case UPDATE_SERVER:
         {
             argos::LOG << "CLIENT UPDATE SERVER\n";
-            argos::LOG << "sendt: " << connection.debug_sendt <<'\n'; 
+            argos::LOG << "sent: " << connection.debug_sent <<'\n'; 
             argos::LOG << "recieved: " << connection.debug_recieved <<'\n'; 
             if(connection.send(robotPos.Position))
             {
