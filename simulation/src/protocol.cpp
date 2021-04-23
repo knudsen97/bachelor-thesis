@@ -29,11 +29,11 @@ protocol::~protocol(){}
  */
 bool protocol::send(argos::CByteArray message) 
 {
-    if (sendt && recieved)
+    if (sent && recieved)
     {
         communicate = std::thread(&protocol::sendMessage, this, message, dataType::typeCByteArray);
         communicate.detach();
-        sendt = false;
+        sent = false;
         return true;
     }
     else
@@ -46,13 +46,13 @@ bool protocol::send(argos::CByteArray message)
  */
 bool protocol::send(std::string message) 
 {
-    if (sendt && recieved)
+    if (sent && recieved)
     {
         argos::CByteArray package;
         package = argos::CByteArray((argos::UInt8*)message.c_str(), message.size()+1);
         communicate = std::thread(&protocol::sendMessage, this, package, dataType::typeString);
         communicate.detach();
-        sendt = false;
+        sent = false;
         return true;
     }
     else
@@ -65,7 +65,7 @@ bool protocol::send(std::string message)
  */
 bool protocol::send(argos::CVector3 message) 
 {
-    if (sendt && recieved)
+    if (sent && recieved)
     {        
         std::string strMessage;
         strMessage.append(std::to_string(message.GetX()) + ' ');
@@ -76,7 +76,7 @@ bool protocol::send(argos::CVector3 message)
         package = argos::CByteArray((argos::UInt8*)strMessage.c_str(), strMessage.size()+1);
         communicate = std::thread(&protocol::sendMessage, this, package, dataType::typeCVector3);
         communicate.detach();
-        sendt = false;
+        sent = false;
         return true;
     }
     else
@@ -92,7 +92,7 @@ bool protocol::send(argos::CVector3 message)
  */
 bool protocol::send(argos::CRadians X, argos::CRadians Y, argos::CRadians Z) 
 {
-    if (sendt && recieved)
+    if (sent && recieved)
     {        
         std::string strMessage;
         strMessage.append(std::to_string(X.GetValue()) + ' ');
@@ -103,7 +103,7 @@ bool protocol::send(argos::CRadians X, argos::CRadians Y, argos::CRadians Z)
         package = argos::CByteArray((argos::UInt8*)strMessage.c_str(), strMessage.size()+1);
         communicate = std::thread(&protocol::sendMessage, this, package, dataType::typeCRadians);
         communicate.detach();
-        sendt = false;
+        sent = false;
         return true;
     }
     else
@@ -116,13 +116,13 @@ bool protocol::send(argos::CRadians X, argos::CRadians Y, argos::CRadians Z)
  */
 bool protocol::send(argos::Real message) 
 {
-    if (sendt && recieved)
+    if (sent && recieved)
     {   
         u_char* prePackage = reinterpret_cast<u_char*>(&message);
         argos::CByteArray package(prePackage, sizeof(prePackage)/sizeof(u_char));
         communicate = std::thread(&protocol::sendMessage, this, package, dataType::typeReal);
         communicate.detach();
-        sendt = false;
+        sent = false;
         return true;
     }
     else
@@ -135,7 +135,7 @@ bool protocol::send(argos::Real message)
  */
 bool protocol::send(cv::Point message) 
 {
-    if (sendt && recieved)
+    if (sent && recieved)
     {   
         std::string strMessage;
         strMessage.append(std::to_string(message.x) + ' ');
@@ -145,7 +145,7 @@ bool protocol::send(cv::Point message)
         package = argos::CByteArray((argos::UInt8*)strMessage.c_str(), strMessage.size()+1);
         communicate = std::thread(&protocol::sendMessage, this, package, dataType::typePoint);
         communicate.detach();
-        sendt = false;
+        sent = false;
 
         return true;
     }
@@ -186,7 +186,7 @@ void protocol::sendMessage(argos::CByteArray message, dataType type)
         ;
     }
     socket->SendByteArray(message);
-    sendt = true;
+    sent = true;
 }
 
 
@@ -202,9 +202,9 @@ void protocol::sendMessage(argos::CByteArray message, dataType type)
  */
 bool protocol::recieve(argos::CByteArray& message) 
 {
-    // std::cout << "sendt: " << sendt << '\n';
+    // std::cout << "sent: " << sent << '\n';
     // std::cout << "recieved: " << recieved << '\n';
-    if (recieved && sendt && socket->GetEvents().find(argos::CTCPSocket::EEvent::InputReady) != socket->GetEvents().end())
+    if (recieved && sent && socket->GetEvents().find(argos::CTCPSocket::EEvent::InputReady) != socket->GetEvents().end())
     {
         
         communicate = std::thread(&protocol::recieveMessage, this);

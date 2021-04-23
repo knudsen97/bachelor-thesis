@@ -165,7 +165,7 @@ public:
 
 private:
     argos::CTCPSocket* socket;
-    bool sendt = true;
+    bool sent = true;
     bool recieved = true;
     void sendMessage(argos::CByteArray message, dataType type);
 
