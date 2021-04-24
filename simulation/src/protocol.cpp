@@ -33,7 +33,7 @@ protocol::~protocol(){}
  */
 bool protocol::send(argos::CByteArray message) 
 {
-    if (sent && recieved)
+    if (sent && recieved && socket->GetEvents().find(argos::CTCPSocket::EEvent::OutputReady) != socket->GetEvents().end())
     {
         communicate = std::thread(&protocol::sendMessage, this, message, dataType::typeCByteArray);
         communicate.detach();
@@ -50,7 +50,7 @@ bool protocol::send(argos::CByteArray message)
  */
 bool protocol::send(std::string message) 
 {
-    if (sent && recieved)
+    if (sent && recieved && socket->GetEvents().find(argos::CTCPSocket::EEvent::OutputReady) != socket->GetEvents().end())
     {
         argos::CByteArray package;
         package = argos::CByteArray((argos::UInt8*)message.c_str(), message.size()+1);
@@ -72,7 +72,7 @@ bool protocol::send(argos::CVector3 message)
     debug_sent= sent;
     debug_recieved= recieved;
     
-    if (sent && recieved)
+    if (sent && recieved && socket->GetEvents().find(argos::CTCPSocket::EEvent::OutputReady) != socket->GetEvents().end())
     {        
         std::string strMessage;
         strMessage.append(std::to_string(message.GetX()) + ' ');
@@ -99,7 +99,7 @@ bool protocol::send(argos::CVector3 message)
  */
 bool protocol::send(argos::CRadians X, argos::CRadians Y, argos::CRadians Z) 
 {
-    if (sent && recieved)
+    if (sent && recieved && socket->GetEvents().find(argos::CTCPSocket::EEvent::OutputReady) != socket->GetEvents().end())
     {        
         std::string strMessage;
         strMessage.append(std::to_string(X.GetValue()) + ' ');
@@ -123,7 +123,7 @@ bool protocol::send(argos::CRadians X, argos::CRadians Y, argos::CRadians Z)
  */
 bool protocol::send(argos::Real message) 
 {
-    if (sent && recieved)
+    if (sent && recieved && socket->GetEvents().find(argos::CTCPSocket::EEvent::OutputReady) != socket->GetEvents().end())
     {   
         u_char* prePackage = reinterpret_cast<u_char*>(&message);
         argos::CByteArray package(prePackage, sizeof(prePackage)/sizeof(u_char));
@@ -142,7 +142,7 @@ bool protocol::send(argos::Real message)
  */
 bool protocol::send(cv::Point message) 
 {
-    if (sent && recieved)
+    if (sent && recieved && socket->GetEvents().find(argos::CTCPSocket::EEvent::OutputReady) != socket->GetEvents().end())
     {   
         std::string strMessage;
         strMessage.append(std::to_string(message.x) + ' ');
