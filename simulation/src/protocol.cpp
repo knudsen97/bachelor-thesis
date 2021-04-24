@@ -209,22 +209,22 @@ void protocol::sendMessage(argos::CByteArray message, dataType type)
  */
 bool protocol::recieve(argos::CByteArray& message) 
 {
-    debug_sent= sent;
-    debug_recieved= recieved;
+    debug_sent = sent;
+    debug_recieved = recieved;
     if (recieved && sent && socket->GetEvents().find(argos::CTCPSocket::EEvent::InputReady) != socket->GetEvents().end())
     {
-        
-        communicate = std::thread(&protocol::recieveMessage, this);
-        communicate.detach();
         recieved = false;
+        communicate = std::thread(&protocol::recieveMessage, this);
+        // communicate.detach();
     }
     else
         return false;
-    usleep(500);
+    // usleep(1000);
+    communicate.join();
     if (recievedMessage.Size()>0)
     {
         message = recievedMessage;
-        communicate.~thread();
+        // communicate.~thread();
         recieved = true;
         return true;
     }
