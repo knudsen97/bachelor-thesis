@@ -65,6 +65,8 @@ public:
     cv::Mat GetPlot();
     void GetPlot(cv::Mat& outputFrame);
     void ClearPlot();
+    void PlotBox(argos::CBoxEntity* box, cv::Mat& outputMatrix);
+    cv::Mat PlotBox(argos::CBoxEntity* box);
 
 protected:
     std::vector<argos::CBoxEntity*> boxes;
