@@ -28,6 +28,8 @@ public:
     ~planner();
     
     cPositions FindCPositions(argos::CBoxEntity* mBox);
+    std::vector<cv::Point> FindPolygonCorners(argos::CBoxEntity* mBox);
+
     std::vector<argos::CVector3> FindPushPointsBox(argos::CBoxEntity* mBox, argos::CVector3 goalPoint);
     std::vector<argos::CVector3> FindPushPointsIrregular(argos::CBoxEntity* mBox, argos::CVector3 goalPoint);
     //cv::Mat Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3 &goal);
@@ -54,6 +56,7 @@ public:
 private:
     cv::Mat map; //For illustration
     cv::Mat grayMapCopy;
+    camera cam;
 };
 
 #endif

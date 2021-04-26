@@ -52,11 +52,56 @@ planner::cPositions planner::FindCPositions(CBoxEntity* mBox)
 
 
 /**
+ * Finds corner position an irregular shaped object of a CBoxEntity
+ * @param mBox is the argos box entity
+*/
+std::vector<cv::Point> planner::FindPolygonCorners(argos::CBoxEntity* mBox)
+{
+    std::vector<cv::Point> corners;
+
+    /* Find corners */
+    cv::Mat objectMap = cam.PlotBox(mBox);
+    cv::cvtColor(objectMap, objectMap, cv::COLOR_BGR2GRAY);
+
+    cv::Mat dst, dstNorm, dstNormScaled;
+    cv::cornerHarris(objectMap, dst, 7, 5, 0.05, cv::BORDER_DEFAULT) ;
+    cv::normalize( dst, dstNorm, 0, 255, cv::NORM_MINMAX, CV_32FC1, cv::Mat() );
+    cv::convertScaleAbs( dstNorm, dstNormScaled );
+
+    cv::Point prev;
+    for( int j = 0; j < dstNorm.rows ; j++ )
+    { 
+        for( int i = 0; i < dstNorm.cols; i++ )
+        {
+            if( (int) dstNorm.at<float>(j,i) > 200 )
+            {
+                 
+                if(corners.size() == 0)
+                {
+                    corners.push_back(cv::Point(i,j));
+                }
+                else if(abs((prev - cv::Point(i,j)).x) > 1 && abs((prev - cv::Point(i,j)).y) > 1)
+                {
+                    corners.push_back(cv::Point(i,j));
+                }
+
+                prev = cv::Point(i,j);
+            }
+        }
+    }
+
+
+    return corners;
+}
+
+
+
+/**
  * Find eligible points on a CBoxEntity box to push from given a goal position.
  * @param mBox is the box entity in argos
  * @param goalPoint is the goal position
 */
-std::vector<CVector3> planner::FindPushPoints(CBoxEntity* mBox, CVector3 goalPoint)
+std::vector<CVector3> planner::FindPushPointsBox(CBoxEntity* mBox, CVector3 goalPoint)
 {
     std::vector<CVector3> validPushPoints;
     planner::cPositions c = planner::FindCPositions(mBox);
@@ -122,6 +167,29 @@ std::vector<CVector3> planner::FindPushPoints(CBoxEntity* mBox, CVector3 goalPoi
 
     return validPushPoints;
 }
+
+/**
+ * Find eligible points on a irregular shaped object to push from given a goal position.
+ * @param mBox is the box entity in argos
+ * @param goalPoint is the goal position
+*/
+std::vector<argos::CVector3> planner::FindPushPointsIrregular(argos::CBoxEntity* mBox, argos::CVector3 goalPoint)
+{
+    std::vector<CVector3> validPushPoints;
+    std::vector<cv::Point> corners = FindPolygonCorners(mBox);
+
+    // cv::Mat map = cv::Mat::zeros( IMAGESIZE, IMAGESIZE, CV_32FC1 );
+    // for(auto corner : corners)
+    //     std::cout << corner << std::endl;
+    // for(auto corner : corners)
+    //     cv::circle(map, corner, 5, cv::Scalar(255,255,255), -1);
+    // std::cout << "# of corners: " << corners.size() << std::endl;
+    // cv::imshow("hej", map);
+    // cv::waitKey(0);
+
+    return validPushPoints;
+}
+
 
 /**
  * @brief Generates a wavefront starting from the goal location
