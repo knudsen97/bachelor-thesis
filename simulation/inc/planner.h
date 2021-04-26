@@ -14,6 +14,7 @@
 #include "algorithm"
 #include "../inc/camera.h"
 
+#define INTERWHEEL_DISTANCE 0.14f 
 #define MAX_USHORT 65535
 #define OFF_SET 0.35
 
@@ -28,7 +29,7 @@ public:
     ~planner();
     
     cPositions FindCPositions(argos::CBoxEntity* mBox);
-    std::vector<cv::Point> FindPolygonCorners(argos::CBoxEntity* mBox);
+    std::vector<argos::CVector3> FindPolygonCorners(argos::CBoxEntity* mBox);
 
     std::vector<argos::CVector3> FindPushPointsBox(argos::CBoxEntity* mBox, argos::CVector3 goalPoint);
     std::vector<argos::CVector3> FindPushPointsIrregular(argos::CBoxEntity* mBox, argos::CVector3 goalPoint);
@@ -51,12 +52,12 @@ public:
     bool ValidLine(cv::Point A, cv::Point B, cv::Mat img);
     ushort GrayPixelVal(cv::Mat &map, cv::Point point);
 
-    
+    argos::CVector3 offsetPoint(argos::CBoxEntity* mBox, argos::CVector3 cornerLoc, argos::CVector3 goalPoint);
 
 private:
     cv::Mat map; //For illustration
     cv::Mat grayMapCopy;
-    camera cam;
+    //camera cam;
 };
 
 #endif

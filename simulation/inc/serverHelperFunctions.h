@@ -52,10 +52,10 @@ void drawEndPoints(int _i, planner &_plan, argos::CBoxEntity* _pcBox,
     {
         if (k != _i)
         {
-            robotEndPoint = _plan.push(_pcBox, _validPushPoints[k], _boxGoal) - _validPushPoints[k];
-            robotEndPoint = robotEndPoint.Normalize() * (-OFF_SET);
-            robotEndPoint += _validPushPoints[k];
-            cv::circle(_cameraImage, convertToCV(robotEndPoint), INTERWHEEL_DISTANCE*SCALE/2.0f, cv::Scalar(0,0,0), -1);
+            // robotEndPoint = _plan.push(_pcBox, _validPushPoints[k], _boxGoal) - _validPushPoints[k];
+            // robotEndPoint = robotEndPoint.Normalize() * (-OFF_SET);
+            // robotEndPoint += _validPushPoints[k];
+            cv::circle(_cameraImage, convertToCV(_validPushPoints[k]), INTERWHEEL_DISTANCE*SCALE/2.0f, cv::Scalar(0,0,0), -1);
         }
     }
 }

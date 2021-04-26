@@ -75,7 +75,7 @@ protected:
     std::string windowName;
     static size_t windowCounter;
     static cv::Mat emptyFrame;
-    static cv::Mat frame;
+    cv::Mat frame;
     static std::vector<camera*> objectContainer;
 };
 

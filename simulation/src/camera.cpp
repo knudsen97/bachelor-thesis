@@ -204,5 +204,5 @@ cv::Mat camera::PlotBox(argos::CBoxEntity* box)
 
 size_t camera::windowCounter = 0;
 cv::Mat camera::emptyFrame(IMAGESIZE,IMAGESIZE, CV_8UC3, cv::Scalar(255,255,255));
-cv::Mat camera::frame = camera::emptyFrame.clone();
+//cv::Mat camera::frame = camera::emptyFrame.clone();
 std::vector<camera*> camera::objectContainer;

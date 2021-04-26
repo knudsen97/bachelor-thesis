@@ -239,9 +239,9 @@ void cameraServerLoop::step()
                   std::vector<bool> isRobotAssigned;
 
                   /* Find where to push on the box to get to goal */
-                  //validPushPoints = plan.FindPushPointsBox(pcBox, boxGoal);
-                  validPushPoints = plan.FindPushPointsIrregular(pcBox, boxGoal);
-
+                  validPushPoints = plan.FindPushPointsBox(pcBox, boxGoal);
+                  //validPushPoints = plan.FindPushPointsIrregular(pcBox, boxGoal);
+               
                   argos::LOG << "push points: " << validPushPoints.size() << std::endl;
                   for(auto point : validPushPoints)
                      argos::LOG << "point: " << point << std::endl;
@@ -282,6 +282,10 @@ void cameraServerLoop::step()
                      bool planComplete = Planning(cameraImage, boxGoal, startLocations[idxPH], validPushPoints[i], subGoals);
 
                      /* Visualization */
+                     // std::cout << subGoals.size() << std::endl;
+                     // for(auto corner : validPushPoints)
+                     //       cv::circle(cameraImage, convertToCV(corner), 5, cv::Scalar(0,200,200), -1);
+
                      // for(auto point : subGoals)
                      //    cv::circle(cameraImage, point, 5, cv::Scalar(0,200,200), -1);
                      // cv::circle(cameraImage, cv::Point(startLocations[idxPH].GetX()*SCALE, startLocations[idxPH].GetY()*SCALE) , 5, cv::Scalar(0,0,255), -1);
@@ -599,9 +603,9 @@ bool cameraServerLoop::Planning(cv::Mat &map_, argos::CVector3 goal, argos::CVec
    //cv::Mat map = map_.clone();
  
    /*Find a point on the line between corner and goal*/
-   argos::CVector3 CG = P.push(pcBox,cornerLoc, goal) - cornerLoc; //Corner-Goal vector
-   CG = CG.Normalize() * (-OFF_SET);
-   cornerLoc += CG;
+   // argos::CVector3 CG = P.push(pcBox,cornerLoc, goal) - cornerLoc; //Corner-Goal vector
+   // CG = CG.Normalize() * (-OFF_SET);
+   // cornerLoc += CG;
 
    grayMap = P.planner::Wavefront(map_, startLoc, cornerLoc);
 
