@@ -183,6 +183,25 @@ void camera::ClearPlot()
 }
 
 
+void camera::PlotBox(argos::CBoxEntity* box, cv::Mat& outputMatrix) 
+{
+    outputMatrix = emptyFrame;
+    camera::polygon polygon;
+    polygon = findCPositions(box);
+    cv::fillPoly(outputMatrix, polygon.corners, cv::Scalar(0,0,0));
+}
+
+cv::Mat camera::PlotBox(argos::CBoxEntity* box) 
+{
+    cv::Mat outputMatrix = emptyFrame;
+    camera::polygon polygon;
+    polygon = findCPositions(box);
+    cv::fillPoly(outputMatrix, polygon.corners, cv::Scalar(0,0,0));
+    return outputMatrix.clone();
+}
+
+
+
 size_t camera::windowCounter = 0;
 cv::Mat camera::emptyFrame(IMAGESIZE,IMAGESIZE, CV_8UC3, cv::Scalar(255,255,255));
 cv::Mat camera::frame = camera::emptyFrame.clone();
