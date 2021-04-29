@@ -20,14 +20,14 @@ set(CMAKE_MACOSX_RPATH 0)
 set(CMAKE_MODULE_PATH $ENV{CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 # Find the ARGoS package, make sure to save the ARGoS prefix
-find_package(PkgConfig)
-pkg_check_modules(ARGOS REQUIRED argos3_simulator)
-set(ARGOS_PREFIX ${ARGOS_PREFIX} CACHE INTERNAL "")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ARGOS_PREFIX}/share/argos3/cmake)
+find_package(ARGoS REQUIRED)
+include_directories(${CMAKE_SOURCE_DIR} ${ARGOS_INCLUDE_DIRS})
+link_directories(${ARGOS_LIBRARY_DIR})
+link_libraries(${ARGOS_LDFLAGS})
 
 # Check whether all the necessary libs have been installed to compile the
 # code that depends on Qt and OpenGL
-include(ARGoSCheckQTOpenGL)
+#include(ARGoSCheckQTOpenGL)
 
 # Look for the (optional) galib library
 find_package(GALIB)
