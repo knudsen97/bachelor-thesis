@@ -68,46 +68,50 @@ planner::cPositions planner::FindCPositions(CBoxEntity* mBox)
 */
 std::vector<argos::CVector3> planner::FindPolygonCorners(argos::CBoxEntity* mBox)
 {
-    std::vector<argos::CVector3> corners;
-
-    /* Find corners */
+    /* Get a map of the current box plotted: */
     camera cam;
     cv::Mat objectMap = cam.PlotBox(mBox);
     cv::cvtColor(objectMap, objectMap, cv::COLOR_BGR2GRAY);
 
-    cv::Mat dst, dstNorm, dstNormScaled;
-    cv::cornerHarris(objectMap, dst, 7, 5, 0.05, cv::BORDER_DEFAULT) ;
-    cv::normalize( dst, dstNorm, 0, 255, cv::NORM_MINMAX, CV_32FC1, cv::Mat() );
-    cv::convertScaleAbs( dstNorm, dstNormScaled );
+    cv::GaussianBlur(objectMap, objectMap, cv::Size(9, 9), 2, 2 );
 
-    cv::Point prev;
-    for( int j = 0; j < dstNorm.rows ; j++ )
-    { 
-        for( int i = 0; i < dstNorm.cols; i++ )
-        {
-            if( (int) dstNorm.at<float>(j,i) > 200 )
-            {
-                 
-                if(corners.size() == 0)
-                {
-                    corners.push_back(argos::CVector3(cv::Point(i,j).x/(double)SCALE, cv::Point(i,j).y/(double) SCALE, 0));
-                    //corners.push_back(cv::Point(i,j));
-                }
-                else if(abs((prev - cv::Point(i,j)).x) > 1 && abs((prev - cv::Point(i,j)).y) > 1)
-                {
-                    corners.push_back(argos::CVector3(cv::Point(i,j).x / (double) SCALE, cv::Point(i,j).y / (double) SCALE, 0));
-                    //corners.push_back(cv::Point(i,j));
-                }
+    /* Parameter definitions for goodFeaturesToTrack openCV function: */
+    std::vector<cv::Point2f> corners; // To store answers
+    int maxCorners = 10; 
+    double qLevel = 0.1;
+    double minDist = 10;
+    int blockSize = 3, gradientSize = 3;
+    bool useHarrisDetect = false;
+    double k = 0.04;
 
-                prev = cv::Point(i,j);
-            }
-        }
+    cv::goodFeaturesToTrack(objectMap,
+                            corners,
+                            maxCorners,
+                            qLevel,
+                            minDist,
+                            cv::Mat(),
+                            blockSize,
+                            gradientSize,
+                            useHarrisDetect,
+                            k );
+    std::cout << "COrners detected: " << corners.size() << std::endl;
+
+    // for(auto corner : corners)
+    // {
+    //     cv::circle(objectMap, corner, 5, 0, -1);
+    // }
+    // cv::imshow("test", objectMap);
+    // cv::waitKey(0);
+
+    /* Convert the corners found to argos coordinates */
+    std::vector<argos::CVector3> corners_;
+    for(auto corner : corners)
+    {
+        corners_.push_back(argos::CVector3(corner.x/SCALE, corner.y/SCALE, 0));
     }
 
-
-    return corners;
+    return corners_;
 }
-
 
 
 /**
@@ -183,8 +187,6 @@ std::vector<CVector3> planner::FindPushPointsBox(CBoxEntity* mBox, CVector3 goal
         }
     }
 
-    // for(auto point : validPushPoints)
-    //     point = offsetPoint(mBox, point, goalPoint);
     return validPushPoints;
 }
 
@@ -209,15 +211,21 @@ std::vector<argos::CVector3> planner::FindPushPointsIrregular(argos::CBoxEntity*
     cv::cvtColor(objectMap, objectMap, cv::COLOR_BGR2GRAY);
     cv::Mat robotMap = objectMap.clone();
     robotMap.setTo(255);
+    //cv::Mat copy = 
 
     cv::Mat nor;
     bool noIntersect = true;
     for(argos::CVector3 robotPosition : tempPoints)
     {   
         cv::circle(robotMap, toCV(robotPosition), INTERWHEEL_DISTANCE*SCALE, 0, -1);
-        cv::bitwise_or(robotMap, objectMap, nor);
 
-        /* Check for intersect between robotMap and objectMap */
+        /* Debugging */
+        // cv::circle(objectMap, toCV(robotPosition), INTERWHEEL_DISTANCE*SCALE, 0, -1);
+        // cv::imshow("test", objectMap);
+        // cv::waitKey(0);
+
+        /* Check for intersections between robotMap and objectMap */
+        cv::bitwise_or(robotMap, objectMap, nor);
         for(int row = 0; row < nor.rows && noIntersect; row++)
         {
             for(int col = 0; col < nor.cols && noIntersect; col++)
@@ -235,8 +243,8 @@ std::vector<argos::CVector3> planner::FindPushPointsIrregular(argos::CBoxEntity*
         nor.setTo(255);
     }
 
-    std::cout << validPushPoints.size() << std::endl;
-
+    // std::cout << "validPushPoints: " << validPushPoints.size() << std::endl;
+    // cv::waitKey(0);
 
 
     return validPushPoints;

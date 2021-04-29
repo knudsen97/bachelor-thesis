@@ -239,8 +239,8 @@ void cameraServerLoop::step()
                   std::vector<bool> isRobotAssigned;
 
                   /* Find where to push on the box to get to goal */
-                  validPushPoints = plan.FindPushPointsBox(pcBox, boxGoal);
-                  //validPushPoints = plan.FindPushPointsIrregular(pcBox, boxGoal);
+                  //validPushPoints = plan.FindPushPointsBox(pcBox, boxGoal);
+                  validPushPoints = plan.FindPushPointsIrregular(pcBox, boxGoal);
                
                   argos::LOG << "push points: " << validPushPoints.size() << std::endl;
                   for(auto point : validPushPoints)

@@ -185,7 +185,7 @@ void camera::ClearPlot()
 
 void camera::PlotBox(argos::CBoxEntity* box, cv::Mat& outputMatrix) 
 {
-    outputMatrix = emptyFrame;
+    outputMatrix = emptyFrame.clone();
     camera::polygon polygon;
     polygon = findCPositions(box);
     cv::fillPoly(outputMatrix, polygon.corners, cv::Scalar(0,0,0));
@@ -193,7 +193,7 @@ void camera::PlotBox(argos::CBoxEntity* box, cv::Mat& outputMatrix)
 
 cv::Mat camera::PlotBox(argos::CBoxEntity* box) 
 {
-    cv::Mat outputMatrix = emptyFrame;
+    cv::Mat outputMatrix = emptyFrame.clone();
     camera::polygon polygon;
     polygon = findCPositions(box);
     cv::fillPoly(outputMatrix, polygon.corners, cv::Scalar(0,0,0));
