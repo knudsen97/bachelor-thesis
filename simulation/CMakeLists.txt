@@ -37,6 +37,7 @@ endif(GALIB_FOUND)
 
 # Find Lua
 find_package(Lua REQUIRED)
+include_directories(${LUA_INCLUDE_DIR})
 
 # Find opencv
 find_package(OpenCV)
