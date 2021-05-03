@@ -4,28 +4,28 @@ using namespace argos;
 
 void camera::PreStep()
 {
-    camera::ClearPlot();
-    /**
-     * These for-loop is written after this example 
-     * https://www.argos-sim.info/code_page.php?path=examples/loop_functions/trajectory_loop_functions/trajectory_loop_functions.cpp&lang=cpp
-    */
-    CSpace::TMapPerType& boxMap = GetSpace().GetEntitiesByType("box");
-    for (CSpace::TMapPerType::iterator i = boxMap.begin(); i != boxMap.end(); ++i)
-    {
-        CBoxEntity* pBox = any_cast<CBoxEntity*>(i->second);
-        // argos::LOG << "box id" << pBox->GetId() << '\n';
-        // if(pBox->GetMass() > 0)
-        //     camera::AddBox(pBox, {0, 0, 255});
-        // else 
-            camera::AddBox(pBox);
-    }
+    // camera::ClearPlot();
+    // /**
+    //  * These for-loop is written after this example 
+    //  * https://www.argos-sim.info/code_page.php?path=examples/loop_functions/trajectory_loop_functions/trajectory_loop_functions.cpp&lang=cpp
+    // */
+    // CSpace::TMapPerType& boxMap = GetSpace().GetEntitiesByType("box");
+    // for (CSpace::TMapPerType::iterator i = boxMap.begin(); i != boxMap.end(); ++i)
+    // {
+    //     CBoxEntity* pBox = any_cast<CBoxEntity*>(i->second);
+    //     // argos::LOG << "box id" << pBox->GetId() << '\n';
+    //     // if(pBox->GetMass() > 0)
+    //     //     camera::AddBox(pBox, {0, 0, 255});
+    //     // else 
+    //         camera::AddBox(pBox);
+    // }
 
-    CSpace::TMapPerType& FBmap = GetSpace().GetEntitiesByType("foot-bot");
-    for (CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
-    {
-        CFootBotEntity* fBot = any_cast<CFootBotEntity*>(i->second);
-        camera::AddRobotPosition(fBot->GetEmbodiedEntity().GetOriginAnchor().Position);
-    }
+    // CSpace::TMapPerType& FBmap = GetSpace().GetEntitiesByType("foot-bot");
+    // for (CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
+    // {
+    //     CFootBotEntity* fBot = any_cast<CFootBotEntity*>(i->second);
+    //     camera::AddRobotPosition(fBot->GetEmbodiedEntity().GetOriginAnchor().Position);
+    // }
 }
 
 camera::polygon findCPositions(argos::CBoxEntity* mBox)

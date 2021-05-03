@@ -13,7 +13,7 @@ masterLoopFunction::~masterLoopFunction()
 
 void masterLoopFunction::Init(argos::TConfigurationNode& t_tree) {
 
-   
+
    try {
          argos::TConfigurationNodeIterator itDistr;         
          /* Get current node */
@@ -32,10 +32,25 @@ void masterLoopFunction::Init(argos::TConfigurationNode& t_tree) {
       THROW_ARGOSEXCEPTION_NESTED("Error initializing the loop functions", ex);
    }
 
+   argos::CPiPuckEntity* PiPuck;
+   std::string PBId;
 
    argos::CSpace::TMapPerType& FBmap = GetSpace().GetEntitiesByType("foot-bot");
    for (argos::CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
+   {
+      CFootBotEntity& cFootBot = *any_cast<CFootBotEntity*>(i->second);
+      PBId = "pb_" + std::to_string(footbotCount);
+      PiPuck = new argos::CPiPuckEntity(
+         PBId,
+         "",
+         cFootBot.GetEmbodiedEntity().GetOriginAnchor().Position,
+         cFootBot.GetEmbodiedEntity().GetOriginAnchor().Orientation
+      );
+
       footbotCount++;
+   }
+
+   
 
    // server(footbotCount);
    // server.connect();
@@ -56,6 +71,23 @@ void masterLoopFunction::Init(argos::TConfigurationNode& t_tree) {
 
 void masterLoopFunction::PreStep() 
 {
+   argos::CSpace::TMapPerType& FBmap = GetSpace().GetEntitiesByType("foot-bot");
+   for (argos::CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
+   {
+      CFootBotEntity& cFootBot = *any_cast<CFootBotEntity*>(i->second);
+      argos::CPiPuckEntity* PiPuck;
+      std::string PBId;
+
+      PBId = "pb_" + std::to_string(footbotCount);
+      PiPuck = new argos::CPiPuckEntity(
+         PBId,
+         "",
+         cFootBot.GetEmbodiedEntity().GetOriginAnchor().Position,
+         cFootBot.GetEmbodiedEntity().GetOriginAnchor().Orientation
+      );
+
+      footbotCount++;
+   }
 
   /* Update camera objects each iteration*/
    for (size_t i = 0; i < camera::objectContainer.size(); i++)

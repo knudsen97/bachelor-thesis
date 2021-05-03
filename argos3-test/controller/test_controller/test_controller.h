@@ -8,6 +8,7 @@
 
 #include <argos3/core/control_interface/ci_controller.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_differential_steering_actuator.h>
+
 #include <argos3/plugins/robots/generic/control_interface/ci_positioning_sensor.h>
 #include <argos3/core/utility/logging/argos_log.h>
 #include <argos3/plugins/simulator/entities/box_entity.h>
@@ -15,6 +16,9 @@
 #include <argos3/plugins/robots/generic/simulator/camera_default_sensor.h>
 //#include <argos3/plugins/simulator/physics_engines/dynamics3d/dynamics3d_box_model.h>
 //#include <argos3/plugins/simulator/physics_engines/dynamics3d/dynamics3d_engine.h>
+// #include <argos3/plugins/robots/e-puck/control_interface/ci_epuck_proximity_sensor.h>
+// #include <argos3/plugins/robots/e-puck/control_interface/ci_epuck_wheels_actuator.h>
+#include <argos3/plugins/robots/generic/control_interface/ci_proximity_sensor.h>
 
 using namespace argos;
 
@@ -37,6 +41,8 @@ private:
    CCI_DifferentialSteeringActuator* m_pcWheels;
    CCI_PositioningSensor* posSensor;
    CCI_CameraSensor* camSensor;
+   CCI_ProximitySensor* m_pcProximity;
+
    
    CBoxEntity* pcBox;
 

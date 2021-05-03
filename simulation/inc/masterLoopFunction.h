@@ -4,6 +4,7 @@
 #include <argos3/core/utility/networking/tcp_socket.h>
 #include <argos3/core/simulator/loop_functions.h>
 #include <argos3/core/utility/logging/argos_log.h>
+#include <argos3/plugins/robots/pi-puck/simulator/pipuck_entity.h>
 
 #include "cameraServerLoop.h"
 #include "camera.h"
