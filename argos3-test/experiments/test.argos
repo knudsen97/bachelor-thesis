@@ -38,7 +38,7 @@
         <differential_steering implementation="default" />
       </actuators>
       <sensors>
-        <proximity implementation="default" show_rays="true" />
+        <epuck_proximity implementation="default" show_rays="true" />
         <positioning implementation="default" />
       </sensors>
 
@@ -91,17 +91,19 @@
       <body position="0.5,0,0" orientation="0,0,0" />
     </box> -->
     <!-- Place a foot-bot in the origin and bind it to the controller -->
+
     <e-puck id="fb_0">
       <body position="1.5,1.5,0" orientation="0,0,0" />
       <controller config="test"/>
     </e-puck>
 
     <prototype id="box3d" movable="true">
-      <body position="2, 1.5, 0.0" orientation="0,0,0" />
+      <body position="1.8, 1.5, 0.0" orientation="0,0,0" />
       <links ref="body">
         <link id="body" geometry="convex_hull" mass="0.02" position="0,0,0.04" orientation="180,0,0">
-          (0.1, 0.05, 0) (0.15, 0, 0) (0.1, -0.05, 0) (-0.05, -0.05, 0) (-0.05, 0.05, 0)
-          (0.1, 0.05, 0.05) (0.15, 0, 0.08) (0.1, -0.05, 0.05) (-0.05, -0.05, 0.05) (-0.05, 0.05, 0.05)
+          (0.1, 0.1, 0) (0.15, 0, 0) (0.1, -0.1, 0) (-0.05, -0.05, 0) (-0.05, 0.05, 0)
+          (0.1, 0.1, 0.5) (0.15, 0, 0.5) (0.1, -0.1, 0.5) (-0.05, -0.05, 0.5) (-0.05, 0.05, 0.5)
+        </link>
       </links>
     </prototype>
 

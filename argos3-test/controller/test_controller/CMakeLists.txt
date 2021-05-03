@@ -3,7 +3,9 @@ test_controller.cpp
 camera.cpp camera.h 
 planner.cpp planner.h
 bug.cpp bug.h
+controller.cpp controller.h
 )
+find_package(Lua REQUIRED)
 link_directories(${CMAKE_SOURCE_DIR}/argos3-test/utils)
 include_directories(${CMAKE_SOURCE_DIR}/argos3-test/utils)
 target_link_libraries(test_controller
