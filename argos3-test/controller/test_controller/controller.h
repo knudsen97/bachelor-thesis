@@ -5,7 +5,6 @@
 #include <argos3/core/utility/math/vector3.h>
 #include <argos3/core/utility/logging/argos_log.h>
 
-
 #define WHEEL_RADIUS 0.029112741f //Found in argos documentation
 #define INTERWHEEL_DISTANCE 0.14f 
 

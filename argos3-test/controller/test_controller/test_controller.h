@@ -17,8 +17,8 @@
 //#include <argos3/plugins/simulator/physics_engines/dynamics3d/dynamics3d_box_model.h>
 //#include <argos3/plugins/simulator/physics_engines/dynamics3d/dynamics3d_engine.h>
 // #include <argos3/plugins/robots/e-puck/control_interface/ci_epuck_proximity_sensor.h>
-// #include <argos3/plugins/robots/e-puck/control_interface/ci_epuck_wheels_actuator.h>
 #include <argos3/plugins/robots/e-puck/control_interface/ci_epuck_proximity_sensor.h>
+
 #include <argos3/plugins/robots/generic/control_interface/ci_proximity_sensor.h>
 
 
@@ -28,7 +28,7 @@
 
 using namespace argos;
 
-#define SAMPLING_RATE 0.01
+#define SAMPLING_RATE 0.002
 
 class test_controller : public CCI_Controller, public CLoopFunctions, public CBoxEntity{
 
@@ -52,7 +52,7 @@ private:
    CCI_EPuckProximitySensor* m_pcProximity;
 
    controller con;
-       bug bugAlg;
+   bug bugAlg;
    CBoxEntity* pcBox;
 
    Real m_fWheelVelocity;

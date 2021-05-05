@@ -9,7 +9,9 @@ controller::controller() :
     Ki(1),
     Kd(1),
     preError(0),
-    integral(0)
+    integral(0),
+    vR(0), 
+    vL(0)
 {}
 
 /**
@@ -25,7 +27,9 @@ controller::controller(argos::Real _dt, argos::Real _Kp, argos::Real _Ki, argos:
     Kd(_Kd),
     Ki(_Ki),
     preError(0),
-    integral(0)
+    integral(0),
+    vR(0), 
+    vL(0)
 {}
 
 void controller::operator()(argos::Real _dt, argos::Real _Kp, argos::Real _Ki, argos::Real _Kd)
@@ -44,6 +48,7 @@ controller::~controller(){}
  **/
 controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::CRadians desiredAngle)
 {
+
     //TODO: Indtil videre kører jeg bare med konstant hastighed maybe fix that?
     wVelocity vel;
     
@@ -65,6 +70,9 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::
     /*Define controller*/
     argos::Real K = Po + Io + Do;
 
+    // if(K > 5)
+    //     K = 5;
+
     /*The controller is set to omega and used to calculate the speed of 
     the individual wheels to obtain the desired angle*/
     argos::Real omega = K;
@@ -73,6 +81,9 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::
     vel.rWheel = (2*velocity + omega*INTERWHEEL_DISTANCE) / 2*WHEEL_RADIUS;
     this->vL = vel.lWheel;
     this->vR = vel.rWheel;
+    // std::cout << velocity << std::endl;
+    // std::cout << vel.lWheel << std::endl;
+    // std::cout << vel.rWheel << std::endl;
 
     //Plot error:
     // y.push_back(K/(1+K*error));
@@ -85,6 +96,7 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::
 
 
     preError = error;
+
     return vel;
 }
 
@@ -113,12 +125,14 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, const a
     argos::Real Po = Kp*error;
     /*Integral part*/
     integral += error*dt;
-    argos::Real Io = 0; //Ki*integral;
+    argos::Real Io = Ki*integral;
     /*Differentiate part*/
     argos::Real Do = Kd * (error - preError)/dt;
 
     /*Define controller*/
     argos::Real K = Po + Io + Do;
+
+ 
 
     /*The controller is set to omega and used to calculate the speed of 
     the individual wheels to obtain the desired angle*/

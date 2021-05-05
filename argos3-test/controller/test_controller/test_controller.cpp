@@ -10,7 +10,6 @@
 #define ANGLE_THRESHOLD 2*M_PI/32
 #define IDLE_TIME 50
 
-#define SAMPLING_RATE 0.01
 #define PORT 1024
 
 #define RECEIVE 0
@@ -23,25 +22,30 @@
 #define PI 3.14159265
 float scale = 0.01;
 
-    test_controller::test_controller() :
-        m_pcWheels(NULL),
-        m_fWheelVelocity(2.5f),
-        posSensor(NULL),
-        pcBox(NULL){}
+test_controller::test_controller() :
+    m_pcWheels(NULL),
+    m_fWheelVelocity(2.5f),
+    posSensor(NULL),
+    pcBox(NULL){}
 
-    void test_controller::Init(TConfigurationNode& t_node) 
-    {
-        
-        m_pcWheels = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
-        posSensor = GetSensor<CCI_PositioningSensor>("positioning");
-        m_pcProximity = GetSensor<CCI_EPuckProximitySensor>("epuck_proximity");
-        GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
-    }
+void test_controller::Init(TConfigurationNode& t_node) 
+{
+    
+    m_pcWheels = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
+    posSensor = GetSensor<CCI_PositioningSensor>("positioning");
+    m_pcProximity = GetSensor<CCI_EPuckProximitySensor>("epuck_proximity");
+    GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
+    argos::Real Ku = 4000;
+    argos::Real Tu = 1000;
+    // con(SAMPLING_RATE*5, 500, 0, 1500);
+    con(SAMPLING_RATE*5, 400, 0, 0);
+
+}
 
  
 
-    void test_controller::ControlStep()
-    {
+void test_controller::ControlStep()
+{
     /*Protocol receive variables*/
     argos::CVector3 goalPointMessage;
     argos::CRadians goalAngle, bugGoalAngle;
@@ -49,20 +53,32 @@ float scale = 0.01;
 
 
     /*Make controller instance*/
-    
     controller::wVelocity wVel;
-    argos::CVector3 goalPoint = {2, 1.5, 0};
+    argos::CVector3 goalPoint = {1, 1, 0};
     argos::CVector3 robotPos = posSensor->GetReading().Position;
     argos::CRadians robotAngle, temp;
-    posSensor->GetReading().Orientation.ToEulerAngles(temp, temp, robotAngle);
-    
+    posSensor->GetReading().Orientation.ToEulerAngles(robotAngle, temp, temp);
+    std::cout << "Rob angle:  " << robotAngle << std::endl;
 
     bugGoalAngle = bugAlg.move(m_pcProximity, posSensor, goalPoint);
-    con(SAMPLING_RATE*5, 2000, 100, 1);
+    std::cout << "Goal angle: " << bugGoalAngle << std::endl;
+
+    //std::cout << wVel.lWheel << " " << wVel.rWheel << std::endl;
     wVel = con.angleControl(robotAngle, bugGoalAngle);
+    const argos::Real velScale = 25;
+    wVel.lWheel *= velScale;
+    wVel.rWheel *= velScale;
+
+    //m_pcWheels->SetLinearVelocity(wVel.lWheel, wVel.rWheel);
+
+
 
     argos::Real leftWheeleVelocity;
     argos::Real rightWheeleVelocity;
+
+    leftWheeleVelocity = wVel.lWheel;
+    rightWheeleVelocity = wVel.rWheel;
+
     if(sqrt(pow(goalPoint.GetX() - robotPos.GetX(), 2) + pow(goalPoint.GetY() - robotPos.GetY(), 2)) <= 0.01999f)
     {
         m_pcWheels->SetLinearVelocity(0,0);
@@ -78,8 +94,10 @@ float scale = 0.01;
         leftWheeleVelocity = wVel.lWheel + 4;
         rightWheeleVelocity = wVel.rWheel + 4;
         bugAlg.regulateSpeed(m_pcProximity, leftWheeleVelocity, rightWheeleVelocity);
-        m_pcWheels->SetLinearVelocity(leftWheeleVelocity, -rightWheeleVelocity);
-    }
+        m_pcWheels->SetLinearVelocity(leftWheeleVelocity, rightWheeleVelocity);
     }
 
-   REGISTER_CONTROLLER(test_controller, "test_controller")
+    // std::cout << "vel: " << leftWheeleVelocity <<  " " << rightWheeleVelocity  << std::endl;
+}
+
+REGISTER_CONTROLLER(test_controller, "test_controller")
