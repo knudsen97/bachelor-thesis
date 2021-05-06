@@ -346,7 +346,7 @@ void cameraServerLoop::step()
             case SEND_VELOCITY:
             {
                argos::LOG << "SERVER SEND_VELOCITY\n";
-               argos::Real velocityMessage = 2.0f;
+               argos::Real velocityMessage = 60.0f;
                bool velReceived = true;
                for(int i = 0; i < clientcount; i++)
                {

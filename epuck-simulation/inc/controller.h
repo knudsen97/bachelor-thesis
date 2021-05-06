@@ -23,6 +23,8 @@ public:
     controller(argos::Real _dt, argos::Real _Kp, argos::Real _Ki, argos::Real _Kd);
     ~controller();
 
+    void operator()(argos::Real _dt, argos::Real _Kp, argos::Real _Ki, argos::Real _Kd);
+
     wVelocity angleControl(argos::CRadians curAngle, argos::CRadians desiredAngle); 
     wVelocity angleControl(argos::CRadians curAngle, const argos::CVector3 &robPos, argos::CVector3 &goalPos); 
 

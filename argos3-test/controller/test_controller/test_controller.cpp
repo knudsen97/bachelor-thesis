@@ -77,7 +77,7 @@ void test_controller::ControlStep()
     wVel.rWheel *= velScale;
 
     //const argos::Real vel = 50;
-   // m_pcWheels->SetLinearVelocity(100, -100);
+    //m_pcWheels->SetLinearVelocity(100, 100);
     //std::cout << wVel.lWheel << wVel.rWheel << '\n';
     //m_pcWheels->SetLinearVelocity(wVel.lWheel, -wVel.rWheel);
 
@@ -99,6 +99,7 @@ void test_controller::ControlStep()
     {
         leftWheeleVelocity = wVel.lWheel;
         rightWheeleVelocity = wVel.rWheel;
+        //std::cout << leftWheeleVelocity<< ' ' << rightWheeleVelocity <<'\n';
         m_pcWheels->SetLinearVelocity(leftWheeleVelocity, -rightWheeleVelocity);
     }
     else

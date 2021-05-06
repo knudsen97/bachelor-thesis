@@ -62,6 +62,11 @@ void test_controller::Init(argos::TConfigurationNode& t_node)
     proxSensor = GetSensor<argos::CCI_EPuckProximitySensor>("epuck_proximity");
     argos::GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
 
+    /* Define controller */
+    argos::Real Ku = 20000;
+    argos::Real Tu = 5;
+    control(SAMPLING_RATE*5, 0.75*Ku, 0, 0.135*Ku*Tu);
+
     currentState = RECEIVE;
 }
 void test_controller::ControlStep()
@@ -87,7 +92,6 @@ void test_controller::ControlStep()
         robotPos.Orientation.ToEulerAngles(xAngle, yAngle, zAngle);
         robotPosition = robotPos.Position; 
 
-        controller control(SAMPLING_RATE*5, 2000, 100, 1);
         controller::wVelocity wVel;
 
         if(!sentPosition)
@@ -253,11 +257,11 @@ bool test_controller::ReadyToPush(const argos::CCI_PositioningSensor::SReading& 
                                     argos::CVector3& goalPoint, argos::CRadians& desiredAngle, argos::CRadians& robotAngle, int v0)
 {
     /*Make controller instance*/
-    controller con(SAMPLING_RATE*5, 2000, 100, 1);
+    //controller con(SAMPLING_RATE*5, 2000, 100, 1);
     controller::wVelocity wVel;
 
     bugGoalAngle = bugAlg.move(proxSensor, posSensor, goalPoint);
-    wVel = con.angleControl(robotAngle, bugGoalAngle);
+    wVel = control.angleControl(robotAngle, bugGoalAngle);
 
     argos::Real leftWheeleVelocity;
     argos::Real rightWheeleVelocity;
@@ -275,9 +279,9 @@ bool test_controller::ReadyToPush(const argos::CCI_PositioningSensor::SReading& 
     else
     {
         leftWheeleVelocity = wVel.lWheel + v0;
-        rightWheeleVelocity = wVel.rWheel + v0;
+        rightWheeleVelocity = wVel.rWheel - v0;
         bugAlg.regulateSpeed(proxSensor, leftWheeleVelocity, rightWheeleVelocity);
-        m_pcWheels->SetLinearVelocity(leftWheeleVelocity, -rightWheeleVelocity);
+        m_pcWheels->SetLinearVelocity(leftWheeleVelocity, rightWheeleVelocity);
     }
 
     return false;

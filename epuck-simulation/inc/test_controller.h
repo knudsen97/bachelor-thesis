@@ -26,7 +26,7 @@
 #include <argos3/core/utility/networking/tcp_socket.h>
 #include "../inc/protocol.h"
 
-#define V_0 4
+#define V_0 60
 
 //using namespace argos;
 
@@ -53,6 +53,8 @@ private:
    argos::CBoxEntity* pcBox;
    argos::Real m_fWheelVelocity;
    argos::CVector3 robotPosition;
+
+   controller control;
 
    /*State machine variables*/
    bool pointReached = false;
