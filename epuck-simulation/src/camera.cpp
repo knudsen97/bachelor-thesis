@@ -19,7 +19,16 @@ void camera::step()
         // else 
             camera::AddBox(pBox);
     }
-
+    
+    int i_ = 0;
+    CSpace::TMapPerType& objMap = GetSpace().GetEntitiesByType("prototype");
+    for (CSpace::TMapPerType::iterator i = objMap.begin(); i != objMap.end(); ++i)
+    {
+        CPrototypeEntity* obj = any_cast<CPrototypeEntity*>(i->second);
+        AddObject(obj);
+    }
+    
+    
     CSpace::TMapPerType& FBmap = GetSpace().GetEntitiesByType("e-puck");
     for (CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
     {
@@ -37,7 +46,7 @@ camera::polygon findCPositions(argos::CBoxEntity* mBox)
     //Get the Orientation of the box:
     argos::CRadians xAngle, yAngle, zAngle;
     mBox->GetEmbodiedEntity().GetOriginAnchor().Orientation.ToEulerAngles(xAngle, yAngle, zAngle);
-    float theta = -xAngle.GetAbsoluteValue() + M_PI_2;
+    float theta = xAngle.GetValue() + M_PI_2;
     
     //Get box dimensions to calculate offset:
     float xSize = mBox->GetSize().GetX();
@@ -64,6 +73,51 @@ camera::polygon findCPositions(argos::CBoxEntity* mBox)
     polygon.corners.push_back({(c3x)*SCALE, (c3y)*SCALE});
     polygon.corners.push_back({(c4x)*SCALE, (c4y)*SCALE});
 
+    return polygon;
+}
+
+void translate(std::vector<cv::Point2i>& points, cv::Point2i destinationPoint)
+{
+    for(cv::Point2i& point : points)
+        point += destinationPoint;
+}
+void rotate(std::vector<cv::Point2i>& points, const double theta)
+{
+    cv::Point2i p;
+    for(cv::Point2i& point : points)
+    {
+        p.x = cos(theta)*point.x + -sin(theta)*point.y;
+        p.y = sin(theta)*point.x +  cos(theta)*point.y;
+        point = p;
+    }
+
+}
+
+cv::Point2i cvtArgosOpencv(argos::CVector3 p)
+{
+    return cv::Point2i(p.GetX()*SCALE, p.GetY()*SCALE);
+}
+
+camera::polygon findObjectCorners(CPrototypeEntity* obj)
+{
+    camera::polygon polygon;
+    argos::CPrototypeLinkEntity::TVector links;
+    std::vector<argos::CVector3> edges;
+    argos::CVector3 origin, edge;
+    argos::CRadians theta_x, theta_y, theta_z;
+
+    links = obj->GetLinkEquippedEntity().GetLinks();
+    origin = obj->GetEmbodiedEntity().GetOriginAnchor().Position;
+    // obj->GetEmbodiedEntity().GetOriginAnchor().Orientation.ToEulerAngles(theta_z, theta_y, theta_x);
+    edges = links[0]->GetConvexHullPoints();
+    links[0]->GetAnchor().Orientation.ToEulerAngles(theta_z, theta_y, theta_x);
+    for(size_t i = 0; i < edges.size()/2; i++)
+    {
+        polygon.corners.push_back( cvtArgosOpencv(edges[i]));
+    }
+
+    rotate(polygon.corners, theta_z.GetValue());
+    translate(polygon.corners, cvtArgosOpencv(origin));
     return polygon;
 }
 
@@ -128,6 +182,19 @@ void camera::AddBox(argos::CBoxEntity* box, cv::Scalar color)
     // {
     //     argos::LOG << "corner " << std::to_string(i) << ": " << polygon.corners[i]/(SCALE/100) << "\n";
     // }     
+}
+
+/**
+ * Draw box into the frame
+ * @param box is the box entity in argos
+ * @param color is the color of the show box, default is black
+*/
+
+void camera::AddObject(CPrototypeEntity* object, cv::Scalar color) 
+{
+    camera::polygon polygon;
+    polygon = findObjectCorners(object);
+    cv::fillPoly(frame, polygon.corners, color);
 }
 
 /**

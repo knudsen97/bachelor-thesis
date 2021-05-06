@@ -163,6 +163,36 @@
       </dynamics2d>
     </e-puck>
 
+
+    <prototype id="5e3d" movable="true">
+      <body position="1.8, 1.5, 0.0" orientation="0,0,0" />
+      <links ref="body">
+        <link id="body" geometry="convex_hull" mass="0.02" position="0,0,0.0" orientation="0,0,0">
+          (-0.15, -0.21, 0.00) (0.15, -0.21, 0.00) (0.24, 0.08, 0.00) (0.00, 0.26, 0.00) (-0.24, 0.08, 0.00)
+          (-0.15, -0.21, 0.50) (0.15, -0.21, 0.50) (0.24, 0.08, 0.50) (0.00, 0.26, 0.50) (-0.24, 0.08, 0.50)
+        </link>
+      </links>
+    </prototype>
+
+    <prototype id="4e3d" movable="true">
+      <body position="2.8, 1.5, 0.0" orientation="0,0,0" />
+      <links ref="body">
+        <link id="body" geometry="convex_hull" mass="0.02" position="0,0,0.0" orientation="0,0,0">
+          (-0.15, -0.21, 0.00) (0.24, 0.08, 0.00) (0.00, 0.26, 0.00) (-0.24, 0.08, 0.00)
+          (-0.15, -0.21, 0.50) (0.24, 0.08, 0.50) (0.00, 0.26, 0.50) (-0.24, 0.08, 0.50)
+        </link>
+      </links>
+    </prototype>
+
+        <prototype id="3e3d" movable="true">
+      <body position="3.8, 1.5, 0.0" orientation="0,0,0" />
+      <links ref="body">
+        <link id="body" geometry="convex_hull" mass="0.02" position="0,0,0.0" orientation="180,0,0">
+          (-0.15, -0.21, 0.00) (0.24, 0.08, 0.00) (0.00, 0.26, 0.00)
+          (-0.15, -0.21, 0.50) (0.24, 0.08, 0.50) (0.00, 0.26, 0.50)
+        </link>
+      </links>
+    </prototype>
     
   </arena>
 

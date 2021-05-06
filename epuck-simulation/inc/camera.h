@@ -1,10 +1,16 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include <string>
+#include <vector>
+#include <cmath>
+#include <iterator>
+
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
+
 
 #include <argos3/plugins/simulator/entities/box_entity.h>
 #include <argos3/core/utility/configuration/argos_configuration.h>
@@ -13,10 +19,15 @@
 #include <argos3/plugins/robots/e-puck/simulator/epuck_entity.h>
 #include <argos3/core/simulator/loop_functions.h>
 #include <argos3/core/utility/logging/argos_log.h>
+#include <argos3/plugins/robots/prototype/simulator/prototype_link_equipped_entity.h>
+#include <argos3/plugins/robots/prototype/simulator/prototype_link_entity.h>
+#include <argos3/plugins/robots/prototype/simulator/prototype_entity.h>
+#include <argos3/plugins/robots/prototype/simulator/dynamics3d_prototype_model.h>
 
-#include <string>
-#include <vector>
-#include <cmath>
+
+
+
+
 
 
 #define IMAGESIZE 700
@@ -44,6 +55,13 @@ public:
      * @param color is the color of the show box, default is black
     */
     void AddBox(argos::CBoxEntity* box, cv::Scalar color = {0,0,0});
+
+    /**
+     * Draw arbitrary object into the frame
+     * @param object is the box entity in argos
+     * @param color is the color of the show box, default is black
+    */
+    void AddObject(argos::CPrototypeEntity* object, cv::Scalar color = {0,0,0});
 
     /**
      * Draw robot into the frame
