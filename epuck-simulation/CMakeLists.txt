@@ -38,10 +38,13 @@ endif(GALIB_FOUND)
 # Find Lua
 find_package(Lua REQUIRED)
 include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
+include_directories(${LUA_INCLUDE_DIR})
 
 # Find opencv
-find_package(OpenCV)
+find_package(OpenCV REQUIRED)
+include_directories(/usr/local/include/opencv4)
 include_directories(${OpenCV_INCLUDE_DIRS}) # Not needed for CMake >= 2.8.11
+#find_path(OpenCV opencv2/core.hpp)
 
 
 #add matlab
