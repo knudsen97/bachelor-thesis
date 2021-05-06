@@ -39,6 +39,7 @@
       </actuators>
       <sensors>
         <epuck_proximity implementation="default" show_rays="true" />
+        <!-- <proximity implementation="default" show_rays="true" />  -->
         <positioning implementation="default" />
       </sensors>
 
@@ -128,8 +129,8 @@
     <!-- <dynamics3d id="dyn3d" /> -->
     <!-- <dynamics2d id="dyn2d" /> -->
 
-    <dynamics3d id="dyn3d" iterations="25" default_friction="0.25">
-      <floor height="0.0" friction="0.25"/>
+    <dynamics3d id="dyn3d" iterations="50" default_friction="1">
+      <floor height="0.01" friction="0.05"/>
       <gravity g="9.8" />
     </dynamics3d>
    

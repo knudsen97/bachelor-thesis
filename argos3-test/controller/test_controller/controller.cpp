@@ -9,7 +9,9 @@ controller::controller() :
     Ki(1),
     Kd(1),
     preError(0),
-    integral(0)
+    integral(0),
+    vR(0), 
+    vL(0)
 {}
 
 /**
@@ -25,8 +27,11 @@ controller::controller(argos::Real _dt, argos::Real _Kp, argos::Real _Ki, argos:
     Kd(_Kd),
     Ki(_Ki),
     preError(0),
-    integral(0)
-{}
+    integral(0),
+    vR(0), 
+    vL(0)
+{
+}
 
 void controller::operator()(argos::Real _dt, argos::Real _Kp, argos::Real _Ki, argos::Real _Kd)
 {
@@ -44,6 +49,7 @@ controller::~controller(){}
  **/
 controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::CRadians desiredAngle)
 {
+
     //TODO: Indtil videre kører jeg bare med konstant hastighed maybe fix that?
     wVelocity vel;
     
@@ -51,6 +57,10 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::
     argos::Real sign = desiredAngle >= curAngle ? 1.0f : -1.0f;
         /*Calculate the error:*/
     argos::Real error = (desiredAngle - curAngle).GetValue();
+    argos::CRadians RError = (desiredAngle - curAngle);
+
+    //std::cout << "error: " <<RError << '\n';
+
     argos::Real S = -sign * M_PI * 2;
     error = (abs(S+error) < abs(error)) ? S+error : error;
     
@@ -65,6 +75,7 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::
     /*Define controller*/
     argos::Real K = Po + Io + Do;
 
+ 
     /*The controller is set to omega and used to calculate the speed of 
     the individual wheels to obtain the desired angle*/
     argos::Real omega = K;
@@ -74,17 +85,23 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::
     this->vL = vel.lWheel;
     this->vR = vel.rWheel;
 
-    //Plot error:
-    // y.push_back(K/(1+K*error));
-    // y.push_back(abs(curAngle.GetValue()));
-    // x.push_back(M_PI);
-    // x.push_back(abs(desiredAngle.GetValue()));
-    
-    // argos::LOG << "cur: " << curAngle << std::endl;
-    // argos::LOG << "des: " << desiredAngle << std::endl;
 
+    /* Check that velocity is reasonable */
+    argos::Real thres = 100;
+    vel.lWheel = vel.lWheel > 100 ? 100 : vel.lWheel;
+    vel.lWheel = vel.lWheel < -100 ? -100 : vel.lWheel;
+
+    vel.rWheel = vel.rWheel > 100 ? 100 : vel.rWheel;
+    vel.rWheel = vel.rWheel < -100 ? -100 : vel.rWheel;
+
+
+
+    // outfile.open("out.csv", std::ios_base::app);
+    // outfile << error << '\n';
+    // outfile.close();
 
     preError = error;
+
     return vel;
 }
 
@@ -113,12 +130,14 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, const a
     argos::Real Po = Kp*error;
     /*Integral part*/
     integral += error*dt;
-    argos::Real Io = 0; //Ki*integral;
+    argos::Real Io = Ki*integral;
     /*Differentiate part*/
     argos::Real Do = Kd * (error - preError)/dt;
 
     /*Define controller*/
     argos::Real K = Po + Io + Do;
+
+ 
 
     /*The controller is set to omega and used to calculate the speed of 
     the individual wheels to obtain the desired angle*/

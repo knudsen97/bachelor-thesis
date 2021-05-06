@@ -30,6 +30,15 @@ controller::controller(argos::Real _dt, argos::Real _Kp, argos::Real _Ki, argos:
 
 controller::~controller(){}
 
+
+void controller::operator()(argos::Real _dt, argos::Real _Kp, argos::Real _Ki, argos::Real _Kd)
+{
+    dt = _dt;
+    Kp = _Kp;
+    Ki = _Ki;
+    Kd = _Kd;
+}
+
 /**
  * @param curAngle The current angle of the robot
  * @param desiredAngle The desired angle the robot should reach

@@ -4,8 +4,8 @@ set(sort_loop_function_SOURCES
 
 add_library(sort_loop_function MODULE 
 ${sort_loop_function_SOURCES})
-target_link_libraries(sort_loop_function
-  argos3core_simulator
-  argos3plugin_simulator_entities
-  argos3plugin_simulator_footbot
-  )
+#target_link_libraries(sort_loop_function
+#  argos3core_simulator
+#  argos3plugin_simulator_entities
+#  argos3plugin_simulator_footbot
+#  )

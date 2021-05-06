@@ -164,8 +164,8 @@
   </physics_engines> -->
 
 <physics_engines>
-  <dynamics3d id="dyn3d" iterations="100" default_friction="2">
-    <floor height="0.0" friction="1"/>
+  <dynamics3d id="dyn3d" iterations="50" default_friction="1">
+    <floor height="0.01" friction="1"/>
     <gravity g="9.82" />
   </dynamics3d>
 </physics_engines>
