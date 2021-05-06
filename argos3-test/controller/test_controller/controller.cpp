@@ -30,7 +30,8 @@ controller::controller(argos::Real _dt, argos::Real _Kp, argos::Real _Ki, argos:
     integral(0),
     vR(0), 
     vL(0)
-{}
+{
+}
 
 void controller::operator()(argos::Real _dt, argos::Real _Kp, argos::Real _Ki, argos::Real _Kd)
 {
@@ -56,6 +57,10 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::
     argos::Real sign = desiredAngle >= curAngle ? 1.0f : -1.0f;
         /*Calculate the error:*/
     argos::Real error = (desiredAngle - curAngle).GetValue();
+    argos::CRadians RError = (desiredAngle - curAngle);
+
+    //std::cout << "error: " <<RError << '\n';
+
     argos::Real S = -sign * M_PI * 2;
     error = (abs(S+error) < abs(error)) ? S+error : error;
     
@@ -70,9 +75,7 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::
     /*Define controller*/
     argos::Real K = Po + Io + Do;
 
-    // if(K > 5)
-    //     K = 5;
-
+ 
     /*The controller is set to omega and used to calculate the speed of 
     the individual wheels to obtain the desired angle*/
     argos::Real omega = K;
@@ -81,19 +84,21 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::
     vel.rWheel = (2*velocity + omega*INTERWHEEL_DISTANCE) / 2*WHEEL_RADIUS;
     this->vL = vel.lWheel;
     this->vR = vel.rWheel;
-    // std::cout << velocity << std::endl;
-    // std::cout << vel.lWheel << std::endl;
-    // std::cout << vel.rWheel << std::endl;
 
-    //Plot error:
-    // y.push_back(K/(1+K*error));
-    // y.push_back(abs(curAngle.GetValue()));
-    // x.push_back(M_PI);
-    // x.push_back(abs(desiredAngle.GetValue()));
-    
-    // argos::LOG << "cur: " << curAngle << std::endl;
-    // argos::LOG << "des: " << desiredAngle << std::endl;
 
+    /* Check that velocity is reasonable */
+    argos::Real thres = 100;
+    vel.lWheel = vel.lWheel > 100 ? 100 : vel.lWheel;
+    vel.lWheel = vel.lWheel < -100 ? -100 : vel.lWheel;
+
+    vel.rWheel = vel.rWheel > 100 ? 100 : vel.rWheel;
+    vel.rWheel = vel.rWheel < -100 ? -100 : vel.rWheel;
+
+
+
+    // outfile.open("out.csv", std::ios_base::app);
+    // outfile << error << '\n';
+    // outfile.close();
 
     preError = error;
 

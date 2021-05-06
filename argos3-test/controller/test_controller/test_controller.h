@@ -21,7 +21,6 @@
 
 #include <argos3/plugins/robots/generic/control_interface/ci_proximity_sensor.h>
 
-
 #include "planner.h"
 #include "controller.h"
 #include "bug.h"
@@ -47,6 +46,7 @@ public:
 
 private:
    CCI_DifferentialSteeringActuator* m_pcWheels;
+   
    CCI_PositioningSensor* posSensor;
    CCI_CameraSensor* camSensor;
    CCI_EPuckProximitySensor* m_pcProximity;
@@ -65,6 +65,7 @@ private:
    cv::Mat map;
 
    bool planComplete = false;
+
 
 };
 
