@@ -86,6 +86,8 @@ public:
     void ClearPlot();
     void PlotBox(argos::CBoxEntity* box, cv::Mat& outputMatrix);
     cv::Mat PlotBox(argos::CBoxEntity* box);
+    void PlotBox(argos::CPrototypeEntity* object, cv::Mat& outputMatrix);
+    cv::Mat PlotBox(argos::CPrototypeEntity* object);
 
 protected:
     static bool boxExist;

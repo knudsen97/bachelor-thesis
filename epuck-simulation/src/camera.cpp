@@ -319,6 +319,26 @@ cv::Mat camera::PlotBox(argos::CBoxEntity* box)
     return outputMatrix.clone();
 }
 
+void camera::PlotBox(argos::CPrototypeEntity* object, cv::Mat& outputMatrix) 
+{
+    outputMatrix = emptyFrame.clone();
+    camera::polygon polygon;
+    polygon = findObjectCorners(object);
+    cv::fillPoly(outputMatrix, polygon.corners, cv::Scalar(0,0,0));
+}
+
+cv::Mat camera::PlotBox(argos::CPrototypeEntity* object) 
+{
+    cv::Mat outputMatrix = emptyFrame.clone();
+    camera::polygon polygon;
+    polygon = findObjectCorners(object);
+    cv::fillPoly(outputMatrix, polygon.corners, cv::Scalar(0,0,0));
+    return outputMatrix.clone();
+}
+
+
+
+
 
 
 size_t camera::windowCounter = 0;
