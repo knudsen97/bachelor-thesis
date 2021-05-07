@@ -20,7 +20,6 @@ void camera::step()
             camera::AddBox(pBox);
     }
     
-    int i_ = 0;
     CSpace::TMapPerType& objMap = GetSpace().GetEntitiesByType("prototype");
     for (CSpace::TMapPerType::iterator i = objMap.begin(); i != objMap.end(); ++i)
     {
