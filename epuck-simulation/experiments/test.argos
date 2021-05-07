@@ -37,8 +37,7 @@
                      label="test_controller">
       <actuators>
         <differential_steering implementation="default" />
-        <leds                  implementation="default" medium="leds" />
-
+        <leds                  implementation="default" medium="led" />
       </actuators>
       <sensors>
         <epuck_proximity implementation="default" show_rays="true" />
@@ -99,19 +98,14 @@
     <!--
     <box id="box1" size="0.5,0.5,0.2" movable="true" mass="5">
       <body position="1.5, 1.5, 0.0" orientation="0,0,0" />
-      <leds medium="leds">
+      <leds medium="led">
         <led offset="0,0,0.2" anchor="origin" color="white"/>
       </leds>
     </box>
-    
-    
-    <box id="box2" size="0.5,0.5,0.2" movable="true" mass="2">
-      <body position="4, 1.5, 0.0" orientation="0,0,0" />
-      <leds medium="leds">
-        <led offset="0,0,0.2" anchor="origin" color="blue" />
-      </leds>
-    </box>
     -->
+    
+    
+
 
 
     <!-- Place a e-puck in the origin and bind it to the controller -->
@@ -172,6 +166,11 @@
           (-0.15, -0.21, 0.50) (0.15, -0.21, 0.50) (0.24, 0.08, 0.50) (0.00, 0.26, 0.50) (-0.24, 0.08, 0.50)
         </link>
       </links>
+      <devices>
+        <leds medium="led">
+          <led offset="0,0,0.499" anchor="body" color="blue" />
+        </leds>
+      </devices>
     </prototype>
 
     <prototype id="4e3d" movable="true">
@@ -182,16 +181,26 @@
           (-0.15, -0.21, 0.50) (0.24, 0.08, 0.50) (0.00, 0.26, 0.50) (-0.24, 0.08, 0.50)
         </link>
       </links>
+      <devices>
+        <leds medium="led">
+          <led offset="0,0,0.499" anchor="body" color="white" />
+        </leds>
+      </devices>
     </prototype>
 
-        <prototype id="3e3d" movable="true">
-      <body position="3.8, 1.5, 0.0" orientation="0,0,0" />
+    <prototype id="3e3d" movable="true">
+      <body position="3.8, 1.5, 0.0" orientation="180,0,0" />
       <links ref="body">
-        <link id="body" geometry="convex_hull" mass="0.02" position="0,0,0.0" orientation="180,0,0">
+        <link id="body" geometry="convex_hull" mass="0.02" position="0,0,0.0" orientation="0,0,0">
           (-0.15, -0.21, 0.00) (0.24, 0.08, 0.00) (0.00, 0.26, 0.00)
           (-0.15, -0.21, 0.50) (0.24, 0.08, 0.50) (0.00, 0.26, 0.50)
         </link>
       </links>
+      <devices>
+        <leds medium="led">
+          <led offset="0,0,0.499" anchor="body" color="white" />
+        </leds>
+      </devices>
     </prototype>
     
   </arena>
@@ -207,10 +216,11 @@
       $ argos3 -q physics_engines
   -->
   <physics_engines>
-    <dynamics3d id="dyn3d" iterations="100" default_friction="2">
+    <dynamics3d id="dyn3d" iterations="50" default_friction="2">
       <floor height="0.0" friction="10"/>
       <gravity g="9.82" />
     </dynamics3d>
+    <dynamics2d id="dyn2d" />
   </physics_engines>
 
   <!-- ********* -->
@@ -225,7 +235,8 @@
       $ argos3 -q media
   -->
   <media>
-    <led id="leds" />
+    <led id="led" />
+    <directional_led id="leds" />
   </media>
 
   <!-- ****************** -->
