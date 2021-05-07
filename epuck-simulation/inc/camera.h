@@ -88,6 +88,10 @@ public:
     cv::Mat PlotBox(argos::CBoxEntity* box);
 
 protected:
+    static bool boxExist;
+    static bool objectExist;
+    static bool footbotExist;
+    static bool epuckExist;
     std::vector<argos::CBoxEntity*> boxes;
     std::vector<argos::CEPuckEntity*> bots;
     std::string windowNameTemp = "Utils plot";

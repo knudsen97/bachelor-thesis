@@ -9,30 +9,82 @@ void camera::step()
      * These for-loop is written after this example 
      * https://www.argos-sim.info/code_page.php?path=examples/loop_functions/trajectory_loop_functions/trajectory_loop_functions.cpp&lang=cpp
     */
-    CSpace::TMapPerType& boxMap = GetSpace().GetEntitiesByType("box");
-    for (CSpace::TMapPerType::iterator i = boxMap.begin(); i != boxMap.end(); ++i)
+    if (boxExist)
     {
-        CBoxEntity* pBox = any_cast<CBoxEntity*>(i->second);
-        // argos::LOG << "box id" << pBox->GetId() << '\n';
-        // if(pBox->GetMass() > 0)
-        //     camera::AddBox(pBox, {0, 0, 255});
-        // else 
-            camera::AddBox(pBox);
+        try
+        {
+            CSpace::TMapPerType& boxMap = GetSpace().GetEntitiesByType("box");
+            for (CSpace::TMapPerType::iterator i = boxMap.begin(); i != boxMap.end(); ++i)
+            {
+                CBoxEntity* pBox = any_cast<CBoxEntity*>(i->second);
+                // argos::LOG << "box id" << pBox->GetId() << '\n';
+                // if(pBox->GetMass() > 0)
+                //     camera::AddBox(pBox, {0, 0, 255});
+                // else 
+                    camera::AddBox(pBox);
+            }
+        }
+        catch(const std::exception& e)
+        {
+            boxExist = false;
+            argos::LOGERR << e.what() << '\n';
+        }
     }
+        
     
-    CSpace::TMapPerType& objMap = GetSpace().GetEntitiesByType("prototype");
-    for (CSpace::TMapPerType::iterator i = objMap.begin(); i != objMap.end(); ++i)
+
+    if (objectExist)
     {
-        CPrototypeEntity* obj = any_cast<CPrototypeEntity*>(i->second);
-        AddObject(obj);
+        try
+        {
+            CSpace::TMapPerType& objMap = GetSpace().GetEntitiesByType("prototype");
+            for (CSpace::TMapPerType::iterator i = objMap.begin(); i != objMap.end(); ++i)
+            {
+                CPrototypeEntity* obj = any_cast<CPrototypeEntity*>(i->second);
+                AddObject(obj);
+            }
+        }
+        catch(const std::exception& e)
+        {
+            objectExist = false;
+            argos::LOGERR << e.what() << '\n';
+        }
     }
-    
-    
-    CSpace::TMapPerType& FBmap = GetSpace().GetEntitiesByType("e-puck");
-    for (CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
+            
+    if (epuckExist)
     {
-        CEPuckEntity* fBot = any_cast<CEPuckEntity*>(i->second);
-        camera::AddRobotPosition(fBot->GetEmbodiedEntity().GetOriginAnchor().Position);
+        try
+        {
+            CSpace::TMapPerType& FBmap = GetSpace().GetEntitiesByType("e-puck");
+            for (CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
+            {
+                CEPuckEntity* fBot = any_cast<CEPuckEntity*>(i->second);
+                camera::AddRobotPosition(fBot->GetEmbodiedEntity().GetOriginAnchor().Position);
+            }
+        }
+        catch(const std::exception& e)
+        {
+            epuckExist = false;
+            argos::LOGERR << e.what() << '\n';
+        }
+    }
+
+    if (footbotExist)
+    {
+        try
+        {
+            CSpace::TMapPerType& FBmap = GetSpace().GetEntitiesByType("foot-bot");
+            for (CSpace::TMapPerType::iterator i = FBmap.begin(); i != FBmap.end(); ++i)
+            {
+                CEPuckEntity* fBot = any_cast<CEPuckEntity*>(i->second);
+                camera::AddRobotPosition(fBot->GetEmbodiedEntity().GetOriginAnchor().Position);
+            }
+        }
+        catch(const std::exception& e)
+        {
+            footbotExist = false;
+            argos::LOGERR << e.what() << '\n';
+        }
     }
 }
 
@@ -272,3 +324,7 @@ size_t camera::windowCounter = 0;
 cv::Mat camera::emptyFrame(IMAGESIZE,IMAGESIZE, CV_8UC3, cv::Scalar(255,255,255));
 //cv::Mat camera::frame = camera::emptyFrame.clone();
 std::vector<camera*> camera::objectContainer;
+bool camera::boxExist = true;
+bool camera::objectExist = true;
+bool camera::footbotExist = true;
+bool camera::epuckExist = true;
