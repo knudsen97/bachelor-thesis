@@ -159,9 +159,10 @@ camera::polygon findObjectCorners(CPrototypeEntity* obj)
 
     links = obj->GetLinkEquippedEntity().GetLinks();
     origin = obj->GetEmbodiedEntity().GetOriginAnchor().Position;
+    obj->GetEmbodiedEntity().GetOriginAnchor().Orientation.ToEulerAngles(theta_z, theta_y, theta_x);
+
     // obj->GetEmbodiedEntity().GetOriginAnchor().Orientation.ToEulerAngles(theta_z, theta_y, theta_x);
     edges = links[0]->GetConvexHullPoints();
-    links[0]->GetAnchor().Orientation.ToEulerAngles(theta_z, theta_y, theta_x);
     for(size_t i = 0; i < edges.size()/2; i++)
     {
         polygon.corners.push_back( cvtArgosOpencv(edges[i]));
