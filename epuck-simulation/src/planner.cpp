@@ -66,6 +66,57 @@ planner::cPositions planner::FindCPositions(CBoxEntity* mBox)
  * Finds corner position an irregular shaped object of a CBoxEntity
  * @param mBox is the argos box entity
 */
+std::vector<argos::CVector3> planner::FindPolygonCorners(argos::CPrototypeEntity* mObject)
+{
+    /* Get a map of the current box plotted: */
+    camera cam;
+    cv::Mat objectMap = cam.PlotBox(mObject);
+    cv::cvtColor(objectMap, objectMap, cv::COLOR_BGR2GRAY);
+
+    cv::GaussianBlur(objectMap, objectMap, cv::Size(9, 9), 2, 2 );
+
+    /* Parameter definitions for goodFeaturesToTrack openCV function: */
+    std::vector<cv::Point2f> corners; // To store answers
+    int maxCorners = 10; 
+    double qLevel = 0.1;
+    double minDist = 10;
+    int blockSize = 3, gradientSize = 3;
+    bool useHarrisDetect = false;
+    double k = 0.04;
+
+    cv::goodFeaturesToTrack(objectMap,
+                            corners,
+                            maxCorners,
+                            qLevel,
+                            minDist,
+                            cv::Mat(),
+                            blockSize,
+                            gradientSize,
+                            useHarrisDetect,
+                            k );
+    std::cout << "COrners detected: " << corners.size() << std::endl;
+
+    // for(auto corner : corners)
+    // {
+    //     cv::circle(objectMap, corner, 5, 0, -1);
+    // }
+    // cv::imshow("test", objectMap);
+    // cv::waitKey(0);
+
+    /* Convert the corners found to argos coordinates */
+    std::vector<argos::CVector3> corners_;
+    for(auto corner : corners)
+    {
+        corners_.push_back(argos::CVector3(corner.x/SCALE, corner.y/SCALE, 0));
+    }
+
+    return corners_;
+}
+
+/**
+ * Finds corner position an irregular shaped object of a CBoxEntity
+ * @param mBox is the argos box entity
+*/
 std::vector<argos::CVector3> planner::FindPolygonCorners(argos::CBoxEntity* mBox)
 {
     /* Get a map of the current box plotted: */
@@ -208,6 +259,66 @@ std::vector<argos::CVector3> planner::FindPushPointsIrregular(argos::CBoxEntity*
     /* Generate cv::Mat to check for collision */
     camera cam;
     cv::Mat objectMap = cam.PlotBox(mBox);
+    cv::cvtColor(objectMap, objectMap, cv::COLOR_BGR2GRAY);
+    cv::Mat robotMap = objectMap.clone();
+    robotMap.setTo(255);
+    //cv::Mat copy = 
+
+    cv::Mat nor;
+    bool noIntersect = true;
+    for(argos::CVector3 robotPosition : tempPoints)
+    {   
+        cv::circle(robotMap, toCV(robotPosition), INTERWHEEL_DISTANCE*SCALE, 0, -1);
+
+        /* Debugging */
+        // cv::circle(objectMap, toCV(robotPosition), INTERWHEEL_DISTANCE*SCALE, 0, -1);
+        // cv::imshow("test", objectMap);
+        // cv::waitKey(0);
+
+        /* Check for intersections between robotMap and objectMap */
+        cv::bitwise_or(robotMap, objectMap, nor);
+        for(int row = 0; row < nor.rows && noIntersect; row++)
+        {
+            for(int col = 0; col < nor.cols && noIntersect; col++)
+            {
+                if(nor.at<uchar>(row,col) != 255)
+                    noIntersect = false;
+            }
+        }
+        if(noIntersect)
+        {
+            validPushPoints.push_back(robotPosition);
+        }
+        noIntersect = true;
+        robotMap.setTo(255);
+        nor.setTo(255);
+    }
+
+    // std::cout << "validPushPoints: " << validPushPoints.size() << std::endl;
+    // cv::waitKey(0);
+
+
+    return validPushPoints;
+}
+
+/**
+ * Find eligible points on a irregular shaped object to push from given a goal position.
+ * @param mObject is the prototype entity in argos
+ * @param goalPoint is the goal position
+*/
+std::vector<argos::CVector3> planner::FindPushPointsIrregular(argos::CPrototypeEntity* mObject, argos::CVector3 goalPoint)
+{
+    std::vector<CVector3> validPushPoints, tempPoints, corners;
+    corners = FindPolygonCorners(mObject);
+
+
+    /* Find off set corner location */
+    for(auto corner : corners)
+        tempPoints.push_back(offsetPoint(mObject, corner, goalPoint));
+
+    /* Generate cv::Mat to check for collision */
+    camera cam;
+    cv::Mat objectMap = cam.PlotBox(mObject);
     cv::cvtColor(objectMap, objectMap, cv::COLOR_BGR2GRAY);
     cv::Mat robotMap = objectMap.clone();
     robotMap.setTo(255);
@@ -501,6 +612,14 @@ argos::CVector3 planner::push(argos::CBoxEntity* mBox, argos::CVector3 currentPo
 
     return translate(currentPoint, orientation, distance);
 }
+argos::CVector3 planner::push(argos::CPrototypeEntity* mBox, argos::CVector3 currentPoint, argos::CVector3 goalPoint)
+{
+    argos::CVector3 boxOrigin = mBox->GetEmbodiedEntity().GetOriginAnchor().Position;
+    argos::Real distance = argos::Distance(goalPoint, boxOrigin);
+    argos::CRadians orientation = argos::ATan2(goalPoint.GetX() - boxOrigin.GetX(), goalPoint.GetY() - boxOrigin.GetY());
+
+    return translate(currentPoint, orientation, distance);
+}
 
 /**
  * This function is a helper function for planner::push to calculate the robots position after pushing the object.
@@ -558,6 +677,15 @@ argos::CVector3 planner::offsetPoint(argos::CBoxEntity* mBox, argos::CVector3 co
     return robotEndPoint;
 }
 
+argos::CVector3 planner::offsetPoint(argos::CPrototypeEntity* mObject, argos::CVector3 cornerLoc, argos::CVector3 goalPoint)
+{
+    argos::CVector3 robotEndPoint(0,0,0);
+    robotEndPoint = push(mObject, cornerLoc, goalPoint) - cornerLoc;
+    robotEndPoint = robotEndPoint.Normalize() * (-OFF_SET);
+    robotEndPoint += cornerLoc;
+
+    return robotEndPoint;
+}
 
 
 

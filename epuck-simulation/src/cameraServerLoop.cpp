@@ -17,6 +17,10 @@
 #define SEND_ORIENTATION 4
 #define RECEIVE_STATE 5
 
+//types of object to push
+#define BOX 0
+#define OBJECT 1
+
 
 //debug variables
 bool testDebug = false;
@@ -73,6 +77,8 @@ cameraServerLoop::~cameraServerLoop()
 
 void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, argos::CBoxEntity* pcBox_, std::string servername_) 
 {
+   argos::LOG << "----------constructor--------------- 1 \n";
+   cameraServerLoop::objectType = BOX;
    cameraServerLoop::currentState = 0;
    cameraServerLoop::threadsOpened = false;
    cameraServerLoop::allPositionRecieved = false;
@@ -119,11 +125,62 @@ void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, ar
    debugMaps.resize(clientcount);
 }
 
+void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, argos::CPrototypeEntity* pcObject_, std::string servername_) 
+{
+   argos::LOG << "----------constructor--------------- 2 \n";
+   cameraServerLoop::objectType = OBJECT;
+   cameraServerLoop::currentState = 0;
+   cameraServerLoop::threadsOpened = false;
+   cameraServerLoop::allPositionRecieved = false;
+   cameraServerLoop::prepareToPushDone = false;
+   cameraServerLoop::currentState = DISTRIBUTE_CORNERS;
+   cameraServerLoop::stopSent = true;
+   cameraServerLoop::stopSent_ = false;
+   cameraServerLoop::rewind = true;
+   cameraServerLoop::rewind_ = false;
+   cameraServerLoop::footbotStopped = true;
+   cameraServerLoop::footbotStopped_ = false;
+   cameraServerLoop::inRange_ = false;
+   cameraServerLoop::jobsDone = false;
+   cameraServerLoop::threadClosed.clear();
+   cameraServerLoop::threadCurrentState.clear();
+   cameraServerLoop::recievedPosition.clear();           
+   cameraServerLoop::argosTime = 0;            
+   
+   servername = servername_;
+   clientcount = clientcount_;
+   connect();
+
+   //assign variables
+   boxGoal = boxGoal_;
+   pcObject = pcObject_;
+   startLocations.resize(clientcount);
+   recievedPosition.resize(clientcount, false);
+
+   //debug
+   wavefront_debug.resize(clientcount);
+   camera_debug.resize(clientcount);
+   robot_debug.resize(clientcount);
+   corner_debug.resize(clientcount);
+   boxGoal_debug.resize(clientcount);
+   cv_subgoal_debug.resize(clientcount);
+   subgoal_debug.resize(clientcount);
+   planner_debug.resize(clientcount);
+   debugMessage.resize(clientcount);
+   numPushPoints.resize(clientcount,0);
+   
+
+
+   debug.resize(clientcount, false);
+   debugMaps.resize(clientcount);
+}
+
 
 void cameraServerLoop::operator()(argos::CVector3 boxGoal_, argos::CBoxEntity* pcBox_) 
 {
-   argos::LOG << "---------------------reseb serber------------------------\n";
    //reset
+   argos::LOG << "----------constructor--------------- 3 \n";
+   cameraServerLoop::objectType = BOX;
    cameraServerLoop::currentState = 0;
    cameraServerLoop::threadsOpened = false;
    cameraServerLoop::allPositionRecieved = false;
@@ -145,6 +202,54 @@ void cameraServerLoop::operator()(argos::CVector3 boxGoal_, argos::CBoxEntity* p
    //assign variables
    boxGoal = boxGoal_;
    pcBox = pcBox_;
+   startLocations.resize(clientcount);
+   recievedPosition.resize(clientcount, false);
+
+   //debug
+   wavefront_debug.resize(clientcount);
+   camera_debug.resize(clientcount);
+   robot_debug.resize(clientcount);
+   corner_debug.resize(clientcount);
+   boxGoal_debug.resize(clientcount);
+   cv_subgoal_debug.resize(clientcount);
+   subgoal_debug.resize(clientcount);
+   planner_debug.resize(clientcount);
+   debugMessage.resize(clientcount);
+   numPushPoints.resize(clientcount,0);
+   
+
+
+   debug.resize(clientcount, false);
+   debugMaps.resize(clientcount);
+}
+
+
+void cameraServerLoop::operator()(argos::CVector3 boxGoal_, argos::CPrototypeEntity* pcObject_) 
+{
+   //reset
+   argos::LOG << "----------constructor--------------- 4 \n";
+   cameraServerLoop::objectType = OBJECT;
+   cameraServerLoop::currentState = 0;
+   cameraServerLoop::threadsOpened = false;
+   cameraServerLoop::allPositionRecieved = false;
+   cameraServerLoop::prepareToPushDone = false;
+   cameraServerLoop::currentState = DISTRIBUTE_CORNERS;
+   cameraServerLoop::stopSent = true;
+   cameraServerLoop::stopSent_ = false;
+   cameraServerLoop::rewind = true;
+   cameraServerLoop::rewind_ = false;
+   cameraServerLoop::footbotStopped = true;
+   cameraServerLoop::footbotStopped_ = false;
+   cameraServerLoop::inRange_ = false;
+   cameraServerLoop::jobsDone = false;
+   cameraServerLoop::threadClosed.clear();
+   cameraServerLoop::threadCurrentState.clear();
+   cameraServerLoop::recievedPosition.clear();           
+   cameraServerLoop::argosTime = 0;            
+
+   //assign variables
+   boxGoal = boxGoal_;
+   pcObject = pcObject_;
    startLocations.resize(clientcount);
    recievedPosition.resize(clientcount, false);
 
@@ -239,8 +344,17 @@ void cameraServerLoop::step()
                   std::vector<bool> isRobotAssigned;
 
                   /* Find where to push on the box to get to goal */
-                  //validPushPoints = plan.FindPushPointsBox(pcBox, boxGoal);
-                  validPushPoints = plan.FindPushPointsIrregular(pcBox, boxGoal);
+                  argos::LOG << "push " << objectType << '\n';
+                  if (objectType == BOX)
+                  {
+                     validPushPoints = plan.FindPushPointsIrregular(pcBox, boxGoal);
+                  }
+                  else
+                  {
+                     validPushPoints = plan.FindPushPointsIrregular(pcObject, boxGoal);
+                  }
+                  
+                  
                
                   argos::LOG << "push points: " << validPushPoints.size() << std::endl;
                   for(auto point : validPushPoints)
@@ -268,7 +382,17 @@ void cameraServerLoop::step()
                      /* Get image of the current map & draw endpoints */
                      cameraImage = cam.GetPlot();
                      cv::circle(cameraImage, convertToCV( boxGoal ), 7, cv::Scalar(0,200,255), -1 );
-                     drawEndPoints(i, plan, pcBox, validPushPoints, boxGoal, cameraImage);
+                     if (objectType == BOX)
+                     {
+                        drawEndPoints(i, plan, pcBox, validPushPoints, boxGoal, cameraImage);
+                     }
+                     else
+                     {
+                        drawEndPoints(i, plan, pcObject, validPushPoints, boxGoal, cameraImage);
+                     }
+                     
+                     
+                     
 
                      /* Define a kernel and erode the map in order to not get close to obstacles */
                      int dilation_size = 0.155*SCALE;
@@ -362,9 +486,18 @@ void cameraServerLoop::step()
             /************************* WAIT *************************/
             case WAIT:
             {
+               bool inRange;
                argos::LOG << "SERVER WAIT\n";
-
-               bool inRange = serverWaitState(pcBox, boxGoal, clientcount, clientConnections, GOAL_THRESHOLD, true);
+               if (objectType == BOX)
+               {
+                  inRange = serverWaitState(pcBox, boxGoal, clientcount, clientConnections, GOAL_THRESHOLD, true);
+               }
+               else
+               {
+                  inRange = serverWaitState(pcObject, boxGoal, clientcount, clientConnections, GOAL_THRESHOLD, true);
+               }
+               
+               
                if(inRange)
                   currentState = SEND_STOP;
 
@@ -558,7 +691,17 @@ void cameraServerLoop::PrepareToPush(argos::CVector3 boxGoal, std::vector<cv::Po
       /************************* SEND_ORIENTATION *************************/
       case SEND_ORIENTATION:
       {
-         argos::CVector3 g = plan.push(pcBox, robotPosition, boxGoal);
+         argos::CVector3 g;
+         if (objectType == BOX)
+         {
+            g = plan.push(pcBox, robotPosition, boxGoal);            
+         }
+         else
+         {
+            g = plan.push(pcObject, robotPosition, boxGoal);
+         }
+         
+         
          argos::CRadians goalAngle = argos::ATan2(g.GetY()-robotPosition.GetY(), g.GetX()-robotPosition.GetX());
          if(clientConnections[id].send(goalAngle, argos::CRadians(0), argos::CRadians(0)))
             currentState = RECEIVE_STATE;

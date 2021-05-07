@@ -9,6 +9,7 @@
 #include <argos3/plugins/simulator/entities/box_entity.h>
 #include <argos3/core/utility/configuration/argos_configuration.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_positioning_sensor.h>
+#include <argos3/plugins/robots/prototype/simulator/prototype_entity.h>
 
 #include "queue"
 #include "algorithm"
@@ -33,6 +34,12 @@ public:
 
     std::vector<argos::CVector3> FindPushPointsBox(argos::CBoxEntity* mBox, argos::CVector3 goalPoint);
     std::vector<argos::CVector3> FindPushPointsIrregular(argos::CBoxEntity* mBox, argos::CVector3 goalPoint);
+
+    cPositions FindCPositions(argos::CPrototypeEntity* mObject);
+    std::vector<argos::CVector3> FindPolygonCorners(argos::CPrototypeEntity* mObject);
+
+    std::vector<argos::CVector3> FindPushPointsBox(argos::CPrototypeEntity* mObject, argos::CVector3 goalPoint);
+    std::vector<argos::CVector3> FindPushPointsIrregular(argos::CPrototypeEntity* mObject, argos::CVector3 goalPoint);
     //cv::Mat Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3 &goal);
     //Debug function: 
     cv::Mat Wavefront(cv::Mat &map, argos::CVector3 &robot, argos::CVector3 &goal);
@@ -48,11 +55,13 @@ public:
     template<class V>
     argos::Real Projection(V &v1, V &v2);
     argos::CVector3 push(argos::CBoxEntity* mBox, argos::CVector3 currentPoint, argos::CVector3 goalPoint);
+    argos::CVector3 push(argos::CPrototypeEntity* mObject, argos::CVector3 currentPoint, argos::CVector3 goalPoint);
     argos::CVector3 translate(argos::CVector3 point, argos::CRadians orientation, argos::Real distance);
     bool ValidLine(cv::Point A, cv::Point B, cv::Mat img);
     ushort GrayPixelVal(cv::Mat &map, cv::Point point);
 
     argos::CVector3 offsetPoint(argos::CBoxEntity* mBox, argos::CVector3 cornerLoc, argos::CVector3 goalPoint);
+    argos::CVector3 offsetPoint(argos::CPrototypeEntity* mObject, argos::CVector3 cornerLoc, argos::CVector3 goalPoint);
 
 private:
     cv::Mat map; //For illustration

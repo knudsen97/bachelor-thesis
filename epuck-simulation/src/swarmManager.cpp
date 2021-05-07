@@ -14,11 +14,27 @@ void sortClosestBox(std::vector<argos::CBoxEntity*> &boxes, const argos::CVector
     );
 }
 
+void sortClosestObject(std::vector<argos::CPrototypeEntity*> &objects, const argos::CVector3& goal)
+{
+    std::sort(
+        std::begin(objects), 
+        std::end(objects), 
+        [goal](argos::CPrototypeEntity* a, argos::CPrototypeEntity* b) {
+            return 
+            argos::Distance(a->GetEmbodiedEntity().GetOriginAnchor().Position, goal) 
+            <
+            argos::Distance(b->GetEmbodiedEntity().GetOriginAnchor().Position, goal); 
+        }
+    );
+}
+
 swarmManager::swarmManager() :
                             blueGoal (argos::CVector3(0,0,0)),
                             whiteGoal(argos::CVector3(0,0,0)),
                             blueBoxIdx(0),
                             whiteBoxIdx(0),
+                            blueObjectIdx(0),
+                            whiteObjectIdx(0),
                             firstRun(false)
                             {}
 
@@ -36,13 +52,28 @@ void swarmManager::step()
 {
     if(!firstRun)
     {
-        classifyBoxes(swarmBoxes, whiteBoxes, blueBoxes);
-        std::thread sortBlue(sortClosestBox, std::ref(blueBoxes), std::ref(blueGoal));
-        std::thread sortWhite(sortClosestBox, std::ref(whiteBoxes), std::ref(whiteGoal));
-        sortBlue.join();
-        sortWhite.join();
-        blueServer(3, blueGoal, blueBoxes[blueBoxIdx++], "blue server");
-        whiteServer(3, whiteGoal, whiteBoxes[whiteBoxIdx++], "white server");
+        if (!swarmBoxes.empty())
+        {
+            classifyBoxes(swarmBoxes, whiteBoxes, blueBoxes);
+            std::thread sortBlue(sortClosestBox, std::ref(blueBoxes), std::ref(blueGoal));
+            std::thread sortWhite(sortClosestBox, std::ref(whiteBoxes), std::ref(whiteGoal));
+            sortBlue.join();
+            sortWhite.join();
+            blueServer(3, blueGoal, blueBoxes[blueBoxIdx++], "blue server");
+            whiteServer(3, whiteGoal, whiteBoxes[whiteBoxIdx++], "white server");
+        }
+        if (!swarmObjects.empty())        
+        {
+            classifyBoxes(swarmObjects, whiteObjects, blueObjects);
+            std::thread sortBlue(sortClosestObject, std::ref(blueObjects), std::ref(blueGoal));
+            std::thread sortWhite(sortClosestObject, std::ref(whiteObjects), std::ref(whiteGoal));
+            sortBlue.join();
+            sortWhite.join();
+            blueServer(3, blueGoal, blueObjects[blueObjectIdx++], "blue server");
+            whiteServer(3, whiteGoal, whiteObjects[whiteObjectIdx++], "white server");
+        }
+        
+
         firstRun = true;
     }
 
@@ -52,9 +83,9 @@ void swarmManager::step()
         {
             blueServer( blueGoal, blueBoxes[blueBoxIdx++]);
         }
-        else if(whiteBoxIdx < whiteBoxes.size())
+        else if (blueObjectIdx < blueObjects.size())
         {
-            blueServer( whiteGoal, whiteBoxes[whiteBoxIdx++]);
+            blueServer( blueGoal, blueObjects[blueObjectIdx++]);
         }
     }
     if (whiteServer.jobsDone)
@@ -62,6 +93,10 @@ void swarmManager::step()
         if (whiteBoxIdx < whiteBoxes.size())
         {
             whiteServer( whiteGoal, whiteBoxes[whiteBoxIdx++]);
+        }
+        else if (whiteObjectIdx < whiteObjects.size())
+        {
+            whiteServer( whiteGoal, whiteObjects[whiteObjectIdx++]);
         }
     }
     blueServer.step();
@@ -77,14 +112,44 @@ void swarmManager::step()
 /**
  * @brief Classifies boxes as either white or blue
  * @param _boxes All the boxes in the simulation
- * @param _whiteBoxes Boxes with white leds are stored here
- * @param _blueBoxes Boxes with blue leds are stored here
+ * @param _whiteObjects Objects with white leds are stored here
+ * @param _blueObjects Objects with blue leds are stored here
 */
 void swarmManager::classifyBoxes(std::vector<argos::CBoxEntity*> _boxes, 
-                                    std::vector<argos::CBoxEntity*> &_whiteBoxes, std::vector<argos::CBoxEntity*> &_blueBoxes)
+                                    std::vector<argos::CBoxEntity*> &_whiteObjects, std::vector<argos::CBoxEntity*> &_blueObjects)
 {
     argos::CColor ledColor;
     for(argos::CBoxEntity* box : _boxes)
+    {
+        ledColor = box->GetLEDEquippedEntity().GetLED(0).GetColor(); //Only looking at index 0, because only 1 led per box
+        if(ledColor == argos::CColor::WHITE)
+        {
+            _whiteObjects.push_back(box);
+        }
+        else if(ledColor == argos::CColor::BLUE)
+        {
+            _blueObjects.push_back(box);
+        }
+        else
+        {
+            argos::LOGERR << "Colour on LED not white/blue\n";
+            break;
+        }
+    }
+
+}
+
+/**
+ * @brief Classifies boxes as either white or blue
+ * @param _boxes All the boxes in the simulation
+ * @param _whiteBoxes Boxes with white leds are stored here
+ * @param _blueBoxes Boxes with blue leds are stored here
+*/
+void swarmManager::classifyBoxes(std::vector<argos::CPrototypeEntity*> _boxes, 
+                                    std::vector<argos::CPrototypeEntity*> &_whiteBoxes, std::vector<argos::CPrototypeEntity*> &_blueBoxes)
+{
+    argos::CColor ledColor;
+    for(argos::CPrototypeEntity* box : _boxes)
     {
         ledColor = box->GetLEDEquippedEntity().GetLED(0).GetColor(); //Only looking at index 0, because only 1 led per box
         if(ledColor == argos::CColor::WHITE)

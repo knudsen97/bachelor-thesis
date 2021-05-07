@@ -21,6 +21,7 @@ private:
     /* data */
     bool firstIteration = true;
     int numBoxes = 0;
+    int numObjects = 0;
 public:
     cameraServerLoop server;
     swarmManager swarmMan;
@@ -39,8 +40,16 @@ public:
         std::string name;
         argos::CBoxEntity* box;
     };
+    struct objAtGoal
+    {
+        int time;
+        std::string name;
+        argos::CPrototypeEntity* box;
+    };
     void removeBoxAtGoal(argos::CBoxEntity* box);
+    void removeBoxAtGoal(argos::CPrototypeEntity* object);
     std::vector<boxAtGoal> boxesToRemove;
+    std::vector<objAtGoal> objectsToRemove;
 
 
 

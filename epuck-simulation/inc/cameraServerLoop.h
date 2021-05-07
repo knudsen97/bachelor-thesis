@@ -23,6 +23,7 @@ protected:
     int clientcount;
 
     argos::CBoxEntity* pcBox;
+    argos::CPrototypeEntity* pcObject;
     argos::CEPuckEntity* fBot;
     std::string servername;
 
@@ -59,6 +60,7 @@ protected:
     std::vector<argos::CVector3> startLocations;        //robot location
     std::vector<int> threadCurrentState;                //to check if thread is in wait state
     planner plan;                                       //plan
+    
 
     /* flags */
     bool allPositionRecieved;                           //to check if all bots position has been recieved
@@ -76,10 +78,15 @@ public:
     int currentState;                                   //cameraServerloop state
     size_t backTime;                                    //time to back away from box
     size_t argosTime;                                   //time unit in argos
+    int objectType;
 
 public:
     void operator()(argos::CVector3 boxGoal_, argos::CBoxEntity* pcBox_);
     void operator()(int clientcount_, argos::CVector3 boxGoal_, argos::CBoxEntity* pcBox_, std::string servername);
+    
+    void operator()(argos::CVector3 boxGoal_, argos::CPrototypeEntity* pcBox_);
+    void operator()(int clientcount_, argos::CVector3 boxGoal_, argos::CPrototypeEntity* pcBox_, std::string servername);
+
     cameraServerLoop();
     ~cameraServerLoop();
     
