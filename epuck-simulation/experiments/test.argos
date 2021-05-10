@@ -168,7 +168,7 @@
       </links>
       <devices>
         <leds medium="led">
-          <led offset="0,0,0.499" anchor="body" color="blue" />
+          <led offset="0,0,0.0" anchor="body" color="blue" />
         </leds>
       </devices>
     </prototype>
@@ -259,6 +259,9 @@
         <placements>
           <placement index="0" position="3,3,17" look_at="3,3,0" up="0,3,0" lens_focal_length="65" />
           <placement index="1" position="1.5,1.5,8.14689" look_at="1.5,1.5,0" up="1,500,0" lens_focal_length="65" />  
+          <placement index="2" position="4.5,1.5,8.14689" look_at="4.5,1.5,0" up="1,500,0" lens_focal_length="65" />  
+          <placement index="3" position="1.5,4.5,8.14689" look_at="1.5,4.5,0" up="1,500,0" lens_focal_length="65" />  
+          <placement index="4" position="4.5,4.5,8.14689" look_at="4.5,4.5,0" up="1,500,0" lens_focal_length="65" />  
         </placements>
       </camera>
     </qt-opengl>
