@@ -83,6 +83,7 @@ target_link_libraries(
   argos3plugin_simulator_genericrobot
   argos3plugin_simulator_entities
   ${OpenCV_LIBS} 
+  ${LUA_LIBRARIES}
   Python2::Python Python2::NumPy
   )
 
