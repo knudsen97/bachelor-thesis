@@ -53,6 +53,7 @@ private:
    argos::CBoxEntity* pcBox;
    argos::Real m_fWheelVelocity;
    argos::CVector3 robotPosition;
+   int wait_time;
 
    controller control;
 

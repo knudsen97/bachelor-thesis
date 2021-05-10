@@ -12,7 +12,7 @@ namespace plt = matplotlibcpp;
 
 
 #define PI 3.14159265
-#define ANGLE_THRESHOLD 2*M_PI/32
+#define ANGLE_THRESHOLD 2*M_PI/64
 #define IDLE_TIME 50
 
 #define SAMPLING_RATE 0.01
@@ -26,7 +26,6 @@ namespace plt = matplotlibcpp;
 #define SET_VELOCITY 5
 
 bool boxDone = false;
-int wait_time = 0;
 
 void test_controller::connect()
 {
@@ -176,8 +175,10 @@ void test_controller::ControlStep()
                 currentState = RECEIVE;
             }
             wait_time = 0;
+            argos::LOG << "or here\n";
+            break;
         }
-        break;
+        
 
         /************************* ORIENTATE *************************/
         case ORIENTATE:
@@ -186,21 +187,30 @@ void test_controller::ControlStep()
 
 
             wVel = control.angleControl(xAngle, goalAngle);
-
             // argos::LOG << "ROBOT ORIEN: " << abs(goalAngle.GetValue()) - abs(xAngle.GetValue()) << std::endl;
             // argos::LOG << "ANGLE THRES: " << ANGLE_THRESHOLD << std::endl;
-            if(abs(goalAngle.GetValue() - xAngle.GetValue()) >= 0.024999f)
+            argos::Real angleError = abs(goalAngle.GetValue() - xAngle.GetValue());
+            //0.024999f
+            if(angleError >= ANGLE_THRESHOLD && angleError <= 2*M_PI-ANGLE_THRESHOLD)
             {
                 m_pcWheels->SetLinearVelocity(wVel.lWheel, -wVel.rWheel);
+                wait_time = 0;
+                argos::LOG << "reset waitime\n";
             }
             else
             {
                 m_pcWheels->SetLinearVelocity(0,0);
+                wait_time++;
+                argos::LOG << "count waittime\n";
+            }
+            if (wait_time > 100)
+            {
                 currentState = WAIT;
             }
-
+            argos::LOG << "wait: " << wait_time << '\n';
+            
+            break;
         }
-        break;
 
         /************************* WAIT *************************/
         case WAIT:
@@ -212,7 +222,7 @@ void test_controller::ControlStep()
                 currentState = RECEIVE;
             }
             wait_time = 0;
-
+            argos::LOG << "plese dont be here\n";
             break;
         }
 
@@ -265,12 +275,15 @@ bool test_controller::ReadyToPush(const argos::CCI_PositioningSensor::SReading& 
 
     argos::Real leftWheeleVelocity;
     argos::Real rightWheeleVelocity;
-    if(sqrt(pow(goalPoint.GetX() - robotPos.Position.GetX(), 2) + pow(goalPoint.GetY() - robotPos.Position.GetY(), 2)) <= 0.01999f)
+    argos::Real angleError = abs(bugGoalAngle.GetValue() - robotAngle.GetValue());
+    argos::LOG << "dis to go: " << sqrt(pow(goalPoint.GetX() - robotPos.Position.GetX(), 2) + pow(goalPoint.GetY() - robotPos.Position.GetY(), 2)) << '\n';
+    argos::LOG << "ang err: " << abs(bugGoalAngle.GetValue() - robotAngle.GetValue()) << '\n';
+    if(sqrt(pow(goalPoint.GetX() - robotPos.Position.GetX(), 2) + pow(goalPoint.GetY() - robotPos.Position.GetY(), 2)) <= 0.00999f)
     {
         m_pcWheels->SetLinearVelocity(0,0);
         return true;
     }
-    else if(abs(bugGoalAngle.GetValue() - robotAngle.GetValue()) >= ANGLE_THRESHOLD)
+    else if(angleError >= ANGLE_THRESHOLD && angleError <= 2*M_PI-ANGLE_THRESHOLD)
     {
         leftWheeleVelocity = wVel.lWheel;
         rightWheeleVelocity = wVel.rWheel;
