@@ -7,7 +7,7 @@
 namespace plt = matplotlibcpp;
 
 #define WHEEL_RADIUS 0.029112741f //Found in argos documentation
-#define INTERWHEEL_DISTANCE 0.14f 
+#define INTERWHEEL_DISTANCE 0.053f //0.14f 
 
 class controller
 {

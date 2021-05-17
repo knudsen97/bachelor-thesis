@@ -77,7 +77,7 @@ cameraServerLoop::~cameraServerLoop()
 
 void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, argos::CBoxEntity* pcBox_, std::string servername_) 
 {
-   argos::LOG << "----------constructor--------------- 1 \n";
+   // argos::LOG << "----------constructor--------------- 1 \n";
    cameraServerLoop::objectType = BOX;
    cameraServerLoop::currentState = 0;
    cameraServerLoop::threadsOpened = false;
@@ -127,7 +127,7 @@ void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, ar
 
 void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, argos::CPrototypeEntity* pcObject_, std::string servername_) 
 {
-   argos::LOG << "----------constructor--------------- 2 \n";
+   // argos::LOG << "----------constructor--------------- 2 \n";
    cameraServerLoop::objectType = OBJECT;
    cameraServerLoop::currentState = 0;
    cameraServerLoop::threadsOpened = false;
@@ -179,7 +179,7 @@ void cameraServerLoop::operator()(int clientcount_, argos::CVector3 boxGoal_, ar
 void cameraServerLoop::operator()(argos::CVector3 boxGoal_, argos::CBoxEntity* pcBox_) 
 {
    //reset
-   argos::LOG << "----------constructor--------------- 3 \n";
+   // argos::LOG << "----------constructor--------------- 3 \n";
    cameraServerLoop::objectType = BOX;
    cameraServerLoop::currentState = 0;
    cameraServerLoop::threadsOpened = false;
@@ -227,7 +227,7 @@ void cameraServerLoop::operator()(argos::CVector3 boxGoal_, argos::CBoxEntity* p
 void cameraServerLoop::operator()(argos::CVector3 boxGoal_, argos::CPrototypeEntity* pcObject_) 
 {
    //reset
-   argos::LOG << "----------constructor--------------- 4 \n";
+   // argos::LOG << "----------constructor--------------- 4 \n";
    cameraServerLoop::objectType = OBJECT;
    cameraServerLoop::currentState = 0;
    cameraServerLoop::threadsOpened = false;
@@ -292,7 +292,7 @@ void cameraServerLoop::connect()
       }
    else
    {
-      argos::LOG << "false\n";
+      // argos::LOG << "false\n";
       connected = false;
    }
       
@@ -302,14 +302,14 @@ void cameraServerLoop::connect()
 
 void cameraServerLoop::step()
 {
-   argos::LOG << "server: " << servername << '\n';
+   // argos::LOG << "server: " << servername << '\n';
    argosTime++;
    if (connected)
    {
       //get robot positions
       if (!allPositionRecieved)
       {
-         argos::LOG << "UPDATE POSITION: " << std::endl;
+         // argos::LOG << "UPDATE POSITION: " << std::endl;
          allPositionRecieved = true;
 
          for (size_t i = 0; i < clientcount; i++)
@@ -319,23 +319,23 @@ void cameraServerLoop::step()
                argos::CVector3 position;
                recievedPosition[i] = clientConnections[i].recieve(position);
                startLocations[i] = position;
-               argos::LOG << position << std::endl;
+               // argos::LOG << position << std::endl;
             }
             allPositionRecieved &= recievedPosition[i];  
-            argos::LOG << "recievedPosition " << i << " :" << recievedPosition[i] << '\n';
+            // argos::LOG << "recievedPosition " << i << " :" << recievedPosition[i] << '\n';
          }
       }
       else
       {
 
-         argos::LOG << "Server state: "<< currentState << std::endl;
+         // argos::LOG << "Server state: "<< currentState << std::endl;
          /************************* FSM START *************************/
          switch (currentState)
          {
             /************************* DISTRIBUTE_CORNERS *************************/
             case DISTRIBUTE_CORNERS:
             { 
-               argos::LOG << "SERVER DIST_CORNERS\n";
+               // argos::LOG << "SERVER DIST_CORNERS\n";
                if(!threadsOpened)
                {
                   /* Define containers */
@@ -344,7 +344,7 @@ void cameraServerLoop::step()
                   std::vector<bool> isRobotAssigned;
 
                   /* Find where to push on the box to get to goal */
-                  argos::LOG << "push " << objectType << '\n';
+                  // argos::LOG << "push " << objectType << '\n';
                   if (objectType == BOX)
                   {
                      validPushPoints = plan.FindPushPointsIrregular(pcBox, boxGoal);
@@ -356,28 +356,28 @@ void cameraServerLoop::step()
                   
                   
                
-                  argos::LOG << "push points: " << validPushPoints.size() << std::endl;
-                  for(auto point : validPushPoints)
-                     argos::LOG << "point: " << point << std::endl;
+                  // argos::LOG << "push points: " << validPushPoints.size() << std::endl;
+                  // for(auto point : validPushPoints)
+                  //    argos::LOG << "point: " << point << std::endl;
 
-                  robotThreads.resize(startLocations.size());
-                  threadCurrentState.resize(startLocations.size(), PLANNING);
+                  robotThreads.resize(validPushPoints.size());
+                  threadCurrentState.resize(validPushPoints.size(), PLANNING);
                   isRobotAssigned.resize(startLocations.size(), false);
-                  threadClosed.resize(startLocations.size(), false);
+                  threadClosed.resize(validPushPoints.size(), false);
 
                   for(auto threadState : threadCurrentState)
                      threadState = 1;
-                  for(auto threadState : threadCurrentState)
-                     argos::LOG << "thread state: " << threadState << '\n';
+                  // for(auto threadState : threadCurrentState)
+                  //    argos::LOG << "thread state: " << threadState << '\n';
 
-                  argos::LOG << "prepare to push done: " << prepareToPushDone << '\n';
+                  // argos::LOG << "prepare to push done: " << prepareToPushDone << '\n';
 
                   /* Find absolute distance between point and robot and assign shortest distance to each robot */               
                   for(size_t i = 0; i < validPushPoints.size(); i++)
                   {
                      int idxPH = cornerAllocation(startLocations, validPushPoints[i], isRobotAssigned);
                      isRobotAssigned[idxPH] = true;
-                     argos::LOG << "indexPH: " << idxPH << std::endl;
+                     // argos::LOG << "indexPH: " << idxPH << std::endl;
 
                      /* Get image of the current map & draw endpoints */
                      cameraImage = cam.GetPlot();
@@ -405,7 +405,7 @@ void cameraServerLoop::step()
                      std::vector<cv::Point> subGoals;
                      bool planComplete = Planning(cameraImage, boxGoal, startLocations[idxPH], validPushPoints[i], subGoals);
 
-                     /* Visualization */
+                     // /* Visualization */
                      // std::cout << subGoals.size() << std::endl;
                      // for(auto corner : validPushPoints)
                      //       cv::circle(cameraImage, convertToCV(corner), 5, cv::Scalar(0,200,200), -1);
@@ -418,7 +418,7 @@ void cameraServerLoop::step()
                      // cv::waitKey(0);
 
                      /* Start thread */
-                     argos::LOG << "subGoals: " << subGoals.size() << std::endl;
+                     // argos::LOG << "subGoals: " << subGoals.size() << std::endl;
                      robotThreads[idxPH] = std::thread(&cameraServerLoop::PrepareToPush, this, boxGoal, 
                                                             subGoals, PLANNING, idxPH);
                      robotThreads[idxPH].detach();
@@ -436,6 +436,7 @@ void cameraServerLoop::step()
                   bool stateCheck = true;
                   for(size_t i = 0; i < threadCurrentState.size(); i++)
                   {
+                     // argos::LOG << "thread " << i << " state: " << threadCurrentState[i] << '\n';
                      stateCheck &= threadCurrentState[i] == WAIT;
                   }
  
@@ -449,7 +450,7 @@ void cameraServerLoop::step()
             /************************* JOIN_THREADS *************************/
             case JOIN_THREADS:
             {
-               argos::LOG << "SERVER JOIN_THREADS\n";
+               // argos::LOG << "SERVER JOIN_THREADS\n";
 
                /* This will end the while loop running in the thread making them exit */
                prepareToPushDone = true;
@@ -469,7 +470,7 @@ void cameraServerLoop::step()
             /************************* SEND_VELOCITY *************************/
             case SEND_VELOCITY:
             {
-               argos::LOG << "SERVER SEND_VELOCITY\n";
+               // argos::LOG << "SERVER SEND_VELOCITY\n";
                argos::Real velocityMessage = 60.0f;
                bool velReceived = true;
                for(int i = 0; i < clientcount; i++)
@@ -487,14 +488,14 @@ void cameraServerLoop::step()
             case WAIT:
             {
                bool inRange;
-               argos::LOG << "SERVER WAIT\n";
+               // argos::LOG << "SERVER WAIT\n";
                if (objectType == BOX)
                {
-                  inRange = serverWaitState(pcBox, boxGoal, clientcount, clientConnections, GOAL_THRESHOLD, true);
+                  inRange = serverWaitState(pcBox, boxGoal, clientcount, clientConnections, GOAL_THRESHOLD, false);
                }
                else
                {
-                  inRange = serverWaitState(pcObject, boxGoal, clientcount, clientConnections, GOAL_THRESHOLD, true);
+                  inRange = serverWaitState(pcObject, boxGoal, clientcount, clientConnections, GOAL_THRESHOLD, false);
                }
                
                
@@ -508,9 +509,9 @@ void cameraServerLoop::step()
             /************************* SEND_STOP *************************/
             case SEND_STOP:
             {
-               argos::LOG << "SERVER SEND_STOP\n";
+               // argos::LOG << "SERVER SEND_STOP\n";
                rewind = true;
-               argos::Real velocityMessage = -2.0f;
+               argos::Real velocityMessage = -70.0f;
                argos::Real velocityStopMessage = 0.0f;
 
                if (rewind_ && footbotStopped_ && stopSent_)
@@ -526,7 +527,7 @@ void cameraServerLoop::step()
                   for(int i = 0; i < clientcount && !stopSent_; i++)
                   {
                      stopSent &= clientConnections[i].send("STOP");
-                     argos::LOG << "send STOP message\n";
+                     // argos::LOG << "send STOP message\n";
                   }
                   stopSent_ = stopSent;// true if all bots have recieved 
                }
@@ -541,7 +542,7 @@ void cameraServerLoop::step()
                      for(int i = 0; i < clientcount && !footbotStopped_; i++) 
                      {
                         footbotStopped &= clientConnections[i].send(velocityStopMessage);
-                        argos::LOG << "---- send footbot Stopped message\n";
+                        // argos::LOG << "---- send footbot Stopped message\n";
                      }
                      footbotStopped_ = footbotStopped; // true if all bots have recieved
                      stopSent_ = !footbotStopped_; //set stopSet to false to it sents stop again
@@ -556,7 +557,7 @@ void cameraServerLoop::step()
                   {
                      rewind &= clientConnections[i].send(velocityMessage);
                      backTime = argosTime;
-                     argos::LOG << "send rewind message\n";
+                     // argos::LOG << "send rewind message\n";
                   }
                   rewind_ = rewind;// true if all bots have recieved 
                   stopSent_ = !rewind_; //set stopSet to false to it sents stop again
@@ -569,7 +570,7 @@ void cameraServerLoop::step()
             }
             case DONE:
             {
-               argos::LOG << "SERVER DONE\n";
+               // argos::LOG << "SERVER DONE\n";
                jobsDone = true;
 
             }
@@ -580,7 +581,7 @@ void cameraServerLoop::step()
    {
       connect();
    }
-   argos::LOG << '\n';
+   // argos::LOG << '\n';
 }
 
 void cameraServerLoop::connect_(int totalClientCount)

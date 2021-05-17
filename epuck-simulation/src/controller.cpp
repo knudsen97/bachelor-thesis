@@ -69,9 +69,13 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::
     /*The controller is set to omega and used to calculate the speed of 
     the individual wheels to obtain the desired angle*/
     argos::Real omega = K;
+    this->vR = abs(this->vR);
+    this->vL = abs(this->vL);
     argos::Real velocity = WHEEL_RADIUS/2 * (this->vR+this->vL);
+    // argos::LOG << "vel: " << abs(this->vR) << '\n';
     vel.lWheel = (2*velocity - omega*INTERWHEEL_DISTANCE) / 2*WHEEL_RADIUS;
     vel.rWheel = (2*velocity + omega*INTERWHEEL_DISTANCE) / 2*WHEEL_RADIUS;
+    // argos::LOG << "v: " << vL << ' ' << vR << '\n';
     this->vL = vel.lWheel;
     this->vR = vel.rWheel;
 
@@ -125,10 +129,12 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, const a
     the individual wheels to obtain the desired angle*/
     argos::Real omega = K;
     argos::Real v = WHEEL_RADIUS/2 * (this->vR+this->vL);
+    // argos::LOG << "vel: " << abs(this->vR) << '\n';
     vel.lWheel = (2*v-omega*INTERWHEEL_DISTANCE) / 2*WHEEL_RADIUS;
     vel.rWheel = (2*v+omega*INTERWHEEL_DISTANCE) / 2*WHEEL_RADIUS;
     this->vL = vel.lWheel;
     this->vR = vel.rWheel;
+    // argos::LOG << "v: " << vL << ' ' << vR << '\n';
 
     /*Plot error:*/
     // y.push_back(K);

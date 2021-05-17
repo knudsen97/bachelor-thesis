@@ -4,6 +4,7 @@
 #include <argos3/core/utility/networking/tcp_socket.h>
 #include <argos3/core/simulator/loop_functions.h>
 #include <argos3/core/utility/logging/argos_log.h>
+#include <argos3/core/utility/math/rng.h>
 
 #include "cameraServerLoop.h"
 #include "camera.h"
@@ -22,7 +23,13 @@ private:
     bool firstIteration = true;
     int numBoxes = 0;
     int numObjects = 0;
+    void replaceObject(argos::CPrototypeEntity* obj);
+    argos::CVector3 generatePosition();
+            CPrototypeEntity* obj;
+
 public:
+    static size_t argosTime;
+    static bool experimentDone;
     cameraServerLoop server;
     swarmManager swarmMan;
     virtual void Init(argos::TConfigurationNode& t_tree);
@@ -50,7 +57,7 @@ public:
     void removeBoxAtGoal(argos::CPrototypeEntity* object);
     std::vector<boxAtGoal> boxesToRemove;
     std::vector<objAtGoal> objectsToRemove;
-
+    std::vector<argos::CVector3> objectLocations;
 
 
 };

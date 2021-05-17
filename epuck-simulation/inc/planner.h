@@ -15,7 +15,7 @@
 #include "algorithm"
 #include "../inc/camera.h"
 
-#define INTERWHEEL_DISTANCE 0.14f 
+#define INTERWHEEL_DISTANCE 0.053f //0.14f 
 #define MAX_USHORT 65535
 #define OFF_SET 0.35
 

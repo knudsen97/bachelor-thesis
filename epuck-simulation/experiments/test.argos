@@ -25,7 +25,7 @@
     -->
     <experiment length="0"
                 ticks_per_second="10"
-                random_seed="124" />
+                random_seed="123" />
   </framework>
 
   <!-- *************** -->
@@ -56,7 +56,7 @@
   <loop_functions library="build/libsrc"
                   label="master_loop_function">
 
-    <server port="1024" clients="6"/>
+    <server port="1024" clients="3"/>
 
   </loop_functions>
   <!-- *********************** -->
@@ -77,7 +77,7 @@
 
       $ argos3 -q box
   -->
-  <arena size="6, 6, 1" center="3,3,0">
+  <arena size="6, 6, 2" center="3,3,0">
 
     <!-- Place four boxes in a square to delimit the arena -->
     <!-- antaget at nord er positiv ud af y -->
@@ -110,7 +110,7 @@
 
     <!-- Place a e-puck in the origin and bind it to the controller -->
     <e-puck id="fb_0">
-      <body position="5,3.5,0" orientation="0,0,0" />
+      <body position="5.5,1.5,0" orientation="0,0,0" />
       <controller config="test"/>
       <dynamics2d>
         <differential_steering max_force="0.3" max_torque="0.3"/>
@@ -118,7 +118,7 @@
     </e-puck>
 
     <e-puck id="fb_1">
-      <body position="5,3,0" orientation="0,0,0" />
+      <body position="4.5,1.5,0" orientation="0,0,0" />
       <controller config="test"/>
       <dynamics2d>
         <differential_steering max_force="0.3" max_torque="0.3"/>
@@ -126,7 +126,7 @@
     </e-puck>
 
     <e-puck id="fb_2">
-      <body position="5,2.5,0" orientation="0,0,0" />
+      <body position="3.5,1.5,0" orientation="0,0,0" />
       <controller config="test"/>
         <dynamics2d>
         <differential_steering max_force="0.3" max_torque="0.3"/>
@@ -134,7 +134,7 @@
     </e-puck>
 
     <e-puck id="fb_3">
-      <body position="5,2,0" orientation="0,0,0" />
+      <body position="2.5,1.5,0" orientation="0,0,0" />
       <controller config="test"/>
       <dynamics2d>
         <differential_steering max_force="0.3" max_torque="0.3"/>
@@ -142,7 +142,7 @@
     </e-puck>
 
     <e-puck id="fb_4">
-      <body position="5,1.5,0" orientation="0,0,0" />
+      <body position="1.5,1.5,0" orientation="0,0,0" />
       <controller config="test"/>
       <dynamics2d>
         <differential_steering max_force="0.3" max_torque="0.3"/>
@@ -150,20 +150,21 @@
     </e-puck>
 
     <e-puck id="fb_5">
-      <body position="5,1,0" orientation="0,0,0" />
+      <body position=".5,1.5,0" orientation="0,0,0" />
       <controller config="test"/>
         <dynamics2d>
         <differential_steering max_force="0.3" max_torque="0.3"/>
       </dynamics2d>
     </e-puck>
 
+    <!-- geometric object placement starts here  -->
 
-    <prototype id="5e3d" movable="true">
-      <body position="1.8, 1.5, 0.0" orientation="0,0,0" />
+    <prototype id="pentagon" movable="true">
+      <body position="1.8, 4.5, 0.0" orientation="17,0,0" />
       <links ref="body">
         <link id="body" geometry="convex_hull" mass="0.02" position="0,0,0.0" orientation="0,0,0">
           (-0.15, -0.21, 0.00) (0.15, -0.21, 0.00) (0.24, 0.08, 0.00) (0.00, 0.26, 0.00) (-0.24, 0.08, 0.00)
-          (-0.15, -0.21, 0.50) (0.15, -0.21, 0.50) (0.24, 0.08, 0.50) (0.00, 0.26, 0.50) (-0.24, 0.08, 0.50)
+          (-0.15, -0.21, 0.20) (0.15, -0.21, 0.20) (0.24, 0.08, 0.20) (0.00, 0.26, 0.20) (-0.24, 0.08, 0.20)
         </link>
       </links>
       <devices>
@@ -173,32 +174,47 @@
       </devices>
     </prototype>
 
-    <prototype id="4e3d" movable="true">
-      <body position="2.8, 1.5, 0.0" orientation="0,0,0" />
+    <prototype id="trapezoid" movable="true">
+      <body position="2.8, 4.5, 0.0" orientation="10,0,0" />
       <links ref="body">
         <link id="body" geometry="convex_hull" mass="0.02" position="0,0,0.0" orientation="0,0,0">
           (-0.15, -0.21, 0.00) (0.24, 0.08, 0.00) (0.00, 0.26, 0.00) (-0.24, 0.08, 0.00)
-          (-0.15, -0.21, 0.50) (0.24, 0.08, 0.50) (0.00, 0.26, 0.50) (-0.24, 0.08, 0.50)
+          (-0.15, -0.21, 0.20) (0.24, 0.08, 0.20) (0.00, 0.26, 0.20) (-0.24, 0.08, 0.20)
         </link>
       </links>
       <devices>
         <leds medium="led">
-          <led offset="0,0,0.499" anchor="body" color="white" />
+          <led offset="0,0,0.0" anchor="body" color="blue" />
         </leds>
       </devices>
     </prototype>
 
-    <prototype id="3e3d" movable="true">
-      <body position="3.8, 1.5, 0.0" orientation="180,0,0" />
+    <prototype id="obtuse_triangle" movable="true">
+      <body position="3.8, 4.5, 0.0" orientation="0,0,0" />
       <links ref="body">
         <link id="body" geometry="convex_hull" mass="0.02" position="0,0,0.0" orientation="0,0,0">
-          (-0.15, -0.21, 0.00) (0.24, 0.08, 0.00) (0.00, 0.26, 0.00)
-          (-0.15, -0.21, 0.50) (0.24, 0.08, 0.50) (0.00, 0.26, 0.50)
+          (0.1, -0.3, 0.00) (0.1, 0.3, 0.00) (-0.20, 0, 0.00)
+          (0.1, -0.3, 0.20) (0.1, 0.3, 0.20) (-0.20, 0, 0.20)
         </link>
       </links>
       <devices>
         <leds medium="led">
-          <led offset="0,0,0.499" anchor="body" color="white" />
+          <led offset="0,0,0.0" anchor="body" color="white" />
+        </leds>
+      </devices>
+    </prototype>
+
+    <prototype id="parallelogram" movable="true">
+      <body position="5, 4.5, 0.0" orientation="-25,0,0" />
+      <links ref="body">
+        <link id="body" geometry="convex_hull" mass="0.02" position="0,0,0.0" orientation="0,0,0">
+          (-0.30, -0.15, 0.00) (0.10, -0.15, 0.00) (0.30, 0.15, 0.00) (-0.15, 0.15, 0.00)
+          (-0.30, -0.15, 0.20) (0.10, -0.15, 0.20) (0.30, 0.15, 0.20) (-0.15, 0.15, 0.20)
+        </link>
+      </links>
+      <devices>
+        <leds medium="led">
+          <led offset="0,0,0.0" anchor="body" color="white" />
         </leds>
       </devices>
     </prototype>
@@ -216,11 +232,11 @@
       $ argos3 -q physics_engines
   -->
   <physics_engines>
-    <dynamics3d id="dyn3d" iterations="50" default_friction="2">
-      <floor height="0.0" friction="10"/>
+    <!-- <dynamics2d id="dyn2d" /> -->
+    <dynamics3d id="dyn3d" iterations="50" default_friction="1">
+      <floor height="0.0" friction="0.5"/>
       <gravity g="9.82" />
     </dynamics3d>
-    <dynamics2d id="dyn2d" />
   </physics_engines>
 
   <!-- ********* -->

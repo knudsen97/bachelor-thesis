@@ -198,7 +198,7 @@ camera::camera(std::string name)
 }
 
 camera::~camera(){
-    argos::LOG << "Destroy camera obj" << std::endl;
+    // argos::LOG << "Destroy camera obj" << std::endl;
 
     try
     {
