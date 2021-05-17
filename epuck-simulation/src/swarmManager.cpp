@@ -87,6 +87,15 @@ void swarmManager::step()
         {
             blueServer( blueGoal, blueObjects[blueObjectIdx++]);
         }
+        /* if this swarm shall push them all */
+        // else if (whiteBoxIdx < whiteBoxes.size())
+        // {
+        //     blueServer( whiteGoal, whiteBoxes[whiteBoxIdx++]);
+        // }
+        // else if (whiteObjectIdx < whiteObjects.size())
+        // {
+        //     blueServer( whiteGoal, whiteObjects[whiteObjectIdx++]);
+        // }
     }
     if (whiteServer.jobsDone)
     {
