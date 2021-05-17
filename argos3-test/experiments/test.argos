@@ -41,6 +41,7 @@
         <epuck_proximity implementation="default" show_rays="true" />
         <!-- <proximity implementation="default" show_rays="true" />  -->
         <positioning implementation="default" />
+        <differential_steering implementation="default"/>
       </sensors>
 
       <params alpha="7.5" delta="0.1" velocity="10" />
@@ -94,16 +95,16 @@
     <!-- Place a foot-bot in the origin and bind it to the controller -->
 
     <e-puck id="fb_0">
-      <body position="1.5,1.5,0" orientation="0,0,0" />
+      <body position="1.3,1.5,0" orientation="0,0,0" />
       <controller config="test"/>
     </e-puck>
 
     <prototype id="box3d" movable="true">
-      <body position="1.8, 1.5, 0.0" orientation="0,0,0" />
+      <body position="1.5, 1.5, 0.0" orientation="0,0,0" />
       <links ref="body">
-        <link id="body" geometry="convex_hull" mass="0.02" position="0,0,0.04" orientation="180,0,0">
-          (0.1, 0.1, 0) (0.15, 0, 0) (0.1, -0.1, 0) (-0.05, -0.05, 0) (-0.05, 0.05, 0)
-          (0.1, 0.1, 0.5) (0.15, 0, 0.5) (0.1, -0.1, 0.5) (-0.05, -0.05, 0.5) (-0.05, 0.05, 0.5)
+        <link id="body" geometry="convex_hull" mass="0.055" position="0,0,0.04" orientation="180,0,0">
+          (0.1, 0.1, 0)    (0.1, -0.1, 0)   (-0.1, -0.1, 0)   (-0.1, 0.1, 0)
+          (0.1, 0.1, 0.2)  (0.1, -0.1, 0.2) (-0.1, -0.1, 0.2) (-0.1, 0.1, 0.2)
         </link>
       </links>
     </prototype>
@@ -123,18 +124,12 @@
       $ argos3 -q physics_engines
   -->
   <physics_engines>
-    <!--
-        Use a 2D dynamics engine.
-    -->
-    <!-- <dynamics3d id="dyn3d" /> -->
-    <!-- <dynamics2d id="dyn2d" /> -->
 
-    <dynamics3d id="dyn3d" iterations="50" default_friction="1">
-      <floor height="0.01" friction="0.05"/>
+    <dynamics3d id="dyn3d">
+      <floor height="0.01" friction="0.1"/>
       <gravity g="9.8" />
     </dynamics3d>
-   
-  
+
   </physics_engines>
 
   <!-- ********* -->

@@ -48,6 +48,7 @@ controller::~controller(){}
  * @param desiredAngle The desired angle the robot should reach
  **/
 controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::CRadians desiredAngle)
+//argos::Real controller::angleControl1(argos::CRadians curAngle, argos::CRadians desiredAngle)
 {
 
     //TODO: Indtil videre kører jeg bare med konstant hastighed maybe fix that?
@@ -64,35 +65,44 @@ controller::wVelocity controller::angleControl(argos::CRadians curAngle, argos::
     argos::Real S = -sign * M_PI * 2;
     error = (abs(S+error) < abs(error)) ? S+error : error;
     
+    // argos::LOG << "error: " << error << '\n';
+    
     /*Proportional part*/
     argos::Real Po = Kp*error;
+
     /*Integral part*/
     integral += error*dt;
     argos::Real Io = Ki*integral;
+    
     /*Differentiate part*/
     argos::Real Do = Kd * (error - preError)/dt;
 
     /*Define controller*/
     argos::Real K = Po + Io + Do;
 
- 
+    // std::cout << "K: " << K << '\n';
     /*The controller is set to omega and used to calculate the speed of 
     the individual wheels to obtain the desired angle*/
     argos::Real omega = K;
-    argos::Real velocity = WHEEL_RADIUS/2 * (this->vR+this->vL);
+    this->vR = this->vR < 0 ? this->vR * (-1) : this->vR;
+    this->vL = this->vL < 0 ? this->vL * (-1) : this->vL;
+
+    argos::Real velocity = WHEEL_RADIUS/2.0f * (this->vR+this->vL);
+    
+    // argos::LOG << "vel: " << velocity << '\n';
     vel.lWheel = (2*velocity - omega*INTERWHEEL_DISTANCE) / 2*WHEEL_RADIUS;
     vel.rWheel = (2*velocity + omega*INTERWHEEL_DISTANCE) / 2*WHEEL_RADIUS;
     this->vL = vel.lWheel;
     this->vR = vel.rWheel;
-
+    // argos::LOG << "v: "<< vL << ' ' << vR << '\n';
 
     /* Check that velocity is reasonable */
-    argos::Real thres = 100;
-    vel.lWheel = vel.lWheel > 100 ? 100 : vel.lWheel;
-    vel.lWheel = vel.lWheel < -100 ? -100 : vel.lWheel;
+    // argos::Real thres = 100;
+    // vel.lWheel = vel.lWheel > 100 ? 100 : vel.lWheel;
+    // vel.lWheel = vel.lWheel < -100 ? -100 : vel.lWheel;
 
-    vel.rWheel = vel.rWheel > 100 ? 100 : vel.rWheel;
-    vel.rWheel = vel.rWheel < -100 ? -100 : vel.rWheel;
+    // vel.rWheel = vel.rWheel > 100 ? 100 : vel.rWheel;
+    // vel.rWheel = vel.rWheel < -100 ? -100 : vel.rWheel;
 
 
 

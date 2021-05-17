@@ -27,88 +27,143 @@ test_controller::test_controller() :
     m_pcWheels(NULL),
     m_fWheelVelocity(2.5f),
     posSensor(NULL),
-    pcBox(NULL){}
+    pcBox(NULL),
+    obj(NULL){}
 
 void test_controller::Init(TConfigurationNode& t_node) 
 {
-    
     m_pcWheels = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
     posSensor = GetSensor<CCI_PositioningSensor>("positioning");
     m_pcProximity = GetSensor<CCI_EPuckProximitySensor>("epuck_proximity");
+
     GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
     //argos::Real Ku = 100000;
     //argos::Real Tu = 4.6;
     //con(SAMPLING_RATE*5, 0.6*Ku, 1.2*Ku/Tu, 0.10*Ku*Tu);
 
-    argos::Real Ku = 20000;
-    argos::Real Tu = 5;
-    //con(SAMPLING_RATE*5, 0.75*Ku, 0, 0.12*Ku*Tu);
-    //con(SAMPLING_RATE*5, 0.8*Ku, 0, 0.12*Ku*Tu);
-    con(SAMPLING_RATE*5, 0.75*Ku, 0, 0.135*Ku*Tu);
+    // argos::Real Ku = 20000;
+    // argos::Real Tu = 5;
+    // con(SAMPLING_RATE*5, 0.75*Ku, 0, 0.135*Ku*Tu);
 
+    argos::Real Ku = 5000;
+    argos::Real Tu = 5;
+    con(SAMPLING_RATE*5, 2000, 0, 0);//0.135*Ku*Tu);
+    // currentLocation = posSensor->GetReading().Position;
+    // prevLocation = {0,0,0};
+    out.open("out.csv");
 }
 
+argos::Real test_controller::getVelocity(const argos::CVector3 &cur, const argos::CVector3 &prev, argos::Real dt)
+{
+    argos::LOG << "diff: " << argos::CVector2(cur.GetX(), cur.GetY()) - argos::CVector2(prev.GetX(), prev.GetY()) << std::endl;
+    return Distance(argos::CVector2(cur.GetX(), cur.GetY()), argos::CVector2(prev.GetX(), prev.GetY()))/(dt);
+
+    // return abs(cur.GetX() - prev.GetX())/dt;
+
+}
     
 
 void test_controller::ControlStep()
 {
+    if(time == 0)
+    {
+        CSpace::TMapPerType& objMap = GetSpace().GetEntitiesByType("prototype");
+        for (CSpace::TMapPerType::iterator i = objMap.begin(); i != objMap.end(); ++i)
+        {
+            obj = argos::any_cast<CPrototypeEntity*>(i->second);
+            // std::string objId = obj->GetId();
+        }
+    }
+    argos::CVector3 currentLocation = obj->GetEmbodiedEntity().GetOriginAnchor().Position;
+
+    if(!testComplete)
+        time++;
+
     /*Protocol receive variables*/
     argos::CVector3 goalPointMessage;
     argos::CRadians goalAngle, bugGoalAngle;
     argos::Real pushVelocity;
 
-
     /*Make controller instance*/
     controller::wVelocity wVel;
-    argos::CVector3 goalPoint = {1, 1, 0};
+    argos::CVector3 goalPoint = {2, 1.5, 0};
     argos::CVector3 robotPos = posSensor->GetReading().Position;
     argos::CRadians robotAngle, temp;
     posSensor->GetReading().Orientation.ToEulerAngles(robotAngle, temp, temp);
-    //std::cout << "Rob angle:  " << robotAngle << std::endl;
 
-    bugGoalAngle = bugAlg.move(m_pcProximity, posSensor, goalPoint);
-    //std::cout << "Goal angle: " << bugGoalAngle << std::endl;
-
-    //std::cout << wVel.lWheel << " " << wVel.rWheel << std::endl;
     wVel = con.angleControl(robotAngle, bugGoalAngle);
-    
-    const argos::Real velScale = 1;
-    wVel.lWheel *= velScale;
-    wVel.rWheel *= velScale;
-
-    //const argos::Real vel = 50;
-    //m_pcWheels->SetLinearVelocity(100, 100);
-    //std::cout << wVel.lWheel << wVel.rWheel << '\n';
-    //m_pcWheels->SetLinearVelocity(wVel.lWheel, -wVel.rWheel);
+    const argos::Real vel = 50;
+    m_pcWheels->SetLinearVelocity(vel + wVel.lWheel, -vel + wVel.rWheel);
 
 
+    if(time > 1)//time % 2 == 0 && time > 1)
+    {
+        // argos::Real dist = getVelocity(currentLocation, prevLocation, 0.01);
+        argos::Real dist = Distance(argos::CVector2(currentLocation.GetX(), currentLocation.GetY()), argos::CVector2(prevLocation.GetX(), prevLocation.GetY()));
 
-    argos::Real leftWheeleVelocity;
-    argos::Real rightWheeleVelocity;
+        argos::LOG << "curr: " << currentLocation.GetX() << std::endl;
+        argos::LOG << "prev: " << prevLocation.GetX() << std::endl;
 
-    leftWheeleVelocity = wVel.lWheel;
-    rightWheeleVelocity = wVel.rWheel;
+        // out << currentLocation.GetX() << ',' << prevLocation.GetX() << std::endl;
+        out << currentLocation.GetX() - prevLocation.GetX() << std::endl;
 
-    std::cout << "Diff:  " << abs(bugGoalAngle.GetValue() - robotAngle.GetValue()) << '\n';
-    std::cout << "Thres: " << ANGLE_THRESHOLD << '\n';
-    if(sqrt(pow(goalPoint.GetX() - robotPos.GetX(), 2) + pow(goalPoint.GetY() - robotPos.GetY(), 2)) <= 0.01999f)
+        // out << abs(currentLocation.GetX() - prevLocation.GetX()) << std::endl;
+        // prevMes = dist;
+        prevLocation = currentLocation;
+    }
+    else if(time == 1)
+    {
+        prevLocation = currentLocation;
+    }
+
+    argos::LOG << "dist to goal: " << sqrt(pow(goalPoint.GetX() - currentLocation.GetX(), 2) + pow(goalPoint.GetY() - currentLocation.GetY(), 2)) << std::endl;
+    if(sqrt(pow(goalPoint.GetX() - currentLocation.GetX(), 2) + pow(goalPoint.GetY() - currentLocation.GetY(), 2)) <= 0.04999f)
     {
         m_pcWheels->SetLinearVelocity(0,0);
+        testComplete = true;
+        std::cout << "time: " << time << std::endl;
+        out.close();
     }
-    else if(abs(bugGoalAngle.GetValue() - robotAngle.GetValue()) >= ANGLE_THRESHOLD)
-    {
-        leftWheeleVelocity = wVel.lWheel;
-        rightWheeleVelocity = wVel.rWheel;
-        //std::cout << leftWheeleVelocity<< ' ' << rightWheeleVelocity <<'\n';
-        m_pcWheels->SetLinearVelocity(leftWheeleVelocity, -rightWheeleVelocity);
-    }
-    else
-    {
-        leftWheeleVelocity = wVel.lWheel + 60;
-        rightWheeleVelocity = wVel.rWheel - 60;
-        bugAlg.regulateSpeed(m_pcProximity, leftWheeleVelocity, rightWheeleVelocity);
-        m_pcWheels->SetLinearVelocity(leftWheeleVelocity, rightWheeleVelocity);
-    }
+
+    // prevLocation = currentLocation;
+
+    //wVel = con.angleControl(robotAngle, bugGoalAngle);
+
+    // std::cout << "test: " << wVel.lWheel << wVel.rWheel << '\n';
+    // m_pcWheels->SetLinearVelocity(wVel.lWheel, wVel.rWheel);
+
+
+    // argos::Real leftWheeleVelocity;
+    // argos::Real rightWheeleVelocity;
+
+    // leftWheeleVelocity = wVel.lWheel;
+    // rightWheeleVelocity = wVel.rWheel;
+
+    // std::cout << "Diff:  " << abs(bugGoalAngle.GetValue() - robotAngle.GetValue()) << '\n';
+    // std::cout << "Thres: " << ANGLE_THRESHOLD << '\n';
+
+    // argos::LOG << "dist to goal: " << sqrt(pow(goalPoint.GetX() - robotPos.GetX(), 2) + pow(goalPoint.GetY() - robotPos.GetY(), 2)) << std::endl;
+    // if(sqrt(pow(goalPoint.GetX() - robotPos.GetX(), 2) + pow(goalPoint.GetY() - robotPos.GetY(), 2)) <= 0.04999f)
+    // {
+    //     m_pcWheels->SetLinearVelocity(0,0);
+    //     testComplete = true;
+    //     std::cout << "time: " << time << std::endl;
+    //     out.close();
+    // }
+    // else if(abs(bugGoalAngle.GetValue() - robotAngle.GetValue()) >= ANGLE_THRESHOLD)
+    // {
+    //     leftWheeleVelocity = wVel.lWheel;
+    //     rightWheeleVelocity = wVel.rWheel;
+    //     //std::cout << leftWheeleVelocity<< ' ' << rightWheeleVelocity <<'\n';
+    //     m_pcWheels->SetLinearVelocity(leftWheeleVelocity, -rightWheeleVelocity);
+    // }
+    // else
+    // {
+    //     leftWheeleVelocity = wVel.lWheel + 60;
+    //     rightWheeleVelocity = wVel.rWheel - 60;
+    //     bugAlg.regulateSpeed(m_pcProximity, leftWheeleVelocity, rightWheeleVelocity);
+    //     m_pcWheels->SetLinearVelocity(leftWheeleVelocity, rightWheeleVelocity);
+    // }
 
     // std::cout << "vel: " << leftWheeleVelocity <<  " " << rightWheeleVelocity  << std::endl;
 }

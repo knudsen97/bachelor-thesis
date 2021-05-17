@@ -6,8 +6,8 @@
 #include <argos3/core/utility/logging/argos_log.h>
 #include <fstream>
 
-#define WHEEL_RADIUS 0.029112741f //Found in argos documentation
-#define INTERWHEEL_DISTANCE 0.14f 
+#define WHEEL_RADIUS 0.0205f //Found in argos documentation
+#define INTERWHEEL_DISTANCE 0.053f 
 
 class controller
 {
@@ -25,6 +25,8 @@ public:
     void operator()(argos::Real _dt, argos::Real _Kp, argos::Real _Ki, argos::Real _Kd);
 
     wVelocity angleControl(argos::CRadians curAngle, argos::CRadians desiredAngle); 
+    argos::Real angleControl1(argos::CRadians curAngle, argos::CRadians desiredAngle); 
+
     wVelocity angleControl(argos::CRadians curAngle, const argos::CVector3 &robPos, argos::CVector3 &goalPos); 
 
     // std::vector<double> getY(){return y;}
