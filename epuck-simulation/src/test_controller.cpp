@@ -70,7 +70,7 @@ void test_controller::Init(argos::TConfigurationNode& t_node)
 }
 void test_controller::ControlStep()
 {
-    argos::LOG << "footbot: " << CCI_Controller::GetId() << '\n';
+    // argos::LOG << "footbot: " << CCI_Controller::GetId() << '\n';
     if (!clientSocket.IsConnected())
     {
         connected = false;
@@ -102,11 +102,11 @@ void test_controller::ControlStep()
         /************************* RECEIVE *************************/
         case RECEIVE:
         {
-            argos::LOG << "sent: " << connection.debug_sent <<'\n'; 
-            argos::LOG << "recieved: " << connection.debug_recieved <<'\n'; 
+            // argos::LOG << "sent: " << connection.debug_sent <<'\n'; 
+            // argos::LOG << "recieved: " << connection.debug_recieved <<'\n'; 
 
             wait_time++;
-            argos::LOG << "CLIENT RECEIVE\n";
+            // argos::LOG << "CLIENT RECEIVE\n";
 
             if(connection.recieve())
             {
@@ -152,7 +152,7 @@ void test_controller::ControlStep()
         /************************* GO TO POINT *************************/
         case GO_TO_POINT:
         {
-            argos::LOG << "CLIENT GO_TO_POINT\n";
+            // argos::LOG << "CLIENT GO_TO_POINT\n";
 
             argos::CRadians desiredAngle;
             desiredAngle = argos::ATan2(goalPointMessage.GetY() - robotPos.Position.GetY(), goalPointMessage.GetX() - robotPos.Position.GetX());
@@ -167,15 +167,15 @@ void test_controller::ControlStep()
         /************************* UPDATE SERVER *************************/
         case UPDATE_SERVER:
         {
-            argos::LOG << "CLIENT UPDATE SERVER\n";
-            argos::LOG << "sent: " << connection.debug_sent <<'\n'; 
-            argos::LOG << "recieved: " << connection.debug_recieved <<'\n'; 
+            // argos::LOG << "CLIENT UPDATE SERVER\n";
+            // argos::LOG << "sent: " << connection.debug_sent <<'\n'; 
+            // argos::LOG << "recieved: " << connection.debug_recieved <<'\n'; 
             if(connection.send(robotPos.Position))
             {
                 currentState = RECEIVE;
             }
             wait_time = 0;
-            argos::LOG << "or here\n";
+            // argos::LOG << "or here\n";
             break;
         }
         
@@ -183,7 +183,7 @@ void test_controller::ControlStep()
         /************************* ORIENTATE *************************/
         case ORIENTATE:
         {
-            argos::LOG << "CLIENT ORIENTATE\n";
+            // argos::LOG << "CLIENT ORIENTATE\n";
 
 
             wVel = control.angleControl(xAngle, goalAngle);
@@ -195,19 +195,19 @@ void test_controller::ControlStep()
             {
                 m_pcWheels->SetLinearVelocity(wVel.lWheel, -wVel.rWheel);
                 wait_time = 0;
-                argos::LOG << "reset waitime\n";
+                // argos::LOG << "reset waitime\n";
             }
             else
             {
                 m_pcWheels->SetLinearVelocity(0,0);
                 wait_time++;
-                argos::LOG << "count waittime\n";
+                // argos::LOG << "count waittime\n";
             }
             if (wait_time > 100)
             {
                 currentState = WAIT;
             }
-            argos::LOG << "wait: " << wait_time << '\n';
+            // argos::LOG << "wait: " << wait_time << '\n';
             
             break;
         }
@@ -215,21 +215,21 @@ void test_controller::ControlStep()
         /************************* WAIT *************************/
         case WAIT:
         {
-            argos::LOG << "CLIENT WAIT\n";
+            // argos::LOG << "CLIENT WAIT\n";
             if(connection.send("WAIT"))
             {
                 sendWaitState = true;
                 currentState = RECEIVE;
             }
             wait_time = 0;
-            argos::LOG << "plese dont be here\n";
+            // argos::LOG << "plese dont be here\n";
             break;
         }
 
         /************************* SET_VELOCITY *************************/
         case SET_VELOCITY:
         {
-            argos::LOG << "CLIENT SET_VELOCITY\n";
+            // argos::LOG << "CLIENT SET_VELOCITY\n";
             wVel = control.angleControl(xAngle, goalAngle);
 
             m_pcWheels->SetLinearVelocity(pushVelocity + wVel.lWheel, -(pushVelocity + wVel.rWheel));
@@ -237,7 +237,7 @@ void test_controller::ControlStep()
             std::string message;
             if(connection.recieve(message))
             {
-                argos::LOG << message << std::endl;
+                // argos::LOG << message << std::endl;
                 if(message == "STOP")
                 {
                     currentState = RECEIVE;
@@ -253,7 +253,7 @@ void test_controller::ControlStep()
         }
     }
     
-    argos::LOG << '\n';
+    // argos::LOG << '\n';
 }
 
 /**
@@ -276,8 +276,8 @@ bool test_controller::ReadyToPush(const argos::CCI_PositioningSensor::SReading& 
     argos::Real leftWheeleVelocity;
     argos::Real rightWheeleVelocity;
     argos::Real angleError = abs(bugGoalAngle.GetValue() - robotAngle.GetValue());
-    argos::LOG << "dis to go: " << sqrt(pow(goalPoint.GetX() - robotPos.Position.GetX(), 2) + pow(goalPoint.GetY() - robotPos.Position.GetY(), 2)) << '\n';
-    argos::LOG << "ang err: " << abs(bugGoalAngle.GetValue() - robotAngle.GetValue()) << '\n';
+    // argos::LOG << "dis to go: " << sqrt(pow(goalPoint.GetX() - robotPos.Position.GetX(), 2) + pow(goalPoint.GetY() - robotPos.Position.GetY(), 2)) << '\n';
+    // argos::LOG << "ang err: " << abs(bugGoalAngle.GetValue() - robotAngle.GetValue()) << '\n';
     if(sqrt(pow(goalPoint.GetX() - robotPos.Position.GetX(), 2) + pow(goalPoint.GetY() - robotPos.Position.GetY(), 2)) <= 0.00999f)
     {
         m_pcWheels->SetLinearVelocity(0,0);
@@ -292,9 +292,9 @@ bool test_controller::ReadyToPush(const argos::CCI_PositioningSensor::SReading& 
     else
     {
         leftWheeleVelocity = wVel.lWheel + v0;
-        rightWheeleVelocity = wVel.rWheel - v0;
+        rightWheeleVelocity = wVel.rWheel + v0;
         bugAlg.regulateSpeed(proxSensor, leftWheeleVelocity, rightWheeleVelocity);
-        m_pcWheels->SetLinearVelocity(leftWheeleVelocity, rightWheeleVelocity);
+        m_pcWheels->SetLinearVelocity(leftWheeleVelocity, -rightWheeleVelocity);
     }
 
     return false;

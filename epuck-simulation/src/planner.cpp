@@ -94,7 +94,7 @@ std::vector<argos::CVector3> planner::FindPolygonCorners(argos::CPrototypeEntity
                             gradientSize,
                             useHarrisDetect,
                             k );
-    std::cout << "COrners detected: " << corners.size() << std::endl;
+    // std::cout << "COrners detected: " << corners.size() << std::endl;
 
     // for(auto corner : corners)
     // {
@@ -145,7 +145,7 @@ std::vector<argos::CVector3> planner::FindPolygonCorners(argos::CBoxEntity* mBox
                             gradientSize,
                             useHarrisDetect,
                             k );
-    std::cout << "COrners detected: " << corners.size() << std::endl;
+    // std::cout << "COrners detected: " << corners.size() << std::endl;
 
     // for(auto corner : corners)
     // {
