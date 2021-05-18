@@ -264,14 +264,14 @@ void masterLoopFunction::replaceObject(argos::CPrototypeEntity* object)
    // argos::LOG << object->GetId() << " angle: " << argos::ATan2(goal.GetY() - newPosition.GetY(), goal.GetX() - newPosition.GetX()) << '\n';
 
    orientation.FromEulerAngles(optimalAngle, non, non);
-   
-   object->GetEmbodiedEntity().MoveTo(newPosition,orientation);
+   object->GetEmbodiedEntity().MoveTo(newPosition,orientation, false, true);
+   // argos::LOG <<"movement: " << object->GetEmbodiedEntity().MoveTo(newPosition,orientation, false, true) << '\n';
 }
 
 argos::CVector3 masterLoopFunction::generatePosition() 
 {
    
-   argos::CRange<argos::Real> x_range(1, 5), y_range(3, 4);
+   argos::CRange<argos::Real> x_range(0.5, 5), y_range(2.5, 4);
    CRandom::CRNG* pcRNG = CRandom::CreateRNG("argos");         
    argos::CVector3 newPosition(0,0,0);
    bool run = true;
@@ -297,8 +297,9 @@ argos::CVector3 masterLoopFunction::generatePosition()
       
       if (count > 10000) //if max runs exceeds
       {
-         throw std::runtime_error("max iteration exceeded in placing objec at random");
+         run = false;
          argos::LOGERR << "max iteration exceeded in placing objec at random";
+         throw std::runtime_error("max iteration exceeded in placing objec at random");
       }
       count++;
       distant = true;
