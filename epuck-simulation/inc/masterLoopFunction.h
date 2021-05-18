@@ -11,8 +11,8 @@
 #include "swarmManager.h"
 #include "sort_loop_function.h"
 
-#define GOAL_THRESHOLD 0.19999f
-#define BOX_TTL 200
+#define GOAL_THRESHOLD 0.39999f
+#define BOX_TTL 500
 
 using namespace argos;
 
