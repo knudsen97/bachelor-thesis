@@ -60,7 +60,10 @@ void swarmManager::step()
             sortBlue.join();
             sortWhite.join();
             blueServer(3, blueGoal, blueBoxes[blueBoxIdx++], "blue server");
-            whiteServer(3, whiteGoal, whiteBoxes[whiteBoxIdx++], "white server");
+            if (cameraServerLoop::totalClientCount > 3)
+            {
+                whiteServer(3, whiteGoal, whiteBoxes[whiteBoxIdx++], "white server");
+            }
         }
         if (!swarmObjects.empty())        
         {
@@ -70,7 +73,10 @@ void swarmManager::step()
             sortBlue.join();
             sortWhite.join();
             blueServer(3, blueGoal, blueObjects[blueObjectIdx++], "blue server");
-            whiteServer(3, whiteGoal, whiteObjects[whiteObjectIdx++], "white server");
+            if (cameraServerLoop::totalClientCount > 3)
+            {
+                whiteServer(3, whiteGoal, whiteObjects[whiteObjectIdx++], "white server");
+            }
         }
         
 
@@ -88,28 +94,32 @@ void swarmManager::step()
             blueServer( blueGoal, blueObjects[blueObjectIdx++]);
         }
         /* if this swarm shall push them all */
-        // else if (whiteBoxIdx < whiteBoxes.size())
-        // {
-        //     blueServer( whiteGoal, whiteBoxes[whiteBoxIdx++]);
-        // }
-        // else if (whiteObjectIdx < whiteObjects.size())
-        // {
-        //     blueServer( whiteGoal, whiteObjects[whiteObjectIdx++]);
-        // }
-    }
-    if (whiteServer.jobsDone)
-    {
-        if (whiteBoxIdx < whiteBoxes.size())
+        else if (whiteBoxIdx < whiteBoxes.size())
         {
-            whiteServer( whiteGoal, whiteBoxes[whiteBoxIdx++]);
+            blueServer( whiteGoal, whiteBoxes[whiteBoxIdx++]);
         }
         else if (whiteObjectIdx < whiteObjects.size())
         {
-            whiteServer( whiteGoal, whiteObjects[whiteObjectIdx++]);
+            blueServer( whiteGoal, whiteObjects[whiteObjectIdx++]);
         }
     }
     blueServer.step();
-    whiteServer.step();
+
+    if (cameraServerLoop::totalClientCount > 3)
+    {
+        if (whiteServer.jobsDone)
+        {
+            if (whiteBoxIdx < whiteBoxes.size())
+            {
+                whiteServer( whiteGoal, whiteBoxes[whiteBoxIdx++]);
+            }
+            else if (whiteObjectIdx < whiteObjects.size())
+            {
+                whiteServer( whiteGoal, whiteObjects[whiteObjectIdx++]);
+            }
+        }
+        whiteServer.step();
+    }
     
     // argos::LOG << "white: " << whiteBoxes.size() << std::endl;
     // argos::LOG << "blue: " << blueBoxes.size() << std::endl;
