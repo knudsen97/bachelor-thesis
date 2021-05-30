@@ -55,22 +55,28 @@ void swarmManager::step()
         if (!swarmBoxes.empty())
         {
             classifyBoxes(swarmBoxes, whiteBoxes, blueBoxes);
-            std::thread sortBlue(sortClosestBox, std::ref(blueBoxes), std::ref(blueGoal));
-            std::thread sortWhite(sortClosestBox, std::ref(whiteBoxes), std::ref(whiteGoal));
-            sortBlue.join();
-            sortWhite.join();
+            // std::thread sortBlue(sortClosestBox, std::ref(blueBoxes), std::ref(blueGoal));
+            // std::thread sortWhite(sortClosestBox, std::ref(whiteBoxes), std::ref(whiteGoal));
+            // sortBlue.join();
+            // sortWhite.join();
             blueServer(3, blueGoal, blueBoxes[blueBoxIdx++], "blue server");
-            // whiteServer(3, whiteGoal, whiteBoxes[whiteBoxIdx++], "white server");
+            if (cameraServerLoop::totalClientCount > 3)
+            {
+                whiteServer(3, whiteGoal, whiteBoxes[whiteBoxIdx++], "white server");
+            }
         }
         if (!swarmObjects.empty())        
         {
             classifyBoxes(swarmObjects, whiteObjects, blueObjects);
-            std::thread sortBlue(sortClosestObject, std::ref(blueObjects), std::ref(blueGoal));
-            std::thread sortWhite(sortClosestObject, std::ref(whiteObjects), std::ref(whiteGoal));
-            sortBlue.join();
-            sortWhite.join();
+            // std::thread sortBlue(sortClosestObject, std::ref(blueObjects), std::ref(blueGoal));
+            // std::thread sortWhite(sortClosestObject, std::ref(whiteObjects), std::ref(whiteGoal));
+            // sortBlue.join();
+            // sortWhite.join();
             blueServer(3, blueGoal, blueObjects[blueObjectIdx++], "blue server");
-            // whiteServer(3, whiteGoal, whiteObjects[whiteObjectIdx++], "white server");
+            if (cameraServerLoop::totalClientCount > 3)
+            {
+                whiteServer(3, whiteGoal, whiteObjects[whiteObjectIdx++], "white server");
+            }
         }
         
 
@@ -97,19 +103,26 @@ void swarmManager::step()
             blueServer( whiteGoal, whiteObjects[whiteObjectIdx++]);
         }
     }
-    // if (whiteServer.jobsDone)
-    // {
-    //     if (whiteBoxIdx < whiteBoxes.size())
-    //     {
-    //         whiteServer( whiteGoal, whiteBoxes[whiteBoxIdx++]);
-    //     }
-    //     else if (whiteObjectIdx < whiteObjects.size())
-    //     {
-    //         whiteServer( whiteGoal, whiteObjects[whiteObjectIdx++]);
-    //     }
-    // }
     blueServer.step();
-    // whiteServer.step();
+
+    if (cameraServerLoop::totalClientCount > 3)
+    {
+        if (whiteServer.jobsDone)
+        {
+            if (whiteBoxIdx < whiteBoxes.size())
+            {
+                whiteServer( whiteGoal, whiteBoxes[whiteBoxIdx++]);
+            }
+            else if (whiteObjectIdx < whiteObjects.size())
+            {
+                whiteServer( whiteGoal, whiteObjects[whiteObjectIdx++]);
+            }
+        }
+        whiteServer.step();
+    }
+    
+
+    
     
     // argos::LOG << "white: " << whiteBoxes.size() << std::endl;
     // argos::LOG << "blue: " << blueBoxes.size() << std::endl;
