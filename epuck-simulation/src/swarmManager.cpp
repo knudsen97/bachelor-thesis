@@ -60,7 +60,10 @@ void swarmManager::step()
             sortBlue.join();
             sortWhite.join();
             blueServer(3, blueGoal, blueBoxes[blueBoxIdx++], "blue server");
-            // whiteServer(3, whiteGoal, whiteBoxes[whiteBoxIdx++], "white server");
+            if (cameraServerLoop::totalClientCount > 3)
+            {
+                whiteServer(3, whiteGoal, whiteBoxes[whiteBoxIdx++], "white server");
+            }
         }
         if (!swarmObjects.empty())        
         {
@@ -70,7 +73,10 @@ void swarmManager::step()
             sortBlue.join();
             sortWhite.join();
             blueServer(3, blueGoal, blueObjects[blueObjectIdx++], "blue server");
-            // whiteServer(3, whiteGoal, whiteObjects[whiteObjectIdx++], "white server");
+            if (cameraServerLoop::totalClientCount > 3)
+            {
+                whiteServer(3, whiteGoal, whiteObjects[whiteObjectIdx++], "white server");
+            }
         }
         
 
@@ -109,7 +115,22 @@ void swarmManager::step()
     //     }
     // }
     blueServer.step();
-    // whiteServer.step();
+
+    if (cameraServerLoop::totalClientCount > 3)
+    {
+        if (whiteServer.jobsDone)
+        {
+            if (whiteBoxIdx < whiteBoxes.size())
+            {
+                whiteServer( whiteGoal, whiteBoxes[whiteBoxIdx++]);
+            }
+            else if (whiteObjectIdx < whiteObjects.size())
+            {
+                whiteServer( whiteGoal, whiteObjects[whiteObjectIdx++]);
+            }
+        }
+        whiteServer.step();
+    }
     
     // argos::LOG << "white: " << whiteBoxes.size() << std::endl;
     // argos::LOG << "blue: " << blueBoxes.size() << std::endl;

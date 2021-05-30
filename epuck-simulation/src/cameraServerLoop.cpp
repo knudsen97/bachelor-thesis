@@ -271,10 +271,10 @@ void cameraServerLoop::operator()(argos::CVector3 boxGoal_, argos::CPrototypeEnt
    debugMaps.resize(clientcount);
 }
 
-void cameraServerLoop::establishConnection(int totalClientCount)
+void cameraServerLoop::establishConnection()
 {
    everyoneIsConected = false;
-   std::thread connecting(&cameraServerLoop::connect_, totalClientCount);
+   std::thread connecting(&cameraServerLoop::connect_, cameraServerLoop::totalClientCount);
    connecting.detach();
 }
 
@@ -765,6 +765,7 @@ bool cameraServerLoop::Planning(cv::Mat &map_, argos::CVector3 goal, argos::CVec
 
 /*Static variables definitions*/
 int cameraServerLoop::portnumber = 0;
+int cameraServerLoop::totalClientCount = 0;
 argos::CTCPSocket cameraServerLoop::serverSocket;
 std::vector<argos::CTCPSocket*> cameraServerLoop::clientSockets;
 std::vector<argos::CTCPSocket> cameraServerLoop::clients;

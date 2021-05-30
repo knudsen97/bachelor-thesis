@@ -32,18 +32,20 @@ protected:
     static argos::CTCPSocket serverSocket;
     static std::vector<argos::CTCPSocket> clients;
     static std::vector<argos::CTCPSocket*> clientSockets;
+    static 
     std::vector<argos::CVector3> robotPositions;
     std::vector<protocol> clientConnections;
     int clientConnected;
     bool connected;
     static void connect_(int totalClientCount);
-    static std::vector<std::pair<std::string, argos::CTCPSocket*>> robotSocketPair;
 
 public:
+    static std::vector<std::pair<std::string, argos::CTCPSocket*>> robotSocketPair;
     void connect();
-    static void establishConnection(int totalClientCount);
+    static void establishConnection();
     static int portnumber;
     static bool everyoneIsConected;
+    static int totalClientCount;
 
     /* camera stuff */
 protected:
