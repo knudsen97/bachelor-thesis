@@ -18,6 +18,7 @@ $ cmake -H./ -B./build
 $ cmake --build ./build --target all
 $ argos3 -c experiments/test.argos 
 ```
+The mass and the friction can be changed in the [test.argos](https://github.com/knudsen97/bachelor-thesis/blob/master/argos3-test/experiments/test.argos) file.
 
 ## Running the second experiment 
 ---
