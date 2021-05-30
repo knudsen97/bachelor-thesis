@@ -55,10 +55,10 @@ void swarmManager::step()
         if (!swarmBoxes.empty())
         {
             classifyBoxes(swarmBoxes, whiteBoxes, blueBoxes);
-            std::thread sortBlue(sortClosestBox, std::ref(blueBoxes), std::ref(blueGoal));
-            std::thread sortWhite(sortClosestBox, std::ref(whiteBoxes), std::ref(whiteGoal));
-            sortBlue.join();
-            sortWhite.join();
+            // std::thread sortBlue(sortClosestBox, std::ref(blueBoxes), std::ref(blueGoal));
+            // std::thread sortWhite(sortClosestBox, std::ref(whiteBoxes), std::ref(whiteGoal));
+            // sortBlue.join();
+            // sortWhite.join();
             blueServer(3, blueGoal, blueBoxes[blueBoxIdx++], "blue server");
             if (cameraServerLoop::totalClientCount > 3)
             {
@@ -68,10 +68,10 @@ void swarmManager::step()
         if (!swarmObjects.empty())        
         {
             classifyBoxes(swarmObjects, whiteObjects, blueObjects);
-            std::thread sortBlue(sortClosestObject, std::ref(blueObjects), std::ref(blueGoal));
-            std::thread sortWhite(sortClosestObject, std::ref(whiteObjects), std::ref(whiteGoal));
-            sortBlue.join();
-            sortWhite.join();
+            // std::thread sortBlue(sortClosestObject, std::ref(blueObjects), std::ref(blueGoal));
+            // std::thread sortWhite(sortClosestObject, std::ref(whiteObjects), std::ref(whiteGoal));
+            // sortBlue.join();
+            // sortWhite.join();
             blueServer(3, blueGoal, blueObjects[blueObjectIdx++], "blue server");
             if (cameraServerLoop::totalClientCount > 3)
             {
@@ -103,17 +103,6 @@ void swarmManager::step()
             blueServer( whiteGoal, whiteObjects[whiteObjectIdx++]);
         }
     }
-    // if (whiteServer.jobsDone)
-    // {
-    //     if (whiteBoxIdx < whiteBoxes.size())
-    //     {
-    //         whiteServer( whiteGoal, whiteBoxes[whiteBoxIdx++]);
-    //     }
-    //     else if (whiteObjectIdx < whiteObjects.size())
-    //     {
-    //         whiteServer( whiteGoal, whiteObjects[whiteObjectIdx++]);
-    //     }
-    // }
     blueServer.step();
 
     if (cameraServerLoop::totalClientCount > 3)
@@ -131,6 +120,9 @@ void swarmManager::step()
         }
         whiteServer.step();
     }
+    
+
+    
     
     // argos::LOG << "white: " << whiteBoxes.size() << std::endl;
     // argos::LOG << "blue: " << blueBoxes.size() << std::endl;
